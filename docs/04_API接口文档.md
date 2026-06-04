@@ -1,6 +1,6 @@
-# 忠济堂中医养生连锁管理系统 · API接口文档（V3.3）
+# 忠济堂中医养生连锁管理系统 · API接口文档（V3.4）
 
-> **版本：V3.3 | 日期：2026年6月**
+> **版本：V3.4 | 日期：2026年6月**
 > **说明：RESTful API规范，版本前缀/api/v1，所有接口需JWT鉴权并自动注入tenant_id**
 
 ---
@@ -71,6 +71,8 @@
 | 40302 | 套餐功能未开通 |
 | 40401 | 资源不存在 |
 | 40901 | 资源冲突（如重复预约） |
+| 40902 | 时段已被占用 |
+| 40903 | 时段临时锁定中 |
 | 42901 | 请求过于频繁 |
 | 50001 | 系统内部错误 |
 
@@ -274,13 +276,298 @@ POST /api/v1/store/technicians/{id}/check-out
 | POST /api/v1/store/schedules/batch | POST | 批量排班 |
 | GET /api/v1/store/schedules/week-view | GET | 周视图 |
 
+### 3.5 技师推广 /store/technician-promotion
+
+#### 3.5.1 获取推广信息
+
+```
+GET /api/v1/store/technicians/{id}/promotion
+```
+
+**路径参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | long | 是 | 技师ID |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "technician_id": 1001,
+    "technician_name": "李技师",
+    "avatar": "https://...",
+    "promotion_enabled": true,
+    "promotion_code": "TC1001PROMO",
+    "share_link": "https://app.zhongjitang.com/promo/TC1001PROMO",
+    "qr_code_url": "https://cdn.zhongjitang.com/qr/TC1001PROMO.png",
+    "commission_rate": "10.00",
+    "total_promoted_customers": 56,
+    "total_commission": "3280.00"
+  }
+}
+```
+
+#### 3.5.2 生成推广海报
+
+```
+POST /api/v1/store/technicians/{id}/promotion/generate-poster
+```
+
+**路径参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | long | 是 | 技师ID |
+
+**请求体：**
+```json
+{
+  "poster_template": "default",
+  "custom_text": "专业肩颈推拿，欢迎预约体验",
+  "include_qr_code": true
+}
+```
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "poster_url": "https://cdn.zhongjitang.com/posters/TC1001_20260604.png",
+    "thumbnail_url": "https://cdn.zhongjitang.com/posters/TC1001_20260604_thumb.png",
+    "expires_at": "2026-07-04T23:59:59+08:00"
+  }
+}
+```
+
+#### 3.5.3 推广统计
+
+```
+GET /api/v1/store/technicians/{id}/promotion/stats
+```
+
+**路径参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | long | 是 | 技师ID |
+
+**查询参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| start_date | date | 否 | 统计起始日期 |
+| end_date | date | 否 | 统计结束日期 |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "technician_id": 1001,
+    "period": { "start_date": "2026-05-01", "end_date": "2026-05-31" },
+    "metrics": {
+      "total_clicks": 320,
+      "total_views": 580,
+      "total_appointments": 45,
+      "completed_appointments": 38,
+      "conversion_rate": 6.56,
+      "total_commission": "2280.00"
+    },
+    "daily_trend": [
+      { "date": "2026-05-01", "clicks": 12, "views": 20, "appointments": 2 }
+    ]
+  }
+}
+```
+
+#### 3.5.4 佣金明细
+
+```
+GET /api/v1/store/technicians/{id}/promotion/commissions
+```
+
+**路径参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | long | 是 | 技师ID |
+
+**查询参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| status | string | 否 | 佣金状态：pending/settled/cancelled |
+| start_date | date | 否 | 起始日期 |
+| end_date | date | 否 | 结束日期 |
+| page | int | 否 | 页码，默认1 |
+| page_size | int | 否 | 每页条数，默认20 |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "list": [
+      {
+        "id": 7001,
+        "order_id": 60001,
+        "order_no": "ORD202606050001",
+        "customer_name": "王**",
+        "commission_amount": "58.00",
+        "commission_rate": "10.00",
+        "order_amount": "580.00",
+        "status": "settled",
+        "settled_at": "2026-06-05T18:00:00+08:00",
+        "created_at": "2026-06-05T15:30:00+08:00"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 20,
+      "total": 38,
+      "total_pages": 2
+    },
+    "summary": {
+      "total_pending": "320.00",
+      "total_settled": "2280.00",
+      "total_cancelled": "80.00"
+    }
+  }
+}
+```
+
+#### 3.5.5 推广排行榜
+
+```
+GET /api/v1/store/technicians/{id}/promotion/ranking
+```
+
+**路径参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | long | 是 | 技师ID |
+
+**查询参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| store_id | long | 否 | 门店ID，不填则全租户 |
+| period | string | 否 | 排行周期：week/month/quarter，默认month |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "period": "month",
+    "my_rank": {
+      "rank": 3,
+      "technician_id": 1001,
+      "technician_name": "李技师",
+      "total_promoted": 38,
+      "total_commission": "2280.00"
+    },
+    "ranking": [
+      {
+        "rank": 1,
+        "technician_id": 1005,
+        "technician_name": "张技师",
+        "avatar": "https://...",
+        "total_promoted": 52,
+        "total_commission": "3120.00"
+      },
+      {
+        "rank": 2,
+        "technician_id": 1003,
+        "technician_name": "王技师",
+        "avatar": "https://...",
+        "total_promoted": 45,
+        "total_commission": "2700.00"
+      }
+    ]
+  }
+}
+```
+
 ---
 
 ## 四、交易域API
 
 ### 4.1 预约管理 /trade/appointment
 
-#### 4.1.1 创建预约
+#### 4.1.1 查询可用时段
+
+```
+GET /api/v1/trade/appointments/available-slots
+```
+
+**查询参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| store_id | long | 是 | 门店ID |
+| technician_id | long | 否 | 技师ID，0=不指定技师 |
+| date | date | 是 | 查询日期 |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "store_id": 101,
+    "date": "2026-06-05",
+    "technician_id": 1001,
+    "time_slots": [
+      { "time_slot": "09:00", "available": true, "remaining_count": 3 },
+      { "time_slot": "10:00", "available": true, "remaining_count": 1 },
+      { "time_slot": "11:00", "available": false, "remaining_count": 0 },
+      { "time_slot": "14:00", "available": true, "remaining_count": 2 },
+      { "time_slot": "15:00", "available": false, "remaining_count": 0 },
+      { "time_slot": "16:00", "available": true, "remaining_count": 2 }
+    ]
+  }
+}
+```
+
+> **说明：** `available=false` 表示该时段已被占用（灰色不可选），`remaining_count` 表示该时段剩余可预约数量。
+
+#### 4.1.2 临时锁定时段
+
+```
+POST /api/v1/trade/appointments/lock-temp
+```
+
+**请求体：**
+```json
+{
+  "store_id": 101,
+  "technician_id": 1001,
+  "date": "2026-06-05",
+  "time_slot": "14:00"
+}
+```
+
+**参数说明：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| store_id | long | 是 | 门店ID |
+| technician_id | long | 是 | 技师ID，0=不指定技师 |
+| date | date | 是 | 预约日期 |
+| time_slot | string | 是 | 时段，如"14:00" |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "lock_id": "LOCK202606041400001",
+    "store_id": 101,
+    "technician_id": 1001,
+    "date": "2026-06-05",
+    "time_slot": "14:00",
+    "expire_at": "2026-06-04T10:05:00+08:00"
+  }
+}
+```
+
+> **说明：** 临时锁定有效期为5分钟，超时自动释放。在锁定期间，其他用户无法预约该时段。创建预约时需携带 `lock_id` 以确保时段一致性。
+
+#### 4.1.3 创建预约
 
 ```
 POST /api/v1/trade/appointments
@@ -289,17 +576,32 @@ POST /api/v1/trade/appointments
 **请求体：**
 ```json
 {
-  "member_id": 50001,
   "store_id": 101,
-  "service_item_id": 2001,
+  "date": "2026-06-05",
+  "time_slot": "14:00",
   "technician_id": 1001,
-  "appointment_date": "2026-06-05",
-  "appointment_time": "14:00",
+  "lock_id": "LOCK202606041400001",
+  "service_item_id": 2001,
+  "member_id": 50001,
   "duration_minutes": 60,
   "source_channel": "miniprogram",
   "consultation_notes": "肩颈不适，想做推拿"
 }
 ```
+
+**参数说明：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| store_id | long | 是 | 门店ID |
+| date | date | 是 | 预约日期 |
+| time_slot | string | 是 | 预约时段，如"14:00" |
+| technician_id | long | 否 | 技师ID，0或不传=不指定技师 |
+| lock_id | string | 否 | 临时锁定ID（建议携带，确保时段一致） |
+| service_item_id | long | 否 | 服务项目ID |
+| member_id | long | 否 | 会员ID |
+| duration_minutes | int | 否 | 服务时长（分钟） |
+| source_channel | string | 否 | 来源渠道 |
+| consultation_notes | string | 否 | 咨询备注 |
 
 **响应：**
 ```json
@@ -309,17 +611,188 @@ POST /api/v1/trade/appointments
     "id": 80001,
     "appointment_no": "APT202606050001",
     "member_name": "张三",
+    "store_name": "忠济堂·朝阳店",
     "service_item_name": "肩颈推拿(60分钟)",
     "technician_name": "李技师",
     "appointment_date": "2026-06-05",
     "appointment_time": "14:00",
     "status": 1,
+    "redirect": "my_appointments",
     "created_at": "2026-06-04T10:00:00+08:00"
   }
 }
 ```
 
-#### 4.1.2 预约状态变更
+> **说明：** 创建成功后前端应跳转至"我的预约"页面（`redirect: "my_appointments"`）。`technician_id` 为0时表示不指定技师，由门店分配。
+
+#### 4.1.4 修改预约
+
+```
+PUT /api/v1/trade/appointments/{id}/modify
+```
+
+**路径参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | long | 是 | 预约ID |
+
+**请求体：**
+```json
+{
+  "date": "2026-06-06",
+  "time_slot": "15:00",
+  "technician_id": 1002,
+  "modify_reason": "临时有事需要改期"
+}
+```
+
+**参数说明：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| date | date | 否 | 新预约日期 |
+| time_slot | string | 否 | 新预约时段 |
+| technician_id | long | 否 | 新技师ID，0=不指定技师 |
+| modify_reason | string | 是 | 修改原因（必填） |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "id": 80001,
+    "appointment_no": "APT202606050001",
+    "member_name": "张三",
+    "store_name": "忠济堂·朝阳店",
+    "service_item_name": "肩颈推拿(60分钟)",
+    "technician_name": "王技师",
+    "appointment_date": "2026-06-06",
+    "appointment_time": "15:00",
+    "status": 1,
+    "modify_reason": "临时有事需要改期",
+    "modified_at": "2026-06-04T11:00:00+08:00"
+  }
+}
+```
+
+> **说明：** 修改预约时，原时段自动释放，新时段自动锁定。仅允许修改待确认(1)和已确认(2)状态的预约。
+
+#### 4.1.5 取消预约
+
+```
+PUT /api/v1/trade/appointments/{id}/cancel
+```
+
+**路径参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | long | 是 | 预约ID |
+
+**请求体：**
+```json
+{
+  "cancel_reason": "身体不适，需要取消"
+}
+```
+
+**参数说明：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| cancel_reason | string | 是 | 取消原因（必填） |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "id": 80001,
+    "appointment_no": "APT202606050001",
+    "status": 5,
+    "cancel_reason": "身体不适，需要取消",
+    "slot_released": true,
+    "cancelled_at": "2026-06-04T12:00:00+08:00"
+  }
+}
+```
+
+> **说明：** 取消预约后，该预约占用的时段自动释放（`slot_released: true`），其他用户可重新预约该时段。仅允许取消待确认(1)和已确认(2)状态的预约。
+
+#### 4.1.6 我的预约列表
+
+```
+GET /api/v1/trade/appointments/my
+```
+
+**查询参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| status_group | string | 否 | 分组筛选：pending/completed/cancelled/all，默认all |
+| page | int | 否 | 页码，默认1 |
+| page_size | int | 否 | 每页条数，默认20 |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "pending": {
+      "count": 2,
+      "list": [
+        {
+          "id": 80001,
+          "appointment_no": "APT202606050001",
+          "store_name": "忠济堂·朝阳店",
+          "service_item_name": "肩颈推拿(60分钟)",
+          "technician_name": "李技师",
+          "appointment_date": "2026-06-05",
+          "appointment_time": "14:00",
+          "status": 1,
+          "status_name": "待确认",
+          "created_at": "2026-06-04T10:00:00+08:00"
+        }
+      ]
+    },
+    "completed": {
+      "count": 5,
+      "list": [
+        {
+          "id": 79001,
+          "appointment_no": "APT202606030001",
+          "store_name": "忠济堂·朝阳店",
+          "service_item_name": "艾灸理疗(45分钟)",
+          "technician_name": "王技师",
+          "appointment_date": "2026-06-03",
+          "appointment_time": "10:00",
+          "status": 4,
+          "status_name": "已完成",
+          "completed_at": "2026-06-03T10:45:00+08:00"
+        }
+      ]
+    },
+    "cancelled": {
+      "count": 1,
+      "list": [
+        {
+          "id": 78501,
+          "appointment_no": "APT202606010002",
+          "store_name": "忠济堂·朝阳店",
+          "service_item_name": "足底推拿(30分钟)",
+          "technician_name": "赵技师",
+          "appointment_date": "2026-06-01",
+          "appointment_time": "16:00",
+          "status": 5,
+          "status_name": "已取消",
+          "cancel_reason": "临时有事",
+          "cancelled_at": "2026-06-01T14:00:00+08:00"
+        }
+      ]
+    }
+  }
+}
+```
+
+> **说明：** 该接口为客户视角，仅返回当前登录会员的预约记录。按待服务(pending)、已完成(completed)、已取消(cancelled)三组返回，每组包含数量和列表。
+
+#### 4.1.7 预约状态变更
 
 ```
 PUT /api/v1/trade/appointments/{id}/status
@@ -336,15 +809,19 @@ PUT /api/v1/trade/appointments/{id}/status
 
 **状态流转：** 1待确认 → 2已确认 → 3服务中 → 4已完成 / 5已取消 / 6超时未到
 
-#### 4.1.3 预约相关接口
+#### 4.1.8 预约相关接口
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
-| GET /api/v1/trade/appointments | GET | 预约列表 |
+| GET /api/v1/trade/appointments | GET | 预约列表（管理端） |
 | GET /api/v1/trade/appointments/{id} | GET | 预约详情 |
-| PUT /api/v1/trade/appointments/{id} | PUT | 修改预约 |
-| DELETE /api/v1/trade/appointments/{id} | DELETE | 取消预约 |
-| GET /api/v1/trade/appointments/time-slots | GET | 查询可用时段 |
+| GET /api/v1/trade/appointments/available-slots | GET | 查询可用时段 |
+| POST /api/v1/trade/appointments/lock-temp | POST | 临时锁定时段 |
+| POST /api/v1/trade/appointments | POST | 创建预约 |
+| PUT /api/v1/trade/appointments/{id}/modify | PUT | 修改预约 |
+| PUT /api/v1/trade/appointments/{id}/cancel | PUT | 取消预约 |
+| GET /api/v1/trade/appointments/my | GET | 我的预约列表（客户视角） |
+| PUT /api/v1/trade/appointments/{id}/status | PUT | 预约状态变更 |
 | POST /api/v1/trade/appointments/{id}/check-in | POST | 到店签到 |
 
 ### 4.2 订单管理 /trade/order
@@ -613,6 +1090,114 @@ GET /api/v1/ai/recommendations/technicians
 | POST /api/v1/integration/orders/confirm | POST | 确认核销 |
 | GET /api/v1/integration/orders | GET | 核销订单列表 |
 
+### 6.4 推广追踪 /integration/promotion
+
+#### 6.4.1 推广事件追踪
+
+```
+POST /api/v1/integration/promotion/track
+```
+
+**请求体：**
+```json
+{
+  "event_type": "click",
+  "promotion_code": "TC1001PROMO",
+  "technician_id": 1001,
+  "source_channel": "wechat_share",
+  "customer_id": 50002,
+  "customer_ip": "192.168.1.1",
+  "user_agent": "Mozilla/5.0...",
+  "extra": {
+    "share_scene": "friend",
+    "page_url": "https://app.zhongjitang.com/promo/TC1001PROMO"
+  }
+}
+```
+
+**参数说明：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| event_type | string | 是 | 事件类型：click/view/appointment/complete |
+| promotion_code | string | 是 | 推广码 |
+| technician_id | long | 是 | 技师ID |
+| source_channel | string | 否 | 来源渠道：wechat_share/poster/qr_code/miniprogram |
+| customer_id | long | 否 | 客户ID（已登录时传入） |
+| customer_ip | string | 否 | 客户IP |
+| user_agent | string | 否 | 客户UA |
+| extra | object | 否 | 扩展信息 |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "track_id": "TRK20260604100001",
+    "event_type": "click",
+    "tracked_at": "2026-06-04T10:00:00+08:00"
+  }
+}
+```
+
+#### 6.4.2 推广漏斗数据
+
+```
+GET /api/v1/integration/promotion/funnel
+```
+
+**查询参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| technician_id | long | 否 | 技师ID，不填则全租户汇总 |
+| store_id | long | 否 | 门店ID |
+| start_date | date | 否 | 起始日期 |
+| end_date | date | 否 | 结束日期 |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "period": { "start_date": "2026-05-01", "end_date": "2026-05-31" },
+    "funnel": {
+      "view": { "count": 1200, "rate": 100.0 },
+      "click": { "count": 580, "rate": 48.3 },
+      "appointment": { "count": 120, "rate": 10.0 },
+      "complete": { "count": 95, "rate": 7.9 }
+    },
+    "conversion": {
+      "view_to_click": 48.3,
+      "click_to_appointment": 20.7,
+      "appointment_to_complete": 79.2,
+      "overall_conversion": 7.9
+    },
+    "by_channel": [
+      {
+        "channel": "wechat_share",
+        "view": 500,
+        "click": 280,
+        "appointment": 65,
+        "complete": 52
+      },
+      {
+        "channel": "poster",
+        "view": 400,
+        "click": 180,
+        "appointment": 35,
+        "complete": 28
+      },
+      {
+        "channel": "qr_code",
+        "view": 300,
+        "click": 120,
+        "appointment": 20,
+        "complete": 15
+      }
+    ]
+  }
+}
+```
+
 ---
 
 ## 七、SaaS计费API
@@ -698,6 +1283,128 @@ GET /api/v1/bi/stores/{store_id}/dashboard
 | GET /api/v1/bi/stores/ranking | GET | 门店排行榜 |
 | GET /api/v1/bi/trends/{metric} | GET | 指标趋势分析 |
 
+### 8.2 预约漏斗 /data/appointment-funnel
+
+#### 8.2.1 预约埋点上报
+
+```
+POST /api/v1/data/appointment-funnel/track
+```
+
+**请求体：**
+```json
+{
+  "event_type": "view_time_slots",
+  "store_id": 101,
+  "member_id": 50001,
+  "session_id": "sess_abc123",
+  "technician_id": 1001,
+  "date": "2026-06-05",
+  "time_slot": "14:00",
+  "extra": {
+    "source_page": "technician_detail",
+    "stay_duration_ms": 3500
+  }
+}
+```
+
+**参数说明：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| event_type | string | 是 | 埋点事件类型，见下方枚举 |
+| store_id | long | 是 | 门店ID |
+| member_id | long | 否 | 会员ID（未登录时可不传） |
+| session_id | string | 是 | 会话ID，用于串联同一用户流程 |
+| technician_id | long | 否 | 技师ID |
+| date | date | 否 | 预约日期 |
+| time_slot | string | 否 | 时段 |
+| extra | object | 否 | 扩展信息 |
+
+**event_type 枚举：**
+| 事件 | 说明 |
+|------|------|
+| enter_appointment_page | 进入预约页面 |
+| view_time_slots | 浏览时段列表 |
+| select_time_slot | 选择时段 |
+| lock_time_slot | 锁定时段 |
+| submit_appointment | 提交预约 |
+| appointment_success | 预约成功 |
+| appointment_failed | 预约失败 |
+| modify_appointment | 修改预约 |
+| cancel_appointment | 取消预约 |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "track_id": "FTRK20260604100001",
+    "event_type": "view_time_slots",
+    "tracked_at": "2026-06-04T10:00:00+08:00"
+  }
+}
+```
+
+#### 8.2.2 预约漏斗统计
+
+```
+GET /api/v1/data/appointment-funnel/statistics
+```
+
+**查询参数：**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| store_id | long | 否 | 门店ID，不填则全租户汇总 |
+| start_date | date | 否 | 起始日期 |
+| end_date | date | 否 | 结束日期 |
+| source_channel | string | 否 | 来源渠道筛选 |
+| group_by | string | 否 | 分组维度：store/channel/technician/date |
+
+**响应：**
+```json
+{
+  "code": 0,
+  "data": {
+    "period": { "start_date": "2026-05-01", "end_date": "2026-05-31" },
+    "funnel": {
+      "enter_appointment_page": { "count": 5000, "rate": 100.0 },
+      "view_time_slots": { "count": 3800, "rate": 76.0 },
+      "select_time_slot": { "count": 2200, "rate": 44.0 },
+      "lock_time_slot": { "count": 1800, "rate": 36.0 },
+      "submit_appointment": { "count": 1500, "rate": 30.0 },
+      "appointment_success": { "count": 1350, "rate": 27.0 },
+      "appointment_failed": { "count": 150, "rate": 3.0 }
+    },
+    "conversion": {
+      "page_to_view": 76.0,
+      "view_to_select": 57.9,
+      "select_to_lock": 81.8,
+      "lock_to_submit": 83.3,
+      "submit_to_success": 90.0,
+      "overall_conversion": 27.0
+    },
+    "failure_reasons": [
+      { "reason": "time_slot_occupied", "count": 80, "percentage": 53.3 },
+      { "reason": "lock_expired", "count": 40, "percentage": 26.7 },
+      { "reason": "network_error", "count": 30, "percentage": 20.0 }
+    ],
+    "groups": [
+      {
+        "dimension": "store",
+        "dimension_value": "忠济堂·朝阳店",
+        "enter_appointment_page": 1500,
+        "view_time_slots": 1200,
+        "select_time_slot": 700,
+        "lock_time_slot": 580,
+        "submit_appointment": 480,
+        "appointment_success": 432,
+        "overall_conversion": 28.8
+      }
+    ]
+  }
+}
+```
+
 ---
 
 ## 九、管理后台API
@@ -755,11 +1462,15 @@ GET /api/v1/admin/audit-logs
 | appointment.created | 预约创建 | /webhook/appointment/created |
 | appointment.completed | 预约完成 | /webhook/appointment/completed |
 | appointment.cancelled | 预约取消 | /webhook/appointment/cancelled |
+| appointment.modified | 预约修改 | /webhook/appointment/modified |
+| appointment.slot_locked | 时段锁定 | /webhook/appointment/slot-locked |
+| appointment.slot_released | 时段释放 | /webhook/appointment/slot-released |
 | order.paid | 订单支付成功 | /webhook/order/paid |
 | order.refunded | 订单退款 | /webhook/order/refunded |
 | member.registered | 新会员注册 | /webhook/member/registered |
 | member.level_changed | 会员等级变更 | /webhook/member/level-changed |
 | integration.lead_created | 新线索接入 | /webhook/integration/lead-created |
+| promotion.event_tracked | 推广事件追踪 | /webhook/promotion/event-tracked |
 
 ### 10.2 事件推送格式
 
@@ -783,6 +1494,6 @@ GET /api/v1/admin/audit-logs
 
 ---
 
-> **文档版本：V3.3**
+> **文档版本：V3.4**
 > **编制日期：2026年6月**
 > **审核状态：草稿**
