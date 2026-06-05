@@ -1,6 +1,5 @@
 package com.zhongjitang.system.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,6 +30,5 @@ public class SysDictItemDO extends BaseDO {
     @Schema(description = "状态:1启用 2停用")
     private Integer status;
 
-    @TableField(exist = false)
-    private Long storeId;
+    // store_id字段由BaseDO继承，sys_dict_item表有store_id列，无需额外声明
 }

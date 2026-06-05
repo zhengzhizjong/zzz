@@ -1,6 +1,5 @@
 package com.zhongjitang.store.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import lombok.Data;
@@ -50,6 +49,5 @@ public class StoreInfoDO extends BaseDO {
 
     private Integer status;
 
-    @TableField(exist = false)
-    private Long storeId;
+    // store_id字段由BaseDO继承，store_info表有store_id列（自关联），无需额外声明
 }

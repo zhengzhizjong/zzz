@@ -1,6 +1,5 @@
 package com.zhongjitang.system.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,6 +33,5 @@ public class SysFeatureFlagDO extends BaseDO {
     @Schema(description = "规则(JSON)")
     private String rulesJson;
 
-    @TableField(exist = false)
-    private Long storeId;
+    // store_id字段由BaseDO继承，sys_feature_flag表有store_id列，无需额外声明
 }

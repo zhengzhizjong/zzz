@@ -36,10 +36,10 @@ public class AppointmentController {
     @GetMapping("/available-slots")
     @Operation(summary = "查询可用时段")
     public R<AvailableSlotVO> getAvailableSlots(
-            @RequestParam Long store_id,
-            @RequestParam(defaultValue = "0") Long technician_id,
+            @RequestParam Long storeId,
+            @RequestParam(defaultValue = "0") Long technicianId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return appointmentSlotService.getAvailableSlots(store_id, technician_id, date);
+        return appointmentSlotService.getAvailableSlots(storeId, technicianId, date);
     }
 
     @PostMapping("/lock-temp")
@@ -61,10 +61,10 @@ public class AppointmentController {
     public R<PageResult<TradeAppointmentDO>> page(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer pageSize,
-            @RequestParam(required = false) Long store_id,
-            @RequestParam(required = false) Long member_id,
+            @RequestParam(required = false) Long storeId,
+            @RequestParam(required = false) Long memberId,
             @RequestParam(required = false) Integer status) {
-        return appointmentService.page(page, pageSize, store_id, member_id, status);
+        return appointmentService.page(page, pageSize, storeId, memberId, status);
     }
 
     @GetMapping("/{id}")

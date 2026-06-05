@@ -64,7 +64,7 @@ Page({
     this.setData({ loading: true });
     appointmentApi.getAvailableSlots({
       storeId: this.data.storeId,
-      techId: this.data.techId,
+      technicianId: this.data.techId,
       date: date
     }).then(res => {
       this.setData({
