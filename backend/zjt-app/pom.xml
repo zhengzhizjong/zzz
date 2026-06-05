@@ -38,6 +38,14 @@
         </dependency>
         <dependency>
             <groupId>com.zhongjitang</groupId>
+            <artifactId>zjt-billing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zhongjitang</groupId>
+            <artifactId>zjt-ai</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zhongjitang</groupId>
             <artifactId>zjt-common-core</artifactId>
         </dependency>
         <dependency>

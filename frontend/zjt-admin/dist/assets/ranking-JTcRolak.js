@@ -1,0 +1,1 @@
+import{s as a}from"./request-818hJB_e.js";function i(n){return a.get("/api/v1/data/ranking/store",{params:n})}function e(n){return a.get("/api/v1/data/ranking/technician",{params:n})}export{e as a,i as g};

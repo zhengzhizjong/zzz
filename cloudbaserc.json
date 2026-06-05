@@ -1,0 +1,23 @@
+{
+  "envId": "{{envId}}",
+  "version": "1.0.0",
+  "services": [
+    {
+      "name": "zjt-backend",
+      "type": "container",
+      "containerPort": 8080,
+      "dockerfile": "./backend/Dockerfile",
+      "envVariables": {
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "SPRING_DATASOURCE_URL": "{{mysqlUrl}}",
+        "SPRING_REDIS_HOST": "{{redisHost}}"
+      }
+    },
+    {
+      "name": "zjt-frontend",
+      "type": "static",
+      "path": "./frontend/zjt-admin/dist",
+      "buildCommand": "cd frontend/zjt-admin && npm ci && npm run build"
+    }
+  ]
+}

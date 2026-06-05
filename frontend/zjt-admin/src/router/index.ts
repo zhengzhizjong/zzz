@@ -141,6 +141,69 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '预约列表', requiresAuth: true }
       }
     ]
+  },
+  {
+    path: '/billing',
+    name: 'Billing',
+    meta: { title: '计费管理', requiresAuth: true },
+    children: [
+      {
+        path: 'tenants',
+        name: 'TenantList',
+        component: () => import('@/views/billing/TenantList.vue'),
+        meta: { title: '租户管理', requiresAuth: true }
+      },
+      {
+        path: 'plans',
+        name: 'PlanList',
+        component: () => import('@/views/billing/PlanList.vue'),
+        meta: { title: '套餐管理', requiresAuth: true }
+      },
+      {
+        path: 'subscriptions',
+        name: 'SubscriptionList',
+        component: () => import('@/views/billing/SubscriptionList.vue'),
+        meta: { title: '订阅管理', requiresAuth: true }
+      },
+      {
+        path: 'usage',
+        name: 'UsageList',
+        component: () => import('@/views/billing/UsageList.vue'),
+        meta: { title: '用量统计', requiresAuth: true }
+      }
+    ]
+  },
+  {
+    path: '/integration',
+    name: 'Integration',
+    meta: { title: '集成管理', requiresAuth: true },
+    children: [
+      {
+        path: 'leads',
+        name: 'LeadList',
+        component: () => import('@/views/integration/LeadList.vue'),
+        meta: { title: '线索管理', requiresAuth: true }
+      }
+    ]
+  },
+  {
+    path: '/ai',
+    name: 'AI',
+    meta: { title: 'AI管理', requiresAuth: true },
+    children: [
+      {
+        path: 'gateway',
+        name: 'GatewayList',
+        component: () => import('@/views/ai/GatewayList.vue'),
+        meta: { title: 'AI网关', requiresAuth: true }
+      },
+      {
+        path: 'daily-report',
+        name: 'DailyReport',
+        component: () => import('@/views/ai/DailyReport.vue'),
+        meta: { title: 'AI日报', requiresAuth: true }
+      }
+    ]
   }
 ]
 

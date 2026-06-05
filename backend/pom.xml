@@ -27,6 +27,8 @@
         <module>zjt-data</module>
         <module>zjt-integration</module>
         <module>zjt-system</module>
+        <module>zjt-billing</module>
+        <module>zjt-ai</module>
         <module>zjt-app</module>
     </modules>
 
@@ -189,6 +191,16 @@
             <dependency>
                 <groupId>com.zhongjitang</groupId>
                 <artifactId>zjt-system</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-billing</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-ai</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
