@@ -1,0 +1,28 @@
+{
+  "pages": [
+    "pages/workspace/index",
+    "pages/performance/index",
+    "pages/promotion/index",
+    "pages/learning/index",
+    "pages/my/index"
+  ],
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#07C160",
+    "backgroundColor": "#ffffff",
+    "list": [
+      { "pagePath": "pages/workspace/index", "text": "工作台", "iconPath": "assets/icons/work.png", "selectedIconPath": "assets/icons/work-active.png" },
+      { "pagePath": "pages/performance/index", "text": "业绩", "iconPath": "assets/icons/chart.png", "selectedIconPath": "assets/icons/chart-active.png" },
+      { "pagePath": "pages/promotion/index", "text": "推广", "iconPath": "assets/icons/share.png", "selectedIconPath": "assets/icons/share-active.png" },
+      { "pagePath": "pages/learning/index", "text": "学习", "iconPath": "assets/icons/book.png", "selectedIconPath": "assets/icons/book-active.png" },
+      { "pagePath": "pages/my/index", "text": "我的", "iconPath": "assets/icons/user.png", "selectedIconPath": "assets/icons/user-active.png" }
+    ]
+  },
+  "window": {
+    "navigationBarBackgroundColor": "#07C160",
+    "navigationBarTitleText": "忠济堂·技师",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F5F5"
+  },
+  "sitemapLocation": "sitemap.json"
+}

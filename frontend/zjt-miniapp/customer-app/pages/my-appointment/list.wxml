@@ -1,0 +1,94 @@
+<view class="container">
+  <!-- Tab栏 -->
+  <view class="tab-bar">
+    <view
+      class="tab-item {{currentTab === item.key ? 'tab-active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="key"
+      data-key="{{item.key}}"
+      bindtap="onTabTap"
+    >
+      <text class="tab-name">{{item.name}}</text>
+      <view class="tab-line" wx:if="{{currentTab === item.key}}"></view>
+    </view>
+  </view>
+
+  <!-- 预约卡片列表 -->
+  <view class="appointment-list" wx:if="{{appointments.length > 0}}">
+    <view class="appointment-card" wx:for="{{appointments}}" wx:key="id">
+      <!-- 门店名称 -->
+      <view class="card-header">
+        <text class="store-name">{{item.storeName}}</text>
+        <text class="status-tag status-{{item.status}}">{{item.statusDisplay}}</text>
+      </view>
+
+      <!-- 预约信息 -->
+      <view class="card-body">
+        <view class="info-row">
+          <text class="info-label">服务项目</text>
+          <text class="info-value">{{item.serviceItemName || '-'}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">技师</text>
+          <text class="info-value">{{item.techName || '待分配'}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">日期</text>
+          <text class="info-value">{{item.date}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">时段</text>
+          <text class="info-value">{{item.timeSlot}}</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮区域 -->
+      <view class="card-footer" wx:if="{{currentTab === 'pending'}}">
+        <view class="btn-group">
+          <button
+            class="btn btn-modify"
+            wx:if="{{item.canModify}}"
+            data-item="{{item}}"
+            bindtap="onModifyTap"
+          >修改</button>
+          <button
+            class="btn btn-cancel"
+            wx:if="{{item.canCancel}}"
+            data-item="{{item}}"
+            bindtap="onCancelTap"
+          >取消</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态提示 -->
+  <view class="empty-state" wx:if="{{!loading && appointments.length === 0}}">
+    <image class="empty-icon" src="/assets/icons/empty-order.png" mode="aspectFit"></image>
+    <text class="empty-text">暂无预约记录</text>
+  </view>
+
+  <!-- 加载提示 -->
+  <view class="loading-tip" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+  <view class="no-more-tip" wx:if="{{!hasMore && appointments.length > 0 && !loading}}">
+    <text>没有更多了</text>
+  </view>
+</view>
+
+<!-- 修改预约弹窗 -->
+<modify-appointment
+  visible="{{showModifyPopup}}"
+  appointment="{{currentAppointment}}"
+  bind:close="onModifyClose"
+  bind:refresh="onRefresh"
+></modify-appointment>
+
+<!-- 取消预约弹窗 -->
+<cancel-appointment
+  visible="{{showCancelPopup}}"
+  appointment="{{currentAppointment}}"
+  bind:close="onCancelClose"
+  bind:refresh="onRefresh"
+></cancel-appointment>

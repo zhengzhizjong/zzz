@@ -1,0 +1,31 @@
+<view class="container">
+  <view class="profile-card">
+    <view class="avatar-wrapper">
+      <image class="avatar" src="/assets/icons/user.png" mode="aspectFill" />
+    </view>
+    <text class="nickname">{{isLogin ? '技师' : '未登录'}}</text>
+  </view>
+
+  <view class="card menu-card">
+    <view class="menu-item">
+      <text class="menu-text">个人信息</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item">
+      <text class="menu-text">技能认证</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item">
+      <text class="menu-text">排班查询</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item">
+      <text class="menu-text">意见反馈</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item">
+      <text class="menu-text">关于我们</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,63 @@
+<view class="container">
+  <view class="step-bar">
+    <text class="step done">1 选择门店</text>
+    <text class="step done">2 选择技师</text>
+    <text class="step active">3 选择时间</text>
+    <text class="step">4 确认预约</text>
+  </view>
+
+  <!-- 已选门店和技师 -->
+  <view class="selected-info-bar">
+    <view class="selected-info-item">
+      <text class="info-label">门店：</text>
+      <text class="info-value">{{storeName}}</text>
+    </view>
+    <view class="selected-info-item">
+      <text class="info-label">技师：</text>
+      <text class="info-value">{{techName}}</text>
+    </view>
+  </view>
+
+  <!-- 日期横向滚动选择 -->
+  <scroll-view class="date-scroll" scroll-x enable-flex>
+    <view class="date-card {{selectedDate === item.dateStr ? 'selected' : ''}} {{item.isPast ? 'disabled' : ''}}"
+          wx:for="{{dates}}" wx:key="dateStr"
+          data-date="{{item.dateStr}}"
+          bindtap="{{item.isPast ? '' : 'onDateTap'}}">
+      <text class="date-weekday">{{item.weekDay}}</text>
+      <text class="date-display">{{item.display}}</text>
+    </view>
+  </scroll-view>
+
+  <!-- 时段网格 -->
+  <view class="slots-section" wx:if="{{!loading}}">
+    <view class="slots-grid">
+      <view class="slot-item {{item.occupied ? 'occupied' : ''}} {{selectedTimeSlot === item.timeSlot ? 'selected' : ''}}"
+            wx:for="{{timeSlots}}" wx:key="timeSlot"
+            data-slot="{{item.timeSlot}}" data-occupied="{{item.occupied}}"
+            bindtap="onSlotTap">
+        <block wx:if="{{item.occupied}}">
+          <text class="slot-lock">🔒</text>
+          <text class="slot-text occupied-text">已约</text>
+        </block>
+        <block wx:else>
+          <text class="slot-text">{{item.timeSlot}}</text>
+        </block>
+      </view>
+    </view>
+
+    <view class="empty-tip" wx:if="{{timeSlots.length === 0}}">
+      <text>暂无可选时段</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 提示文字 -->
+  <view class="slot-tip">
+    <text class="tip-text">选中时段后请在5分钟内完成预约</text>
+  </view>
+</view>

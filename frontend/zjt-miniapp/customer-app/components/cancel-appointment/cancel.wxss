@@ -1,0 +1,194 @@
+/* 遮罩层 */
+.popup-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* 弹窗内容 */
+.popup-content {
+  width: 100%;
+  max-height: 85vh;
+  background-color: #ffffff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 32rpx;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* 标题栏 */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32rpx;
+}
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #303133;
+}
+
+.popup-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-icon {
+  font-size: 40rpx;
+  color: #909399;
+  line-height: 1;
+}
+
+/* 预约信息摘要 */
+.summary-section {
+  background-color: #F5F5F5;
+  border-radius: 8rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 28rpx;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6rpx 0;
+}
+
+.summary-key {
+  font-size: 26rpx;
+  color: #909399;
+  flex-shrink: 0;
+}
+
+.summary-val {
+  font-size: 26rpx;
+  color: #303133;
+  text-align: right;
+  flex: 1;
+  margin-left: 24rpx;
+}
+
+/* 区块 */
+.section {
+  margin-bottom: 28rpx;
+}
+
+.section-label {
+  font-size: 28rpx;
+  color: #303133;
+  font-weight: bold;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+/* 取消原因列表 */
+.reason-list {
+  background-color: #F5F5F5;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.reason-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #EBEEF5;
+  transition: background-color 0.2s;
+}
+
+.reason-item:last-child {
+  border-bottom: none;
+}
+
+.reason-active {
+  background-color: #FEF0F0;
+}
+
+.radio-circle {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 2rpx solid #C0C4CC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+}
+
+.reason-active .radio-circle {
+  border-color: #F56C6C;
+}
+
+.radio-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background-color: #F56C6C;
+}
+
+.reason-text {
+  font-size: 28rpx;
+  color: #303133;
+}
+
+.reason-active .reason-text {
+  color: #F56C6C;
+}
+
+/* 其他原因输入框 */
+.other-input {
+  width: 100%;
+  height: 160rpx;
+  background-color: #F5F5F5;
+  border-radius: 8rpx;
+  padding: 16rpx;
+  font-size: 26rpx;
+  color: #303133;
+  box-sizing: border-box;
+}
+
+/* 底部按钮 */
+.popup-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 32rpx;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+}
+
+.btn::after {
+  border: none;
+}
+
+.btn-default {
+  background-color: #F5F5F5;
+  color: #606266;
+  margin-right: 20rpx;
+}
+
+.btn-danger {
+  background-color: #F56C6C;
+  color: #ffffff;
+}

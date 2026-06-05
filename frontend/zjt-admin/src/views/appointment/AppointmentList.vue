@@ -1,0 +1,313 @@
+<template>
+  <div class="appointment-list">
+    <!-- 筛选栏 -->
+    <el-card class="search-card" shadow="never">
+      <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-form-item label="门店">
+          <el-select v-model="searchForm.storeId" placeholder="全部门店" clearable>
+            <el-option
+              v-for="store in storeOptions"
+              :key="store.id"
+              :label="store.storeName"
+              :value="store.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="技师">
+          <el-select v-model="searchForm.technicianId" placeholder="全部技师" clearable filterable>
+            <el-option
+              v-for="tech in technicianOptions"
+              :key="tech.id"
+              :label="tech.employeeName || tech.technicianNo"
+              :value="tech.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="日期范围">
+          <el-date-picker
+            v-model="dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+          />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="searchForm.status" placeholder="全部状态" clearable>
+            <el-option
+              v-for="item in STATUS_OPTIONS"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="搜索">
+          <el-input v-model="searchForm.keyword" placeholder="预约编号/客户名/手机号" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+        <el-form-item style="float: right">
+          <el-button type="success" @click="handleExport">导出CSV</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <!-- 预约列表 -->
+    <el-card shadow="never" class="table-card">
+      <el-table :data="tableData" v-loading="loading" stripe border>
+        <el-table-column prop="appointmentNo" label="预约编号" width="150" />
+        <el-table-column label="客户" width="140">
+          <template #default="{ row }">
+            <div>{{ row.memberName }}</div>
+            <div class="sub-text">{{ row.memberPhone }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="storeName" label="门店" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="serviceItemName" label="项目" width="120" show-overflow-tooltip />
+        <el-table-column prop="technicianName" label="技师" width="90" />
+        <el-table-column label="日期时间" width="130">
+          <template #default="{ row }">
+            <div>{{ row.appointmentDate }}</div>
+            <div class="sub-text">{{ row.timeSlot }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="90" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getStatusType(row.status)" size="small">
+              {{ getStatusLabel(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="sourceChannel" label="来源" width="90" align="center" />
+        <el-table-column label="操作" width="80" align="center" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="handleViewDetail(row)">详情</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="fetchData"
+          @current-change="fetchData"
+        />
+      </div>
+    </el-card>
+
+    <!-- 详情弹窗 -->
+    <el-dialog v-model="detailVisible" title="预约详情" width="560px" destroy-on-close>
+      <el-descriptions :column="2" border v-if="currentDetail">
+        <el-descriptions-item label="预约编号">{{ currentDetail.appointmentNo }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getStatusType(currentDetail.status)" size="small">
+            {{ getStatusLabel(currentDetail.status) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="客户姓名">{{ currentDetail.memberName }}</el-descriptions-item>
+        <el-descriptions-item label="联系电话">{{ currentDetail.memberPhone }}</el-descriptions-item>
+        <el-descriptions-item label="门店">{{ currentDetail.storeName }}</el-descriptions-item>
+        <el-descriptions-item label="服务项目">{{ currentDetail.serviceItemName }}</el-descriptions-item>
+        <el-descriptions-item label="技师">{{ currentDetail.technicianName }}</el-descriptions-item>
+        <el-descriptions-item label="预约日期">{{ currentDetail.appointmentDate }}</el-descriptions-item>
+        <el-descriptions-item label="预约时段">{{ currentDetail.timeSlot }}</el-descriptions-item>
+        <el-descriptions-item label="来源渠道">{{ currentDetail.sourceChannel }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间" :span="2">{{ currentDetail.createdAt }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button @click="detailVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { getAppointmentList, getAppointmentDetail, type AppointmentInfo } from '@/api/trade/appointment'
+import { getStoreList } from '@/api/store/info'
+import { getTechnicianList } from '@/api/store/technician'
+import type { StoreInfo } from '@/types/store'
+import type { TechnicianInfo } from '@/types/technician'
+import dayjs from 'dayjs'
+
+const STATUS_OPTIONS = [
+  { value: 0, label: '待确认', type: 'primary' },
+  { value: 1, label: '已确认', type: 'success' },
+  { value: 2, label: '服务中', type: 'warning' },
+  { value: 3, label: '已完成', type: 'info' },
+  { value: 4, label: '已取消', type: 'danger' },
+  { value: 5, label: '超时', type: 'info' },
+]
+
+const loading = ref(false)
+const tableData = ref<AppointmentInfo[]>([])
+const storeOptions = ref<StoreInfo[]>([])
+const technicianOptions = ref<TechnicianInfo[]>([])
+const detailVisible = ref(false)
+const currentDetail = ref<AppointmentInfo | null>(null)
+
+const dateRange = ref<[string, string] | null>(null)
+
+const searchForm = reactive({
+  storeId: undefined as number | undefined,
+  technicianId: undefined as number | undefined,
+  status: undefined as number | undefined,
+  keyword: '',
+})
+
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  total: 0,
+})
+
+function getStatusLabel(status: number): string {
+  return STATUS_OPTIONS.find(o => o.value === status)?.label || '未知'
+}
+
+function getStatusType(status: number): string {
+  return STATUS_OPTIONS.find(o => o.value === status)?.type || 'info'
+}
+
+async function fetchStoreOptions() {
+  try {
+    const res: any = await getStoreList({ page: 1, pageSize: 999 })
+    storeOptions.value = res.data.list || []
+  } catch {
+    storeOptions.value = []
+  }
+}
+
+async function fetchTechnicianOptions() {
+  try {
+    const res: any = await getTechnicianList({ page: 1, pageSize: 999 })
+    technicianOptions.value = res.data.list || []
+  } catch {
+    technicianOptions.value = []
+  }
+}
+
+async function fetchData() {
+  loading.value = true
+  try {
+    const params: any = {
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      keyword: searchForm.keyword || undefined,
+      storeId: searchForm.storeId,
+      technicianId: searchForm.technicianId,
+      status: searchForm.status,
+    }
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.startDate = dateRange.value[0]
+      params.endDate = dateRange.value[1]
+    }
+    const res: any = await getAppointmentList(params)
+    tableData.value = res.data.list || []
+    pagination.total = res.data.pagination.total
+  } catch {
+    tableData.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+function handleSearch() {
+  pagination.page = 1
+  fetchData()
+}
+
+function handleReset() {
+  searchForm.storeId = undefined
+  searchForm.technicianId = undefined
+  searchForm.status = undefined
+  searchForm.keyword = ''
+  dateRange.value = null
+  pagination.page = 1
+  fetchData()
+}
+
+async function handleViewDetail(row: AppointmentInfo) {
+  try {
+    const res: any = await getAppointmentDetail(row.id)
+    currentDetail.value = res.data || null
+    detailVisible.value = true
+  } catch {
+    currentDetail.value = row
+    detailVisible.value = true
+  }
+}
+
+function handleExport() {
+  if (tableData.value.length === 0) {
+    ElMessage.warning('暂无数据可导出')
+    return
+  }
+  const headers = ['预约编号', '客户姓名', '联系电话', '门店', '项目', '技师', '预约日期', '时段', '状态', '来源', '创建时间']
+  const rows = tableData.value.map(row => [
+    row.appointmentNo,
+    row.memberName,
+    row.memberPhone,
+    row.storeName,
+    row.serviceItemName,
+    row.technicianName,
+    row.appointmentDate,
+    row.timeSlot,
+    getStatusLabel(row.status),
+    row.sourceChannel,
+    row.createdAt,
+  ])
+  const csvContent = [headers, ...rows].map(r => r.join(',')).join('\n')
+  const BOM = '\uFEFF'
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `预约列表_${dayjs().format('YYYYMMDDHHmmss')}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+  ElMessage.success('导出成功')
+}
+
+onMounted(() => {
+  fetchStoreOptions()
+  fetchTechnicianOptions()
+  fetchData()
+})
+</script>
+
+<style scoped lang="scss">
+.appointment-list {
+  padding: 20px;
+}
+
+.search-card {
+  margin-bottom: 16px;
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sub-text {
+  font-size: 12px;
+  color: #909399;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+</style>

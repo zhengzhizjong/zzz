@@ -1,0 +1,244 @@
+/* 技师信息卡片 */
+.tech-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #07C160, #06AD56);
+  border-radius: 16rpx;
+  padding: 32rpx 24rpx;
+  margin-bottom: 24rpx;
+  color: #fff;
+}
+
+.tech-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.tech-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(255, 255, 255, 0.5);
+  margin-right: 24rpx;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.tech-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.tech-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.tech-tags {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.tech-level {
+  font-size: 22rpx;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+}
+
+.tech-status {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+}
+
+.tech-status.online {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.tech-status.offline {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.check-btn-wrap {
+  margin-left: 16rpx;
+}
+
+.check-btn {
+  font-size: 26rpx;
+  padding: 12rpx 32rpx;
+  border-radius: 32rpx;
+  border: none;
+  line-height: 1.4;
+}
+
+.check-btn::after {
+  border: none;
+}
+
+.check-in {
+  background: #fff;
+  color: #07C160;
+}
+
+.check-out {
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+/* 当前服务 */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #303133;
+}
+
+.service-status {
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+}
+
+.service-status.serving {
+  background: rgba(7, 193, 96, 0.1);
+  color: #07C160;
+}
+
+.service-info {
+  margin-bottom: 20rpx;
+}
+
+.service-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #F2F6FC;
+}
+
+.service-row:last-child {
+  border-bottom: none;
+}
+
+.service-label {
+  font-size: 28rpx;
+  color: #909399;
+}
+
+.service-value {
+  font-size: 28rpx;
+  color: #303133;
+}
+
+.progress-bar {
+  height: 12rpx;
+  background: #EBEEF5;
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-bottom: 8rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #07C160, #06AD56);
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 24rpx;
+  color: #909399;
+}
+
+/* 待服务列表 */
+.pending-count {
+  font-size: 24rpx;
+  color: #07C160;
+}
+
+.empty-tip {
+  padding: 20rpx 0;
+}
+
+.placeholder-text {
+  display: block;
+  text-align: center;
+  color: #C0C4CC;
+  padding: 40rpx 0;
+}
+
+.appointment-list {
+  margin-top: 8rpx;
+}
+
+.appointment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F2F6FC;
+}
+
+.appointment-item:last-child {
+  border-bottom: none;
+}
+
+.appointment-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.appointment-customer {
+  font-size: 30rpx;
+  color: #303133;
+  font-weight: 500;
+}
+
+.appointment-project {
+  font-size: 24rpx;
+  color: #909399;
+}
+
+.appointment-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6rpx;
+}
+
+.appointment-time {
+  font-size: 24rpx;
+  color: #909399;
+}
+
+.appointment-status {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+}
+
+.appointment-status.status-waiting {
+  background: rgba(255, 157, 0, 0.1);
+  color: #FF9D00;
+}
+
+.appointment-status.status-confirmed {
+  background: rgba(7, 193, 96, 0.1);
+  color: #07C160;
+}
+
+.appointment-status.status-cancelled {
+  background: rgba(144, 147, 153, 0.1);
+  color: #909399;
+}

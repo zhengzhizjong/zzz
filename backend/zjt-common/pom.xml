@@ -17,5 +17,9 @@
 
     <modules>
         <module>zjt-common-core</module>
+        <module>zjt-common-security</module>
+        <module>zjt-common-mybatis</module>
+        <module>zjt-common-redis</module>
+        <module>zjt-common-log</module>
     </modules>
 </project>

@@ -1,0 +1,88 @@
+<view class="popup-mask" wx:if="{{visible}}" bindtap="onMaskTap">
+  <view class="popup-content" catchtap="preventBubble">
+    <!-- 标题 -->
+    <view class="popup-header">
+      <text class="popup-title">修改预约</text>
+      <view class="popup-close" bindtap="onClose">
+        <text class="close-icon">×</text>
+      </view>
+    </view>
+
+    <!-- 原预约信息(只读) -->
+    <view class="section" wx:if="{{appointment}}">
+      <text class="section-label">原预约信息</text>
+      <view class="info-row">
+        <text class="info-key">门店</text>
+        <text class="info-val">{{appointment.storeName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-key">服务项目</text>
+        <text class="info-val">{{appointment.serviceItemName || '-'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-key">技师</text>
+        <text class="info-val">{{appointment.techName || '待分配'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-key">日期</text>
+        <text class="info-val">{{appointment.date}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-key">时段</text>
+        <text class="info-val">{{appointment.timeSlot}}</text>
+      </view>
+    </view>
+
+    <!-- 新日期选择 -->
+    <view class="section">
+      <text class="section-label">选择新日期</text>
+      <scroll-view class="date-scroll" scroll-x>
+        <view
+          class="date-item {{newDate === item.dateStr ? 'date-active' : ''}}"
+          wx:for="{{dates}}"
+          wx:key="dateStr"
+          data-date="{{item.dateStr}}"
+          bindtap="onDateChange"
+        >
+          <text class="date-week">{{item.weekDay}}</text>
+          <text class="date-day">{{item.display}}</text>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 新时段选择(网格) -->
+    <view class="section" wx:if="{{availableSlots.length > 0}}">
+      <text class="section-label">选择新时段</text>
+      <view class="slot-grid">
+        <view
+          class="slot-item {{newTimeSlot === item.timeSlot ? 'slot-active' : ''}} {{item.occupied ? 'slot-disabled' : ''}}"
+          wx:for="{{availableSlots}}"
+          wx:key="timeSlot"
+          data-slot="{{item.timeSlot}}"
+          data-occupied="{{item.occupied}}"
+          bindtap="onSlotTap"
+        >
+          <text>{{item.timeSlot}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 修改原因(必填) -->
+    <view class="section">
+      <text class="section-label">修改原因 <text class="required">*</text></text>
+      <textarea
+        class="reason-input"
+        placeholder="请填写修改原因"
+        value="{{modifyReason}}"
+        bindinput="onReasonInput"
+        maxlength="200"
+      ></textarea>
+    </view>
+
+    <!-- 确认/取消按钮 -->
+    <view class="popup-footer">
+      <button class="btn btn-default" bindtap="onClose">取消</button>
+      <button class="btn btn-primary" bindtap="onSubmit" loading="{{submitting}}">确认修改</button>
+    </view>
+  </view>
+</view>

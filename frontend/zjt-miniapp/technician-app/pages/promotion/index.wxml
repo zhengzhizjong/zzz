@@ -1,0 +1,120 @@
+<view class="container">
+  <!-- 推广信息卡片 -->
+  <view class="promo-card">
+    <view class="promo-header">
+      <view class="promo-code-wrap">
+        <text class="promo-code-label">推广码</text>
+        <text class="promo-code">{{promotionInfo.promoCode || '--'}}</text>
+      </view>
+      <view class="promo-share-link" wx:if="{{promotionInfo.shareLink}}">
+        <text class="share-link-text">{{promotionInfo.shareLink}}</text>
+      </view>
+    </view>
+    <view class="promo-stats-row">
+      <view class="promo-stat">
+        <text class="promo-stat-value">{{promotionInfo.totalPromotions || 0}}</text>
+        <text class="promo-stat-label">总推广人数</text>
+      </view>
+      <view class="promo-stat-divider"></view>
+      <view class="promo-stat">
+        <text class="promo-stat-value">¥{{promotionInfo.totalCommission || 0}}</text>
+        <text class="promo-stat-label">总佣金</text>
+      </view>
+    </view>
+    <view class="promo-actions">
+      <button class="promo-btn poster-btn" bindtap="onGeneratePoster">生成海报</button>
+      <button class="promo-btn share-btn" open-type="share">分享给好友</button>
+    </view>
+  </view>
+
+  <!-- Tab切换 -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'promotion' ? 'tab-active' : ''}}" data-tab="promotion" bindtap="onTabChange">
+      <text>推广数据</text>
+    </view>
+    <view class="tab-item {{activeTab === 'commission' ? 'tab-active' : ''}}" data-tab="commission" bindtap="onTabChange">
+      <text>佣金明细</text>
+    </view>
+    <view class="tab-item {{activeTab === 'ranking' ? 'tab-active' : ''}}" data-tab="ranking" bindtap="onTabChange">
+      <text>排行榜</text>
+    </view>
+  </view>
+
+  <!-- 推广数据Tab -->
+  <view class="card" wx:if="{{activeTab === 'promotion'}}">
+    <view class="stats-grid">
+      <view class="stats-item">
+        <text class="stats-value">{{stats.clickCount || 0}}</text>
+        <text class="stats-label">点击数</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value">{{stats.registerCount || 0}}</text>
+        <text class="stats-label">注册数</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value">{{stats.visitCount || 0}}</text>
+        <text class="stats-label">到店数</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value">{{stats.conversionRate || '0%'}}</text>
+        <text class="stats-label">转化率</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 佣金明细Tab -->
+  <view wx:if="{{activeTab === 'commission'}}">
+    <view class="commission-summary">
+      <view class="commission-item">
+        <view class="commission-dot dot-settled"></view>
+        <text class="commission-label">已结算</text>
+        <text class="commission-amount">¥{{promotionInfo.settledCommission || 0}}</text>
+      </view>
+      <view class="commission-item">
+        <view class="commission-dot dot-pending"></view>
+        <text class="commission-label">待结算</text>
+        <text class="commission-amount">¥{{promotionInfo.pendingCommission || 0}}</text>
+      </view>
+    </view>
+    <view class="card">
+      <view wx:if="{{commissions.length === 0}}" class="empty-tip">
+        <text class="placeholder-text">暂无佣金明细</text>
+      </view>
+      <view wx:else class="commission-list">
+        <view class="commission-row" wx:for="{{commissions}}" wx:key="id">
+          <view class="commission-left">
+            <text class="commission-name">{{item.customerName}}</text>
+            <text class="commission-date">{{item.date}}</text>
+          </view>
+          <view class="commission-right">
+            <text class="commission-amount-row {{item.status === 'settled' ? 'amount-settled' : 'amount-pending'}}">¥{{item.amount}}</text>
+            <text class="commission-status {{item.status === 'settled' ? 'status-settled' : 'status-pending'}}">{{item.status === 'settled' ? '已结算' : '待结算'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 排行榜Tab -->
+  <view class="card" wx:if="{{activeTab === 'ranking'}}">
+    <view wx:if="{{ranking.length === 0}}" class="empty-tip">
+      <text class="placeholder-text">暂无排行数据</text>
+    </view>
+    <view wx:else class="ranking-list">
+      <view class="ranking-header">
+        <text class="ranking-col rank-col">排名</text>
+        <text class="ranking-col name-col">姓名</text>
+        <text class="ranking-col count-col">推广数</text>
+        <text class="ranking-col amount-col">佣金</text>
+        <text class="ranking-col change-col">变化</text>
+      </view>
+      <view class="ranking-row" wx:for="{{ranking}}" wx:key="id">
+        <text class="ranking-col rank-col {{item.rank <= 3 ? 'rank-top' : ''}}">{{item.rank}}</text>
+        <text class="ranking-col name-col">{{item.name}}</text>
+        <text class="ranking-col count-col">{{item.promotionCount}}</text>
+        <text class="ranking-col amount-col">¥{{item.commission}}</text>
+        <text class="ranking-col change-col change-{{item.change}}">{{item.change === 'up' ? '↑' : item.change === 'down' ? '↓' : '→'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

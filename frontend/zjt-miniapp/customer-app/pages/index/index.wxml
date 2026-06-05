@@ -1,0 +1,29 @@
+<view class="container">
+  <view class="header">
+    <text class="title">忠济堂·中医养生</text>
+    <text class="subtitle">传承中医精髓 守护健康人生</text>
+  </view>
+
+  <view class="card">
+    <text class="section-title">热门服务</text>
+    <view class="service-list">
+      <view class="service-item">
+        <text class="service-name">中医推拿</text>
+        <text class="service-desc">舒筋活络 缓解疲劳</text>
+      </view>
+      <view class="service-item">
+        <text class="service-name">艾灸理疗</text>
+        <text class="service-desc">温经散寒 扶阳固本</text>
+      </view>
+      <view class="service-item">
+        <text class="service-name">拔罐养生</text>
+        <text class="service-desc">行气活血 祛风散寒</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <text class="section-title">附近门店</text>
+    <text class="placeholder-text">暂无门店信息</text>
+  </view>
+</view>

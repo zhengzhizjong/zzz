@@ -21,6 +21,13 @@
 
     <modules>
         <module>zjt-common</module>
+        <module>zjt-store</module>
+        <module>zjt-content</module>
+        <module>zjt-trade</module>
+        <module>zjt-data</module>
+        <module>zjt-integration</module>
+        <module>zjt-system</module>
+        <module>zjt-app</module>
     </modules>
 
     <properties>
@@ -152,6 +159,36 @@
             <dependency>
                 <groupId>com.zhongjitang</groupId>
                 <artifactId>zjt-common-feign</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-store</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-content</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-data</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-trade</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-integration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-system</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

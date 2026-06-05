@@ -1,0 +1,39 @@
+// 主题色
+$--color-primary: #07C160;
+$--color-success: #07C160;
+$--color-warning: #FF9D00;
+$--color-danger: #FA5151;
+$--color-info: #909399;
+
+// 文字色
+$--text-primary: #303133;
+$--text-regular: #606266;
+$--text-secondary: #909399;
+$--text-placeholder: #C0C4CC;
+
+// 背景色
+$--bg-primary: #FFFFFF;
+$--bg-secondary: #F5F7FA;
+$--bg-page: #F0F2F5;
+
+// 边框色
+$--border-primary: #DCDFE6;
+$--border-secondary: #E4E7ED;
+$--border-light: #EBEEF5;
+
+// 阴影
+$--shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+$--shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+// 圆角
+$--border-radius-base: 4px;
+$--border-radius-small: 2px;
+$--border-radius-round: 20px;
+
+// 字体大小
+$--font-size-extra-large: 20px;
+$--font-size-large: 18px;
+$--font-size-medium: 16px;
+$--font-size-base: 14px;
+$--font-size-small: 13px;
+$--font-size-extra-small: 12px;

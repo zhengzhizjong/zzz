@@ -1,0 +1,74 @@
+<view class="container">
+  <!-- 技师信息卡片 -->
+  <view class="tech-card">
+    <view class="tech-info">
+      <image class="tech-avatar" src="{{technicianInfo.avatar || '/assets/icons/user.png'}}" mode="aspectFill"></image>
+      <view class="tech-detail">
+        <text class="tech-name">{{technicianInfo.name || '技师'}}</text>
+        <view class="tech-tags">
+          <text class="tech-level">{{technicianInfo.skillLevel || '初级技师'}}</text>
+          <text class="tech-status {{isOnline ? 'online' : 'offline'}}">{{isOnline ? '在岗' : '离岗'}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="check-btn-wrap">
+      <button wx:if="{{!isOnline}}" class="check-btn check-in" bindtap="onCheckIn">签到</button>
+      <button wx:else class="check-btn check-out" bindtap="onCheckOut">签退</button>
+    </view>
+  </view>
+
+  <!-- 当前服务 -->
+  <view class="card" wx:if="{{currentService}}">
+    <view class="section-header">
+      <text class="section-title">当前服务</text>
+      <text class="service-status serving">服务中</text>
+    </view>
+    <view class="service-info">
+      <view class="service-row">
+        <text class="service-label">客户</text>
+        <text class="service-value">{{currentService.customerName}}</text>
+      </view>
+      <view class="service-row">
+        <text class="service-label">项目</text>
+        <text class="service-value">{{currentService.projectName}}</text>
+      </view>
+      <view class="service-row">
+        <text class="service-label">开始时间</text>
+        <text class="service-value">{{currentService.startTime}}</text>
+      </view>
+    </view>
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{currentService.progress || 0}}%"></view>
+    </view>
+    <text class="progress-text">服务进度 {{currentService.progress || 0}}%</text>
+  </view>
+
+  <!-- 待服务列表 -->
+  <view class="card">
+    <view class="section-header">
+      <text class="section-title">待服务</text>
+      <text class="pending-count" wx:if="{{pendingAppointments.length > 0}}">{{pendingAppointments.length}}项</text>
+    </view>
+    <view wx:if="{{pendingAppointments.length === 0}}" class="empty-tip">
+      <text class="placeholder-text">暂无待服务预约</text>
+    </view>
+    <view wx:else class="appointment-list">
+      <view
+        class="appointment-item"
+        wx:for="{{pendingAppointments}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onAppointmentTap"
+      >
+        <view class="appointment-left">
+          <text class="appointment-customer">{{item.customerName}}</text>
+          <text class="appointment-project">{{item.projectName}}</text>
+        </view>
+        <view class="appointment-right">
+          <text class="appointment-time">{{item.appointmentTime}}</text>
+          <text class="appointment-status status-{{item.status}}">{{item.statusText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

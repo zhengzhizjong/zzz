@@ -1,0 +1,30 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/store/list",
+    "pages/technician/list",
+    "pages/appointment/step1-store",
+    "pages/appointment/step2-technician",
+    "pages/appointment/step3-datetime",
+    "pages/appointment/step4-confirm",
+    "pages/my-appointment/list",
+    "pages/my/index"
+  ],
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#07C160",
+    "backgroundColor": "#ffffff",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页", "iconPath": "assets/icons/home.png", "selectedIconPath": "assets/icons/home-active.png" },
+      { "pagePath": "pages/appointment/step1-store", "text": "预约", "iconPath": "assets/icons/calendar.png", "selectedIconPath": "assets/icons/calendar-active.png" },
+      { "pagePath": "pages/my/index", "text": "我的", "iconPath": "assets/icons/user.png", "selectedIconPath": "assets/icons/user-active.png" }
+    ]
+  },
+  "window": {
+    "navigationBarBackgroundColor": "#07C160",
+    "navigationBarTitleText": "忠济堂",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F5F5"
+  },
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,82 @@
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <image class="search-icon" src="/assets/icons/search.png" mode="aspectFit" />
+      <input
+        class="search-input"
+        placeholder="搜索技师姓名"
+        placeholder-class="search-placeholder"
+        value="{{keyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearch"
+      />
+    </view>
+  </view>
+
+  <!-- 技师卡片列表 -->
+  <view class="technician-list">
+    <view
+      class="technician-card card {{item.isFullyBooked ? 'card-disabled' : ''}}"
+      wx:for="{{technicians}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      data-fullybooked="{{item.isFullyBooked}}"
+      bindtap="onTechnicianTap"
+    >
+      <!-- 头像区域 -->
+      <view class="avatar-wrap">
+        <image
+          class="avatar {{item.isFullyBooked ? 'avatar-disabled' : ''}}"
+          src="{{item.avatar || '/assets/icons/default-avatar.png'}}"
+          mode="aspectFill"
+        />
+        <view class="online-dot {{item.isOnline ? 'online' : 'offline'}}" wx:if="{{!item.isFullyBooked}}"></view>
+      </view>
+
+      <!-- 信息区域 -->
+      <view class="tech-info">
+        <view class="tech-header">
+          <text class="tech-name {{item.isFullyBooked ? 'text-disabled' : ''}}">{{item.name}}</text>
+          <view class="skill-tag skill-level-{{item.skillLevel}}">
+            {{item.skillLevelText}}
+          </view>
+        </view>
+
+        <!-- 评分 -->
+        <view class="tech-rating">
+          <view class="stars">
+            <text
+              class="star {{index < item.rating ? 'star-active' : 'star-inactive'}}"
+              wx:for="{{5}}"
+              wx:key="index"
+            >★</text>
+          </view>
+          <text class="rating-text">{{item.rating || '5.0'}}</text>
+        </view>
+
+        <!-- 擅长项目 -->
+        <view class="specialty-list" wx:if="{{item.specialties && item.specialties.length > 0}}">
+          <view class="specialty-tag" wx:for="{{item.specialties}}" wx:for-item="spec" wx:key="index">
+            {{spec}}
+          </view>
+        </view>
+      </view>
+
+      <!-- 约满遮罩 -->
+      <view class="fully-booked-mask" wx:if="{{item.isFullyBooked}}">
+        <text class="fully-booked-text">约满</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && technicians.length === 0}}">
+    <text class="empty-text">暂无技师信息</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="load-more" wx:if="{{loading}}">
+    <text class="load-more-text">加载中...</text>
+  </view>
+</view>

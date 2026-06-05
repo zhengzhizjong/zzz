@@ -1,0 +1,47 @@
+<view class="container">
+  <!-- 本月营收大数字 + 目标进度条 -->
+  <view class="revenue-card">
+    <text class="revenue-label">本月营收</text>
+    <view class="revenue-amount">
+      <text class="revenue-symbol">¥</text>
+      <text class="revenue-value">{{monthRevenue}}</text>
+    </view>
+    <view class="target-info">
+      <text class="target-text">目标 ¥{{monthTarget}}</text>
+      <text class="target-percent">{{targetCompletion}}%</text>
+    </view>
+    <view class="target-bar">
+      <view class="target-fill" style="width: {{targetCompletion}}%"></view>
+    </view>
+  </view>
+
+  <!-- 4宫格 -->
+  <view class="stats-grid">
+    <view class="stat-item">
+      <text class="stat-value">{{monthServiceCount}}</text>
+      <text class="stat-label">服务单数</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-value">¥{{avgPrice}}</text>
+      <text class="stat-label">客单价</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-value">{{monthRating}}</text>
+      <text class="stat-label">评分</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-value">No.{{rank}}</text>
+      <text class="stat-label">排名</text>
+    </view>
+  </view>
+
+  <!-- 简易趋势图(预留) -->
+  <view class="card">
+    <view class="section-header">
+      <text class="section-title">营收趋势</text>
+    </view>
+    <view class="chart-placeholder">
+      <text class="placeholder-text">趋势图开发中</text>
+    </view>
+  </view>
+</view>

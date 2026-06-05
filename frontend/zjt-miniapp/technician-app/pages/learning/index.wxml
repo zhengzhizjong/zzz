@@ -1,0 +1,11 @@
+<view class="container">
+  <view class="card">
+    <text class="section-title">学习中心</text>
+    <text class="placeholder-text">暂无课程</text>
+  </view>
+
+  <view class="card">
+    <text class="section-title">学习记录</text>
+    <text class="placeholder-text">暂无学习记录</text>
+  </view>
+</view>
