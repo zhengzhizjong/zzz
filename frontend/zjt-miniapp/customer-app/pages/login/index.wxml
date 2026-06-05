@@ -1,0 +1,55 @@
+<view class="login-page">
+  <view class="login-header">
+    <view class="logo-wrap">
+      <text class="logo-text">忠济堂</text>
+    </view>
+    <text class="slogan">传承中医精髓 守护健康人生</text>
+  </view>
+
+  <view class="login-form">
+    <view class="form-item">
+      <text class="form-icon">📱</text>
+      <input
+        class="form-input"
+        type="number"
+        maxlength="11"
+        placeholder="请输入手机号"
+        value="{{phone}}"
+        bindinput="onPhoneInput"
+      />
+    </view>
+    <view class="form-item code-item">
+      <text class="form-icon">🔐</text>
+      <input
+        class="form-input code-input"
+        type="number"
+        maxlength="6"
+        placeholder="请输入验证码"
+        value="{{verifyCode}}"
+        bindinput="onCodeInput"
+      />
+      <button
+        class="code-btn {{countdown > 0 ? 'disabled' : ''}}"
+        disabled="{{countdown > 0}}"
+        bindtap="sendCode"
+      >
+        {{countdown > 0 ? countdown + 's' : '获取验证码'}}
+      </button>
+    </view>
+
+    <button class="btn-primary login-btn" loading="{{loading}}" disabled="{{loading}}" bindtap="handleLogin">
+      登录
+    </button>
+  </view>
+
+  <view class="divider">
+    <view class="divider-line"></view>
+    <text class="divider-text">其他登录方式</text>
+    <view class="divider-line"></view>
+  </view>
+
+  <button class="wechat-btn" loading="{{wxLoading}}" disabled="{{wxLoading}}" bindtap="handleWechatLogin">
+    <text class="wechat-icon">💚</text>
+    <text>微信一键登录</text>
+  </button>
+</view>

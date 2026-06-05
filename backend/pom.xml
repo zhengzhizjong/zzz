@@ -29,6 +29,7 @@
         <module>zjt-system</module>
         <module>zjt-billing</module>
         <module>zjt-ai</module>
+        <module>zjt-user</module>
         <module>zjt-app</module>
     </modules>
 
@@ -201,6 +202,11 @@
             <dependency>
                 <groupId>com.zhongjitang</groupId>
                 <artifactId>zjt-ai</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zhongjitang</groupId>
+                <artifactId>zjt-user</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

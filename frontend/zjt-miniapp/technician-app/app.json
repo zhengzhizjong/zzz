@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/login/index",
     "pages/workspace/index",
     "pages/performance/index",
     "pages/promotion/index",

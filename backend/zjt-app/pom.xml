@@ -46,6 +46,10 @@
         </dependency>
         <dependency>
             <groupId>com.zhongjitang</groupId>
+            <artifactId>zjt-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zhongjitang</groupId>
             <artifactId>zjt-common-core</artifactId>
         </dependency>
         <dependency>

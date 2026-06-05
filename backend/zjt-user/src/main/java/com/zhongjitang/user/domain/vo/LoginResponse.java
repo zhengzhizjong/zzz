@@ -1,0 +1,29 @@
+package com.zhongjitang.user.domain.vo;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Data
+@Schema(description = "登录响应")
+public class LoginResponse {
+
+    @Schema(description = "JWT Token")
+    private String token;
+
+    @Schema(description = "刷新Token")
+    private String refreshToken;
+
+    @Schema(description = "会员ID")
+    private Long memberId;
+
+    @Schema(description = "昵称")
+    private String nickname;
+
+    @Schema(description = "头像URL")
+    private String avatarUrl;
+
+    @Schema(description = "手机号")
+    private String phone;
+}

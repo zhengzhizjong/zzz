@@ -28,6 +28,30 @@
   font-weight: 500;
 }
 
+.member-level {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 24rpx;
+  margin-top: 8rpx;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.login-btn {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border: 2rpx solid rgba(255, 255, 255, 0.6);
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  padding: 12rpx 48rpx;
+  line-height: 1.4;
+  margin-top: 8rpx;
+}
+
+.login-btn::after {
+  border: none;
+}
+
 .menu-card {
   padding: 0;
 }
@@ -52,4 +76,18 @@
 .menu-arrow {
   font-size: 32rpx;
   color: #C0C4CC;
+}
+
+.logout-btn {
+  margin-top: 32rpx;
+  background: #fff;
+  color: #FA5151;
+  border: none;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  padding: 24rpx 0;
+}
+
+.logout-btn::after {
+  border: none;
 }

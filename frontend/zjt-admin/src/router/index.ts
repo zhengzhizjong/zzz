@@ -204,6 +204,50 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'AI日报', requiresAuth: true }
       }
     ]
+  },
+  {
+    path: '/user',
+    name: 'User',
+    meta: { title: '用户管理', requiresAuth: true },
+    children: [
+      {
+        path: 'employees',
+        name: 'EmployeeList',
+        component: () => import('@/views/user/EmployeeList.vue'),
+        meta: { title: '员工管理', requiresAuth: true }
+      },
+      {
+        path: 'roles',
+        name: 'RoleList',
+        component: () => import('@/views/user/RoleList.vue'),
+        meta: { title: '角色权限', requiresAuth: true }
+      },
+      {
+        path: 'members',
+        name: 'MemberList',
+        component: () => import('@/views/user/MemberList.vue'),
+        meta: { title: '会员管理', requiresAuth: true }
+      }
+    ]
+  },
+  {
+    path: '/trade',
+    name: 'Trade',
+    meta: { title: '交易管理', requiresAuth: true },
+    children: [
+      {
+        path: 'orders',
+        name: 'OrderList',
+        component: () => import('@/views/trade/OrderList.vue'),
+        meta: { title: '订单管理', requiresAuth: true }
+      },
+      {
+        path: 'refunds',
+        name: 'RefundList',
+        component: () => import('@/views/trade/RefundList.vue'),
+        meta: { title: '退款管理', requiresAuth: true }
+      }
+    ]
   }
 ]
 

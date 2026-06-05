@@ -8,6 +8,8 @@
     "pages/appointment/step3-datetime",
     "pages/appointment/step4-confirm",
     "pages/my-appointment/list",
+    "pages/login/index",
+    "pages/payment/index",
     "pages/my/index"
   ],
   "tabBar": {

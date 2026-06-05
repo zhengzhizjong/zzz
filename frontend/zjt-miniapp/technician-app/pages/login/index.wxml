@@ -1,0 +1,36 @@
+<view class="login-page">
+  <view class="login-header">
+    <view class="logo-wrap">
+      <text class="logo-text">忠济堂</text>
+    </view>
+    <text class="app-title">技师工作台</text>
+    <text class="slogan">专业服务 品质保障</text>
+  </view>
+
+  <view class="login-form">
+    <view class="form-item">
+      <text class="form-icon">👤</text>
+      <input
+        class="form-input"
+        placeholder="请输入工号"
+        value="{{employeeNo}}"
+        bindinput="onEmployeeNoInput"
+      />
+    </view>
+    <view class="form-item">
+      <text class="form-icon">🔒</text>
+      <input
+        class="form-input"
+        placeholder="请输入密码"
+        password="{{!showPassword}}"
+        value="{{password}}"
+        bindinput="onPasswordInput"
+      />
+      <text class="toggle-pwd" bindtap="togglePassword">{{showPassword ? '隐藏' : '显示'}}</text>
+    </view>
+
+    <button class="btn-primary login-btn" loading="{{loading}}" disabled="{{loading}}" bindtap="handleLogin">
+      登录
+    </button>
+  </view>
+</view>
