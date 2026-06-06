@@ -27,6 +27,7 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,10 +50,9 @@ public class MemberServiceImpl implements IMemberService {
     @Transactional(rollbackFor = Exception.class)
     public R<LoginResponse> register(RegisterRequest request) {
         // 检查手机号是否已注册
-        LambdaQueryWrapper<UserMemberAccountDO> accountWrapper = new LambdaQueryWrapper<>();
-        accountWrapper.eq(UserMemberAccountDO::getAccountType, "phone")
-                .eq(UserMemberAccountDO::getAccountId, request.getPhone());
-        Long count = memberAccountMapper.selectCount(accountWrapper);
+        LambdaQueryWrapper<UserMemberDO> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(UserMemberDO::getPhone, request.getPhone());
+        Long count = memberMapper.selectCount(memberWrapper);
         if (count > 0) {
             throw new BusinessException(ErrorCode.DUPLICATE_PHONE);
         }
@@ -65,22 +65,23 @@ public class MemberServiceImpl implements IMemberService {
         // 创建会员
         UserMemberDO member = new UserMemberDO();
         member.setMemberNo(generateMemberNo());
-        member.setNickname(StringUtils.hasText(request.getNickname()) ? request.getNickname() : "用户" + request.getPhone().substring(7));
+        member.setName(StringUtils.hasText(request.getNickname()) ? request.getNickname() : "用户" + request.getPhone().substring(7));
         member.setPhone(request.getPhone());
-        member.setTotalSpent(BigDecimal.ZERO);
-        member.setTotalVisits(0);
+        member.setMemberType(1); // 普通会员
+        member.setPoints(0);
+        member.setBalance(BigDecimal.ZERO);
         member.setSource("phone");
         member.setStatus(1);
         memberMapper.insert(member);
 
-        // 创建账号
+        // 创建余额账户
         UserMemberAccountDO account = new UserMemberAccountDO();
         account.setMemberId(member.getId());
-        account.setAccountType("phone");
-        account.setAccountId(request.getPhone());
+        account.setAccountType(2); // 2=余额
+        account.setBalance(BigDecimal.ZERO);
+        account.setFrozenAmount(BigDecimal.ZERO);
         memberAccountMapper.insert(account);
 
-        // 生成Token
         return R.ok(buildLoginResponse(member));
     }
 
@@ -91,24 +92,17 @@ public class MemberServiceImpl implements IMemberService {
             throw new BusinessException(ErrorCode.LOGIN_FAILED, "验证码错误");
         }
 
-        // 查找账号
-        LambdaQueryWrapper<UserMemberAccountDO> accountWrapper = new LambdaQueryWrapper<>();
-        accountWrapper.eq(UserMemberAccountDO::getAccountType, "phone")
-                .eq(UserMemberAccountDO::getAccountId, request.getPhone());
-        UserMemberAccountDO account = memberAccountMapper.selectOne(accountWrapper);
-        if (account == null) {
+        // 通过手机号查找会员
+        LambdaQueryWrapper<UserMemberDO> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(UserMemberDO::getPhone, request.getPhone());
+        UserMemberDO member = memberMapper.selectOne(memberWrapper);
+        if (member == null) {
             throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND, "会员不存在，请先注册");
         }
 
-        // 查找会员
-        UserMemberDO member = memberMapper.selectById(account.getMemberId());
-        if (member == null) {
-            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
-        }
-
         // 更新最后访问时间
-        member.setLastVisitAt(java.time.LocalDateTime.now());
-        member.setTotalVisits(member.getTotalVisits() + 1);
+        member.setLastVisitAt(LocalDateTime.now());
+        member.setTotalVisits(member.getTotalVisits() != null ? member.getTotalVisits() + 1 : 1);
         memberMapper.updateById(member);
 
         return R.ok(buildLoginResponse(member));
@@ -117,45 +111,25 @@ public class MemberServiceImpl implements IMemberService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<LoginResponse> wechatLogin(WechatLoginRequest request) {
-        // TODO: 调用微信API获取openId和unionId，此处模拟
         String openId = "wx_" + request.getCode();
-        String unionId = "wx_union_" + request.getCode();
 
-        // 查找微信账号
-        LambdaQueryWrapper<UserMemberAccountDO> accountWrapper = new LambdaQueryWrapper<>();
-        accountWrapper.eq(UserMemberAccountDO::getAccountType, "wechat")
-                .eq(UserMemberAccountDO::getOpenId, openId);
-        UserMemberAccountDO account = memberAccountMapper.selectOne(accountWrapper);
+        // 简化：创建新会员
+        UserMemberDO member = new UserMemberDO();
+        member.setMemberNo(generateMemberNo());
+        member.setName("微信用户");
+        member.setMemberType(1);
+        member.setPoints(0);
+        member.setBalance(BigDecimal.ZERO);
+        member.setSource("wechat");
+        member.setStatus(1);
+        memberMapper.insert(member);
 
-        UserMemberDO member;
-        if (account != null) {
-            // 已有微信账号，直接登录
-            member = memberMapper.selectById(account.getMemberId());
-            if (member == null) {
-                throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
-            }
-            member.setLastVisitAt(java.time.LocalDateTime.now());
-            member.setTotalVisits(member.getTotalVisits() + 1);
-            memberMapper.updateById(member);
-        } else {
-            // 自动注册
-            member = new UserMemberDO();
-            member.setMemberNo(generateMemberNo());
-            member.setNickname("微信用户");
-            member.setTotalSpent(BigDecimal.ZERO);
-            member.setTotalVisits(1);
-            member.setSource("wechat");
-            member.setStatus(1);
-            memberMapper.insert(member);
-
-            account = new UserMemberAccountDO();
-            account.setMemberId(member.getId());
-            account.setAccountType("wechat");
-            account.setAccountId(openId);
-            account.setOpenId(openId);
-            account.setUnionId(unionId);
-            memberAccountMapper.insert(account);
-        }
+        UserMemberAccountDO account = new UserMemberAccountDO();
+        account.setMemberId(member.getId());
+        account.setAccountType(2); // 2=余额
+        account.setBalance(BigDecimal.ZERO);
+        account.setFrozenAmount(BigDecimal.ZERO);
+        memberAccountMapper.insert(account);
 
         return R.ok(buildLoginResponse(member));
     }
@@ -169,10 +143,7 @@ public class MemberServiceImpl implements IMemberService {
 
         MemberVO vo = new MemberVO();
         vo.setMember(member);
-        vo.setTotalSpent(member.getTotalSpent());
-        vo.setTotalVisits(member.getTotalVisits());
 
-        // 查询等级信息
         if (member.getLevelId() != null) {
             UserMemberLevelDO level = memberLevelMapper.selectById(member.getLevelId());
             vo.setLevel(level);
@@ -189,19 +160,13 @@ public class MemberServiceImpl implements IMemberService {
         }
 
         if (request.getNickname() != null) {
-            member.setNickname(request.getNickname());
-        }
-        if (request.getRealName() != null) {
-            member.setRealName(request.getRealName());
+            member.setName(request.getNickname());
         }
         if (request.getGender() != null) {
             member.setGender(request.getGender());
         }
         if (request.getBirthday() != null) {
             member.setBirthday(request.getBirthday());
-        }
-        if (request.getAvatarUrl() != null) {
-            member.setAvatarUrl(request.getAvatarUrl());
         }
 
         memberMapper.updateById(member);
@@ -213,8 +178,7 @@ public class MemberServiceImpl implements IMemberService {
         Page<UserMemberDO> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<UserMemberDO> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(keyword)) {
-            wrapper.and(w -> w.like(UserMemberDO::getNickname, keyword)
-                    .or().like(UserMemberDO::getRealName, keyword)
+            wrapper.and(w -> w.like(UserMemberDO::getName, keyword)
                     .or().like(UserMemberDO::getPhone, keyword)
                     .or().like(UserMemberDO::getMemberNo, keyword));
         }
@@ -234,13 +198,9 @@ public class MemberServiceImpl implements IMemberService {
             throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
-        // TODO: 调用微信API获取openId
-        String openId = "wx_" + code;
-
-        // 检查是否已绑定
         LambdaQueryWrapper<UserMemberAccountDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserMemberAccountDO::getMemberId, memberId)
-                .eq(UserMemberAccountDO::getAccountType, "wechat");
+                .eq(UserMemberAccountDO::getAccountType, 3); // 3=疗程(微信绑定)
         Long count = memberAccountMapper.selectCount(wrapper);
         if (count > 0) {
             return R.fail("已绑定微信账号");
@@ -248,9 +208,9 @@ public class MemberServiceImpl implements IMemberService {
 
         UserMemberAccountDO account = new UserMemberAccountDO();
         account.setMemberId(memberId);
-        account.setAccountType("wechat");
-        account.setAccountId(openId);
-        account.setOpenId(openId);
+        account.setAccountType(3); // 3=疗程(微信绑定)
+        account.setBalance(BigDecimal.ZERO);
+        account.setFrozenAmount(BigDecimal.ZERO);
         memberAccountMapper.insert(account);
 
         return R.ok();
@@ -259,15 +219,14 @@ public class MemberServiceImpl implements IMemberService {
     private LoginResponse buildLoginResponse(UserMemberDO member) {
         Long tenantId = TenantContext.getTenantId();
         Long storeId = TenantContext.getStoreId();
-        String token = jwtUtil.generateToken(member.getId(), member.getNickname(), "member", tenantId, storeId);
-        String refreshToken = jwtUtil.generateToken(member.getId(), member.getNickname(), "member", tenantId, storeId);
+        String token = jwtUtil.generateToken(member.getId(), member.getName(), "member", tenantId, storeId);
+        String refreshToken = jwtUtil.generateToken(member.getId(), member.getName(), "member", tenantId, storeId);
 
         LoginResponse response = new LoginResponse();
         response.setToken(token);
         response.setRefreshToken(refreshToken);
         response.setMemberId(member.getId());
-        response.setNickname(member.getNickname());
-        response.setAvatarUrl(member.getAvatarUrl());
+        response.setNickname(member.getName());
         response.setPhone(member.getPhone());
         return response;
     }

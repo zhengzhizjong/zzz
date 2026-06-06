@@ -11,22 +11,24 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_audit_log")
 public class SysAuditLogDO extends BaseDO {
 
-    @TableField(exist = false)
-    private Long storeId;
-
-    private Long userId;
-
-    private String userName;
-
-    private String operation;
-
-    private String method;
-
     private String module;
 
-    private String targetId;
+    @TableField("action")
+    private String operation;
+
+    @TableField("operator_id")
+    private Long userId;
+
+    @TableField("operator_name")
+    private String userName;
+
+    @TableField(exist = false)
+    private String method;
 
     private String targetType;
+
+    @TableField("target_id")
+    private String targetId;
 
     private String oldValue;
 
@@ -36,7 +38,9 @@ public class SysAuditLogDO extends BaseDO {
 
     private String userAgent;
 
+    @TableField(exist = false)
     private Long duration;
 
+    @TableField("result")
     private Integer status;
 }

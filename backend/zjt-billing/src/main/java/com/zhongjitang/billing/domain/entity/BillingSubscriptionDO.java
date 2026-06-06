@@ -13,8 +13,6 @@ import java.time.LocalDate;
 @TableName("billing_subscription")
 public class BillingSubscriptionDO extends BaseDO {
 
-    private Long tenantId;
-
     private String planCode;
 
     private String planName;

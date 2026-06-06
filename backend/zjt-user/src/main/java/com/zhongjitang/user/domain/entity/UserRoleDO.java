@@ -1,6 +1,5 @@
 package com.zhongjitang.user.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import lombok.Data;
@@ -18,7 +17,4 @@ public class UserRoleDO extends BaseDO {
     private String description;
 
     private Integer status;
-
-    @TableField(exist = false)
-    private Long storeId;
 }

@@ -1,5 +1,6 @@
 package com.zhongjitang.trade.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @TableName("trade_appointment_lock")
 public class TradeAppointmentLockDO extends BaseDO {
 
+    @TableField(exist = false)
     private String lockId;
 
     private Long technicianId;

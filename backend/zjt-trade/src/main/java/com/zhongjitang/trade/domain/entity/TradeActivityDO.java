@@ -1,5 +1,6 @@
 package com.zhongjitang.trade.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import lombok.Data;
@@ -27,13 +28,13 @@ public class TradeActivityDO extends BaseDO {
     /** 规则配置(JSON) */
     private String rulesJson;
 
-    /** 活动描述 */
+    @TableField(exist = false)
     private String description;
 
-    /** 封面图URL */
+    @TableField(exist = false)
     private String coverImageUrl;
 
-    /** 适用门店ID列表，逗号分隔 */
+    @TableField(exist = false)
     private String applicableStores;
 
     /** 状态: 1草稿 2进行中 3已结束 4已停用 */

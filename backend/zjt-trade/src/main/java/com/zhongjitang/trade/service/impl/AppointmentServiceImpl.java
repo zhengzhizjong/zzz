@@ -10,6 +10,7 @@ import com.zhongjitang.common.redis.util.RedisUtil;
 import com.zhongjitang.trade.domain.dto.AppointmentCancelRequest;
 import com.zhongjitang.trade.domain.dto.AppointmentCreateRequest;
 import com.zhongjitang.trade.domain.dto.AppointmentModifyRequest;
+import com.zhongjitang.trade.domain.dto.LockTempRequest;
 import com.zhongjitang.trade.domain.entity.TradeAppointmentDO;
 import com.zhongjitang.trade.domain.entity.TradeAppointmentLockDO;
 import com.zhongjitang.trade.domain.vo.AppointmentResponse;

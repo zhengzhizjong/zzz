@@ -13,8 +13,6 @@ import java.time.LocalDate;
 @TableName("billing_usage")
 public class BillingUsageDO extends BaseDO {
 
-    private Long tenantId;
-
     private String usageType;
 
     private LocalDate usageDate;

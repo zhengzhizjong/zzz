@@ -5,6 +5,11 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.redisson.spring.data.connection.RedissonConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -12,32 +17,44 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-/**
- * Redis配置
- * <p>
- * 配置RedisTemplate，使用Jackson2JsonRedisSerializer进行值的序列化，
- * Key使用String序列化，支持Java 8日期时间类型。
- * </p>
- */
 @Configuration
 public class RedisConfig {
 
-    /**
-     * 配置RedisTemplate
-     * <p>
-     * Key使用String序列化，Value使用Jackson2JsonRedisSerializer序列化，
-     * 支持Java 8日期时间类型和类型信息保留。
-     * </p>
-     *
-     * @param connectionFactory Redis连接工厂
-     * @return RedisTemplate
-     */
+    @Value("${spring.redis.host:localhost}")
+    private String redisHost;
+
+    @Value("${spring.redis.port:6379}")
+    private String redisPort;
+
+    @Value("${spring.redis.password:}")
+    private String redisPassword;
+
+    @Value("${spring.redis.database:0}")
+    private int redisDatabase;
+
+    @Bean(destroyMethod = "shutdown")
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        String address = "redis://" + redisHost + ":" + redisPort;
+        config.useSingleServer()
+                .setAddress(address)
+                .setDatabase(redisDatabase)
+                .setPassword(redisPassword.isEmpty() ? null : redisPassword)
+                .setConnectionPoolSize(24)
+                .setConnectionMinimumIdleSize(8);
+        return Redisson.create(config);
+    }
+
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory(RedissonClient redissonClient) {
+        return new RedissonConnectionFactory(redissonClient);
+    }
+
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Jackson序列化配置
         Jackson2JsonRedisSerializer<Object> jacksonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
@@ -46,12 +63,9 @@ public class RedisConfig {
         objectMapper.registerModule(new JavaTimeModule());
         jacksonSerializer.setObjectMapper(objectMapper);
 
-        // Key使用String序列化
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
         template.setKeySerializer(stringSerializer);
         template.setHashKeySerializer(stringSerializer);
-
-        // Value使用Jackson序列化
         template.setValueSerializer(jacksonSerializer);
         template.setHashValueSerializer(jacksonSerializer);
 

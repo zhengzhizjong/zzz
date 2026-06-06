@@ -96,8 +96,10 @@ public class MybatisPlusConfig {
                 this.strictInsertFill(metaObject, UPDATED_AT, LocalDateTime.class, now);
                 this.strictInsertFill(metaObject, CREATED_BY, String.class, currentUser);
                 this.strictInsertFill(metaObject, UPDATED_BY, String.class, currentUser);
-                this.strictInsertFill(metaObject, TENANT_ID, Long.class, TenantContext.getTenantId());
-                this.strictInsertFill(metaObject, STORE_ID, Long.class, TenantContext.getStoreId());
+                Long tenantId = TenantContext.getTenantId();
+                this.strictInsertFill(metaObject, TENANT_ID, Long.class, tenantId != null ? tenantId : 1L);
+                Long storeId = TenantContext.getStoreId();
+                this.strictInsertFill(metaObject, STORE_ID, Long.class, storeId != null ? storeId : 0L);
                 this.strictInsertFill(metaObject, IS_DELETED, Integer.class, 0);
             }
 

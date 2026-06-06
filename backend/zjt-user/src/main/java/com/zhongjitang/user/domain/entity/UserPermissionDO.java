@@ -15,8 +15,10 @@ public class UserPermissionDO extends BaseDO {
 
     private String permissionCode;
 
+    @TableField("permission_type")
     private String resourceType;
 
+    @TableField(exist = false)
     private String resourceId;
 
     private Long parentId;
@@ -24,7 +26,4 @@ public class UserPermissionDO extends BaseDO {
     private Integer sortOrder;
 
     private Integer status;
-
-    @TableField(exist = false)
-    private Long storeId;
 }

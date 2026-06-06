@@ -1,5 +1,6 @@
 package com.zhongjitang.user.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import lombok.Data;
@@ -21,15 +22,19 @@ public class UserEmployeeDO extends BaseDO {
 
     private Integer gender;
 
+    @TableField(exist = false)
     private String avatarUrl;
 
     private Long departmentId;
 
     private String position;
 
-    private LocalDate hireDate;
+    private Long roleId;
 
     private Integer status;
 
+    private LocalDate hireDate;
+
+    @TableField(exist = false)
     private LocalDateTime lastLoginAt;
 }

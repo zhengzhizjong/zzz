@@ -1,5 +1,6 @@
 package com.zhongjitang.store.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.time.LocalTime;
 @TableName("store_schedule")
 public class StoreScheduleDO extends BaseDO {
 
+    @TableField("employee_id")
     private Long technicianId;
 
     private LocalDate scheduleDate;
@@ -24,7 +26,6 @@ public class StoreScheduleDO extends BaseDO {
     /** 排班类型: 1上班 2休息 3请假 */
     private Integer scheduleType;
 
-    private Long storeId;
-
+    @TableField(exist = false)
     private String notes;
 }

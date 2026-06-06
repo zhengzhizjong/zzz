@@ -1,5 +1,6 @@
 package com.zhongjitang.trade.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhongjitang.common.mybatis.entity.BaseDO;
 import lombok.Data;
@@ -17,24 +18,32 @@ public class TradeRefundDO extends BaseDO {
 
     private Long orderId;
 
+    @TableField(exist = false)
     private Long paymentId;
 
+    @TableField(exist = false)
     private Long memberId;
 
     private BigDecimal refundAmount;
 
+    @TableField("refund_reason")
     private String reason;
 
-    /** 状态: 1待审核 2已通过 3已拒绝 4已退款 5退款失败 */
+    @TableField("refund_status")
     private Integer status;
 
+    @TableField(exist = false)
     private String approvedBy;
 
+    @TableField(exist = false)
     private LocalDateTime approvedAt;
 
+    @TableField("refund_time")
     private LocalDateTime refundedAt;
 
+    @TableField(exist = false)
     private String transactionId;
 
+    @TableField(exist = false)
     private String rejectReason;
 }

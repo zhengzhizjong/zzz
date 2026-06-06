@@ -6,7 +6,7 @@ import com.zhongjitang.common.mybatis.entity.BaseDO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -15,20 +15,18 @@ public class UserMemberAccountDO extends BaseDO {
 
     private Long memberId;
 
-    private String accountType;
+    private Integer accountType;
 
+    private BigDecimal balance;
+
+    private BigDecimal frozenAmount;
+
+    @TableField(exist = false)
     private String accountId;
 
-    private String accessToken;
-
-    private String refreshToken;
-
-    private LocalDateTime expiresAt;
-
-    private String unionId;
-
+    @TableField(exist = false)
     private String openId;
 
     @TableField(exist = false)
-    private Long storeId;
+    private String unionId;
 }

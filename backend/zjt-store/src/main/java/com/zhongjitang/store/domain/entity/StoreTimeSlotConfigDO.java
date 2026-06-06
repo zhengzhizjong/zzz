@@ -12,8 +12,6 @@ import java.time.LocalTime;
 @TableName("store_time_slot_config")
 public class StoreTimeSlotConfigDO extends BaseDO {
 
-    private Long storeId;
-
     private LocalTime businessStartTime;
 
     private LocalTime businessEndTime;

@@ -27,15 +27,20 @@ public class SecurityConfig implements WebMvcConfigurer {
     private final JwtUtil jwtUtil;
 
     /** 白名单路径，可通过配置文件覆盖 */
-    @Value("${security.ignore-urls:/api/v1/auth/**,/swagger-ui/**,/v3/api-docs/**,/actuator/**}")
+    @Value("${security.ignore-urls:/api/v1/auth/**,/api/v1/user/members/login,/api/v1/user/members/register,/api/v1/user/sms/send,/api/v1/user/employees/login,/swagger-ui/**,/v3/api-docs/**,/actuator/**,/health}")
     private String ignoreUrlsStr;
 
     /** 默认白名单路径 */
     private static final List<String> DEFAULT_IGNORE_URLS = Arrays.asList(
             "/api/v1/auth/**",
+            "/api/v1/user/members/login",
+            "/api/v1/user/members/register",
+            "/api/v1/user/sms/send",
+            "/api/v1/user/employees/login",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/actuator/**"
+            "/actuator/**",
+            "/health"
     );
 
     /**

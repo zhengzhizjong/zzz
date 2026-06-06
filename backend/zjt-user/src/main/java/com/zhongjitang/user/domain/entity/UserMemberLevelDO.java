@@ -17,20 +17,28 @@ public class UserMemberLevelDO extends BaseDO {
 
     private String levelCode;
 
+    @TableField("min_points")
     private BigDecimal minSpent;
 
+    @TableField(exist = false)
     private Integer minVisits;
+
+    @TableField("max_points")
+    private Integer maxPoints;
 
     private BigDecimal discountRate;
 
+    @TableField("benefits_json")
+    private String benefitsJson;
+
+    @TableField(exist = false)
     private String iconUrl;
 
+    @TableField(exist = false)
     private String color;
 
     private Integer sortOrder;
 
-    private Integer status;
-
     @TableField(exist = false)
-    private Long storeId;
+    private Integer status;
 }
