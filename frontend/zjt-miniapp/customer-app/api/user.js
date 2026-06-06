@@ -15,5 +15,11 @@ module.exports = {
   },
   updateProfile(data) {
     return request.put('/api/v1/user/members/profile', data)
+  },
+  getHealthProfile() {
+    return request.get('/api/v1/user/members/health-profile')
+  },
+  updateHealthProfile(data) {
+    return request.put('/api/v1/user/members/health-profile', data)
   }
 }

@@ -1,0 +1,221 @@
+.container {
+  min-height: 100vh;
+  background-color: #F5F5F5;
+  padding-bottom: 20rpx;
+}
+
+/* 疗程卡列表 */
+.card-list {
+  padding: 24rpx;
+}
+
+.treatment-card {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
+
+.card-info {
+  flex: 1;
+}
+
+.card-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #303133;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.card-project {
+  font-size: 24rpx;
+  color: #909399;
+}
+
+.card-count {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+}
+
+.count-remaining {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #07C160;
+  line-height: 1;
+}
+
+.count-total {
+  font-size: 24rpx;
+  color: #909399;
+  margin-left: 4rpx;
+}
+
+/* 进度条 */
+.progress-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.progress-track {
+  flex: 1;
+  height: 12rpx;
+  background-color: #EBEEF5;
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-right: 16rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #07C160, #06AD56);
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 22rpx;
+  color: #909399;
+  flex-shrink: 0;
+}
+
+/* 卡片底部 */
+.card-footer {
+  padding-top: 16rpx;
+  border-top: 1rpx solid #EBEEF5;
+}
+
+.card-validity {
+  font-size: 24rpx;
+  color: #909399;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 200rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #C0C4CC;
+}
+
+/* 加载提示 */
+.loading-tip {
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 24rpx;
+  color: #C0C4CC;
+}
+
+/* 弹窗 */
+.popup-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.popup-content {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 70vh;
+  background-color: #ffffff;
+  border-radius: 24rpx 24rpx 0 0;
+  z-index: 101;
+  padding: 32rpx 24rpx;
+  overflow-y: auto;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #303133;
+}
+
+.popup-close {
+  font-size: 48rpx;
+  color: #909399;
+  line-height: 1;
+  padding: 0 8rpx;
+}
+
+.popup-card-name {
+  font-size: 28rpx;
+  color: #606266;
+  padding: 12rpx 16rpx;
+  background-color: #F5F7FA;
+  border-radius: 8rpx;
+  margin-bottom: 20rpx;
+}
+
+/* 使用记录列表 */
+.usage-list {
+  padding: 0;
+}
+
+.usage-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #EBEEF5;
+}
+
+.usage-item:last-child {
+  border-bottom: none;
+}
+
+.usage-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.usage-service {
+  font-size: 28rpx;
+  color: #303133;
+  margin-bottom: 4rpx;
+}
+
+.usage-date {
+  font-size: 24rpx;
+  color: #909399;
+}
+
+.usage-count {
+  font-size: 28rpx;
+  color: #F56C6C;
+  flex-shrink: 0;
+}
+
+.usage-empty {
+  text-align: center;
+  padding: 48rpx 0;
+  font-size: 28rpx;
+  color: #C0C4CC;
+}

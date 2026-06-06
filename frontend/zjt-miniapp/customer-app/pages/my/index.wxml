@@ -17,6 +17,22 @@
       <text class="menu-text">我的预约</text>
       <text class="menu-arrow">›</text>
     </view>
+    <view class="menu-item" bindtap="goHealthProfile">
+      <text class="menu-text">健康档案</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goCouponList">
+      <text class="menu-text">我的优惠券</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goTreatmentList">
+      <text class="menu-text">我的疗程卡</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goProfileEdit">
+      <text class="menu-text">个人信息编辑</text>
+      <text class="menu-arrow">›</text>
+    </view>
     <view class="menu-item">
       <text class="menu-text">我的收藏</text>
       <text class="menu-arrow">›</text>

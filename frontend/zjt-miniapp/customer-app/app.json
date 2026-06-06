@@ -10,7 +10,11 @@
     "pages/my-appointment/list",
     "pages/login/index",
     "pages/payment/index",
-    "pages/my/index"
+    "pages/my/index",
+    "pages/profile/edit",
+    "pages/health/profile",
+    "pages/coupon/list",
+    "pages/treatment/list"
   ],
   "tabBar": {
     "color": "#999999",

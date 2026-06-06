@@ -1,0 +1,47 @@
+<view class="container">
+  <!-- Tab栏 -->
+  <view class="tab-bar">
+    <view
+      class="tab-item {{currentTab === item.key ? 'tab-active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="key"
+      data-key="{{item.key}}"
+      bindtap="onTabTap"
+    >
+      <text class="tab-name">{{item.name}}</text>
+      <view class="tab-line" wx:if="{{currentTab === item.key}}"></view>
+    </view>
+  </view>
+
+  <!-- 优惠券列表 -->
+  <view class="coupon-list" wx:if="{{coupons.length > 0}}">
+    <view class="coupon-card" wx:for="{{coupons}}" wx:key="id" data-item="{{item}}" bindtap="onCouponTap">
+      <view class="coupon-left">
+        <view class="coupon-value">
+          <text class="coupon-symbol" wx:if="{{item.type === 'discount'}}">¥</text>
+          <text class="coupon-amount">{{item.discountValue || item.discountDisplay || '0'}}</text>
+          <text class="coupon-unit" wx:if="{{item.type === 'percent'}}">折</text>
+        </view>
+        <text class="coupon-threshold">{{item.thresholdDisplay || '无门槛'}}</text>
+      </view>
+      <view class="coupon-divider"></view>
+      <view class="coupon-right">
+        <text class="coupon-name">{{item.couponName}}</text>
+        <text class="coupon-validity">{{item.validityStart}} - {{item.validityEnd}}</text>
+        <view class="coupon-status-tag status-{{currentTab}}">
+          <text>{{currentTab === 'available' ? '可用' : currentTab === 'used' ? '已使用' : '已过期'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && coupons.length === 0}}">
+    <text class="empty-text">暂无优惠券</text>
+  </view>
+
+  <!-- 加载提示 -->
+  <view class="loading-tip" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>

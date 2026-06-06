@@ -5,7 +5,8 @@
     "pages/performance/index",
     "pages/promotion/index",
     "pages/learning/index",
-    "pages/my/index"
+    "pages/my/index",
+    "pages/schedule/index"
   ],
   "tabBar": {
     "color": "#999999",

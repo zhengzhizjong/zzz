@@ -1,0 +1,88 @@
+<view class="container">
+  <!-- 月份切换 -->
+  <view class="month-header">
+    <view class="month-arrow" bindtap="onPrevMonth">
+      <text>‹</text>
+    </view>
+    <text class="month-text">{{monthDisplay}}</text>
+    <view class="month-arrow" bindtap="onNextMonth">
+      <text>›</text>
+    </view>
+  </view>
+
+  <!-- 星期标题 -->
+  <view class="weekday-row">
+    <view class="weekday-item" wx:for="{{['日','一','二','三','四','五','六']}}" wx:key="*this">
+      <text class="weekday-text">{{item}}</text>
+    </view>
+  </view>
+
+  <!-- 日历网格 -->
+  <view class="calendar-grid">
+    <view
+      class="day-cell {{item.empty ? 'day-empty' : ''}} {{item.date === selectedDate ? 'day-selected' : ''}}"
+      wx:for="{{calendarDays}}"
+      wx:key="index"
+      data-day="{{item}}"
+      bindtap="onDayTap"
+    >
+      <text class="day-number" wx:if="{{!item.empty}}">{{item.day}}</text>
+      <view class="day-status status-{{item.status}}" wx:if="{{!item.empty && item.status}}">
+        <text class="day-status-dot"></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 图例 -->
+  <view class="legend">
+    <view class="legend-item">
+      <view class="legend-dot legend-work"></view>
+      <text class="legend-text">上班</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-dot legend-rest"></view>
+      <text class="legend-text">休息</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-dot legend-leave"></view>
+      <text class="legend-text">请假</text>
+    </view>
+  </view>
+
+  <!-- 选中日期的排班详情 -->
+  <view class="detail-card" wx:if="{{selectedDate}}">
+    <view class="detail-header">
+      <text class="detail-title">{{selectedDate}} 排班详情</text>
+    </view>
+    <block wx:if="{{selectedSchedule}}">
+      <view class="detail-row">
+        <text class="detail-label">状态</text>
+        <text class="detail-value">{{selectedSchedule.statusDisplay}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{selectedSchedule.startTime}}">
+        <text class="detail-label">上班时间</text>
+        <text class="detail-value">{{selectedSchedule.startTime}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{selectedSchedule.endTime}}">
+        <text class="detail-label">下班时间</text>
+        <text class="detail-value">{{selectedSchedule.endTime}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{selectedSchedule.storeName}}">
+        <text class="detail-label">门店</text>
+        <text class="detail-value">{{selectedSchedule.storeName}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{selectedSchedule.remark}}">
+        <text class="detail-label">备注</text>
+        <text class="detail-value">{{selectedSchedule.remark}}</text>
+      </view>
+    </block>
+    <view class="detail-empty" wx:else>
+      <text>该日暂无排班信息</text>
+    </view>
+  </view>
+
+  <!-- 加载提示 -->
+  <view class="loading-tip" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>

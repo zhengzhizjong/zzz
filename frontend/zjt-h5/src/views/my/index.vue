@@ -1,0 +1,149 @@
+<template>
+  <div class="my-page">
+    <!-- 个人信息卡片 -->
+    <div class="profile-card">
+      <div class="avatar-wrapper">
+        <van-image class="avatar" round width="64" height="64" :src="userInfo?.avatar || ''" fit="cover">
+          <template #error><div class="avatar-placeholder">👤</div></template>
+        </van-image>
+      </div>
+      <template v-if="isLogin">
+        <div class="user-info">
+          <span class="nickname">{{ userInfo?.nickname || '忠济堂会员' }}</span>
+          <van-tag v-if="userInfo?.levelName" type="success" size="medium">{{ userInfo.levelName }}</van-tag>
+        </div>
+      </template>
+      <template v-else>
+        <van-button type="primary" size="small" round @click="goLogin">点击登录</van-button>
+      </template>
+    </div>
+
+    <!-- 功能菜单 -->
+    <div class="menu-card">
+      <van-cell title="我的预约" is-link @click="goPage('/my-appointment/list')" />
+      <van-cell title="健康档案" is-link @click="goPage('/health/profile')" />
+      <van-cell title="我的优惠券" is-link @click="goPage('/coupon/list')" />
+      <van-cell title="我的疗程卡" is-link @click="goPage('/treatment/list')" />
+      <van-cell title="个人信息编辑" is-link @click="goPage('/profile/edit')" />
+      <van-cell title="我的收藏" is-link />
+      <van-cell title="意见反馈" is-link />
+      <van-cell title="关于我们" is-link />
+    </div>
+
+    <!-- 退出登录 -->
+    <div class="logout-wrap" v-if="isLogin">
+      <van-button block plain type="danger" @click="handleLogout">退出登录</van-button>
+    </div>
+
+    <!-- 底部TabBar占位 -->
+    <div class="tabbar-placeholder"></div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { showDialog, showToast } from 'vant'
+import { useUserStore } from '@/stores/user'
+import { checkLogin } from '@/utils/auth'
+
+const router = useRouter()
+const userStore = useUserStore()
+
+const isLogin = ref(false)
+const userInfo = ref<any>(null)
+
+onMounted(() => {
+  isLogin.value = checkLogin()
+  if (isLogin.value) {
+    loadProfile()
+  }
+})
+
+async function loadProfile() {
+  try {
+    await userStore.fetchProfile()
+    userInfo.value = userStore.userInfo
+  } catch {}
+}
+
+function goLogin() {
+  router.push('/login')
+}
+
+function goPage(path: string) {
+  if (!checkLogin()) {
+    router.push({ path: '/login', query: { redirect: path } })
+    return
+  }
+  router.push(path)
+}
+
+function handleLogout() {
+  showDialog({
+    title: '提示',
+    message: '确认退出登录？',
+    showCancelButton: true
+  }).then(() => {
+    userStore.logout()
+    isLogin.value = false
+    userInfo.value = null
+    showToast('已退出登录')
+  }).catch(() => {})
+}
+</script>
+
+<style scoped lang="scss">
+.my-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #07C160, #06ad56);
+  color: #fff;
+
+  .avatar-wrapper {
+    margin-right: 16px;
+
+    .avatar-placeholder {
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      font-size: 28px;
+    }
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+
+    .nickname {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+  }
+}
+
+.menu-card {
+  margin: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.logout-wrap {
+  margin: 20px 12px;
+}
+
+.tabbar-placeholder {
+  height: 60px;
+}
+</style>

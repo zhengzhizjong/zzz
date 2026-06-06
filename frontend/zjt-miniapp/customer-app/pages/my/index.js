@@ -33,6 +33,38 @@ Page({
     wx.navigateTo({ url: '/pages/my-appointment/list' })
   },
 
+  goHealthProfile() {
+    if (!checkLogin()) {
+      wx.navigateTo({ url: '/pages/login/index' })
+      return
+    }
+    wx.navigateTo({ url: '/pages/health/profile' })
+  },
+
+  goCouponList() {
+    if (!checkLogin()) {
+      wx.navigateTo({ url: '/pages/login/index' })
+      return
+    }
+    wx.navigateTo({ url: '/pages/coupon/list' })
+  },
+
+  goTreatmentList() {
+    if (!checkLogin()) {
+      wx.navigateTo({ url: '/pages/login/index' })
+      return
+    }
+    wx.navigateTo({ url: '/pages/treatment/list' })
+  },
+
+  goProfileEdit() {
+    if (!checkLogin()) {
+      wx.navigateTo({ url: '/pages/login/index' })
+      return
+    }
+    wx.navigateTo({ url: '/pages/profile/edit' })
+  },
+
   handleLogout() {
     wx.showModal({
       title: '提示',

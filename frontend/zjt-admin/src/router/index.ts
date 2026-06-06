@@ -24,6 +24,18 @@ const routes: RouteRecordRaw[] = [
         name: 'StoreList',
         component: () => import('@/views/store/StoreList.vue'),
         meta: { title: '门店列表', requiresAuth: true }
+      },
+      {
+        path: 'rooms',
+        name: 'RoomList',
+        component: () => import('@/views/store/RoomList.vue'),
+        meta: { title: '房间管理', requiresAuth: true }
+      },
+      {
+        path: 'schedules',
+        name: 'ScheduleList',
+        component: () => import('@/views/store/ScheduleList.vue'),
+        meta: { title: '排班管理', requiresAuth: true }
       }
     ]
   },
@@ -126,6 +138,12 @@ const routes: RouteRecordRaw[] = [
         name: 'FeatureFlagList',
         component: () => import('@/views/system/FeatureFlagList.vue'),
         meta: { title: '功能开关', requiresAuth: true }
+      },
+      {
+        path: 'audit-logs',
+        name: 'AuditLogList',
+        component: () => import('@/views/system/AuditLogList.vue'),
+        meta: { title: '审计日志', requiresAuth: true }
       }
     ]
   },
@@ -246,6 +264,18 @@ const routes: RouteRecordRaw[] = [
         name: 'RefundList',
         component: () => import('@/views/trade/RefundList.vue'),
         meta: { title: '退款管理', requiresAuth: true }
+      },
+      {
+        path: 'coupons',
+        name: 'CouponList',
+        component: () => import('@/views/trade/CouponList.vue'),
+        meta: { title: '优惠券管理', requiresAuth: true }
+      },
+      {
+        path: 'treatment-cards',
+        name: 'TreatmentCardList',
+        component: () => import('@/views/trade/TreatmentCardList.vue'),
+        meta: { title: '疗程卡管理', requiresAuth: true }
       }
     ]
   }

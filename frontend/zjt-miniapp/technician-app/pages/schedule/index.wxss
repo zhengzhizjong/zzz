@@ -1,0 +1,209 @@
+.container {
+  min-height: 100vh;
+  background-color: #F5F5F5;
+  padding-bottom: 40rpx;
+}
+
+/* 月份切换 */
+.month-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32rpx 24rpx 20rpx;
+  background-color: #ffffff;
+}
+
+.month-arrow {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40rpx;
+  color: #07C160;
+}
+
+.month-text {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #303133;
+  margin: 0 32rpx;
+}
+
+/* 星期标题 */
+.weekday-row {
+  display: flex;
+  background-color: #ffffff;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #EBEEF5;
+}
+
+.weekday-item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.weekday-text {
+  font-size: 24rpx;
+  color: #909399;
+}
+
+/* 日历网格 */
+.calendar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #ffffff;
+  padding: 16rpx 0;
+}
+
+.day-cell {
+  width: calc(100% / 7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 0;
+  position: relative;
+}
+
+.day-empty {
+  visibility: hidden;
+}
+
+.day-number {
+  font-size: 28rpx;
+  color: #303133;
+  line-height: 1.4;
+}
+
+.day-selected {
+  background-color: #F0F9EB;
+  border-radius: 12rpx;
+}
+
+.day-selected .day-number {
+  color: #07C160;
+  font-weight: bold;
+}
+
+/* 日期状态标记 */
+.day-status {
+  margin-top: 4rpx;
+}
+
+.day-status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  display: block;
+}
+
+.status-work .day-status-dot {
+  background-color: #07C160;
+}
+
+.status-rest .day-status-dot {
+  background-color: #C0C4CC;
+}
+
+.status-leave .day-status-dot {
+  background-color: #E6A23C;
+}
+
+/* 图例 */
+.legend {
+  display: flex;
+  justify-content: center;
+  padding: 20rpx 0;
+  background-color: #ffffff;
+  border-top: 1rpx solid #EBEEF5;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 0 24rpx;
+}
+
+.legend-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+}
+
+.legend-work {
+  background-color: #07C160;
+}
+
+.legend-rest {
+  background-color: #C0C4CC;
+}
+
+.legend-leave {
+  background-color: #E6A23C;
+}
+
+.legend-text {
+  font-size: 24rpx;
+  color: #606266;
+}
+
+/* 排班详情卡片 */
+.detail-card {
+  margin: 24rpx;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.detail-header {
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #EBEEF5;
+}
+
+.detail-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #303133;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+}
+
+.detail-label {
+  font-size: 26rpx;
+  color: #909399;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  font-size: 26rpx;
+  color: #303133;
+  text-align: right;
+  flex: 1;
+  margin-left: 24rpx;
+}
+
+.detail-empty {
+  text-align: center;
+  padding: 32rpx 0;
+  font-size: 28rpx;
+  color: #C0C4CC;
+}
+
+/* 加载提示 */
+.loading-tip {
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 24rpx;
+  color: #C0C4CC;
+}

@@ -1,0 +1,57 @@
+<view class="container">
+  <!-- 体质辨识结果卡片 -->
+  <view class="constitution-card">
+    <view class="constitution-header">
+      <text class="constitution-title">体质辨识结果</text>
+      <view class="constitution-tag" style="background-color: {{constitutionColor}};">
+        <text class="constitution-tag-text">{{constitutionName}}</text>
+      </view>
+    </view>
+    <view class="constitution-desc" wx:if="{{constitutionType}}">
+      <text class="constitution-desc-text">根据AI问诊分析，您的体质类型为{{constitutionName}}</text>
+    </view>
+    <view class="constitution-desc" wx:else>
+      <text class="constitution-desc-text">暂未进行体质辨识，点击下方按钮开始AI问诊</text>
+    </view>
+  </view>
+
+  <!-- 健康信息表单 -->
+  <view class="form-card">
+    <view class="form-title">健康信息</view>
+
+    <view class="form-item form-item-column">
+      <text class="form-label">过敏史</text>
+      <textarea class="form-textarea" value="{{allergies}}" placeholder="请输入过敏史，如无请填"无"" bindinput="onAllergiesInput" maxlength="500" />
+    </view>
+
+    <view class="form-item form-item-column">
+      <text class="form-label">禁忌症</text>
+      <textarea class="form-textarea" value="{{contraindications}}" placeholder="请输入禁忌症，如无请填"无"" bindinput="onContraindicationsInput" maxlength="500" />
+    </view>
+
+    <view class="form-item form-item-column">
+      <text class="form-label">病史</text>
+      <textarea class="form-textarea" value="{{medicalHistory}}" placeholder="请输入既往病史" bindinput="onMedicalHistoryInput" maxlength="500" />
+    </view>
+
+    <view class="form-item form-item-column">
+      <text class="form-label">用药情况</text>
+      <textarea class="form-textarea" value="{{medication}}" placeholder="请输入当前用药情况" bindinput="onMedicationInput" maxlength="500" />
+    </view>
+
+    <view class="form-item form-item-column">
+      <text class="form-label">备注</text>
+      <textarea class="form-textarea" value="{{notes}}" placeholder="其他需要备注的健康信息" bindinput="onNotesInput" maxlength="500" />
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <button class="btn-primary save-btn" bindtap="onSubmit" disabled="{{submitting}}">
+    {{submitting ? '保存中...' : '保存'}}
+  </button>
+
+  <!-- AI体质辨识按钮 -->
+  <button class="ai-btn" bindtap="onGoAiDiagnosis">
+    <text class="ai-btn-text">AI体质辨识</text>
+  </button>
+</view>

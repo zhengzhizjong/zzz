@@ -6,137 +6,173 @@ import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * JWT工具类测试
- */
+@DisplayName("JwtUtil工具类测试")
 class JwtUtilTest {
 
     private JwtUtil jwtUtil;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         jwtUtil = new JwtUtil();
-        ReflectionTestUtils.setField(jwtUtil, "secret",
-                "zhongjitang-default-secret-key-must-be-at-least-256-bits-long-for-hs256");
-        ReflectionTestUtils.setField(jwtUtil, "expireMinutes", 120L);
+        // 通过反射设置私有字段
+        setField(jwtUtil, "secret", "zhongjitang-default-secret-key-must-be-at-least-256-bits-long-for-hs256");
+        setField(jwtUtil, "expireMinutes", 120L);
+        // 手动调用init方法初始化密钥
         jwtUtil.init();
     }
 
-    @Test
-    @DisplayName("生成Token - 应返回非空字符串")
-    void generateToken() {
-        String token = jwtUtil.generateToken(1L, "admin", "admin", 100L, 200L);
-        assertNotNull(token);
-        assertTrue(token.length() > 0);
+    private void setField(Object target, String fieldName, Object value) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
     }
 
     @Test
-    @DisplayName("解析Token - 应正确获取所有声明")
-    void parseToken() {
-        String token = jwtUtil.generateToken(1L, "admin", "admin", 100L, 200L);
+    @DisplayName("生成Token应返回非空字符串")
+    void 生成Token应返回非空() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
+        assertNotNull(token);
+        assertFalse(token.isEmpty());
+        assertTrue(token.split("\\.").length == 3); // JWT三段式结构
+    }
+
+    @Test
+    @DisplayName("解析Token应正确返回Claims")
+    void 解析Token应正确返回Claims() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
         Claims claims = jwtUtil.parseToken(token);
 
+        assertNotNull(claims);
         assertEquals("1", claims.getSubject());
-        assertEquals("admin", claims.get("username", String.class));
-        assertEquals("admin", claims.get("userType", String.class));
-        assertNotNull(claims.get("tenantId"));
-        assertNotNull(claims.get("storeId"));
+        assertEquals("张三", claims.get("username", String.class));
+        assertEquals("member", claims.get("userType", String.class));
     }
 
     @Test
-    @DisplayName("getUserId - 应正确获取用户ID")
-    void getUserId() {
-        String token = jwtUtil.generateToken(123L, "testuser", "member", 10L, 20L);
+    @DisplayName("从Token中获取用户ID应正确")
+    void 从Token获取用户ID() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
         Long userId = jwtUtil.getUserId(token);
-        assertEquals(123L, userId);
+
+        assertNotNull(userId);
+        assertEquals(1L, userId);
     }
 
     @Test
-    @DisplayName("getUsername - 应正确获取用户名")
-    void getUsername() {
-        String token = jwtUtil.generateToken(1L, "testuser", "member", 10L, 20L);
+    @DisplayName("从Token中获取用户名应正确")
+    void 从Token获取用户名() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
         String username = jwtUtil.getUsername(token);
-        assertEquals("testuser", username);
+
+        assertEquals("张三", username);
     }
 
     @Test
-    @DisplayName("getUserType - 应正确获取用户类型")
-    void getUserType() {
-        String token = jwtUtil.generateToken(1L, "testuser", "employee", 10L, 20L);
+    @DisplayName("从Token中获取用户类型应正确")
+    void 从Token获取用户类型() {
+        String token = jwtUtil.generateToken(1L, "admin", "employee", 100L, 1L);
+
         String userType = jwtUtil.getUserType(token);
+
         assertEquals("employee", userType);
     }
 
     @Test
-    @DisplayName("getTenantId - 应正确获取租户ID")
-    void getTenantId() {
-        String token = jwtUtil.generateToken(1L, "testuser", "admin", 999L, 200L);
+    @DisplayName("从Token中获取租户ID应正确")
+    void 从Token获取租户ID() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
         Long tenantId = jwtUtil.getTenantId(token);
-        assertEquals(999L, tenantId);
+
+        assertNotNull(tenantId);
+        assertEquals(100L, tenantId);
     }
 
     @Test
-    @DisplayName("getStoreId - 应正确获取门店ID")
-    void getStoreId() {
-        String token = jwtUtil.generateToken(1L, "testuser", "admin", 100L, 888L);
+    @DisplayName("从Token中获取门店ID应正确")
+    void 从Token获取门店ID() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
         Long storeId = jwtUtil.getStoreId(token);
-        assertEquals(888L, storeId);
+
+        assertNotNull(storeId);
+        assertEquals(1L, storeId);
     }
 
     @Test
-    @DisplayName("isTokenExpired - 未过期的Token应返回false")
-    void isTokenExpired_false() {
-        String token = jwtUtil.generateToken(1L, "testuser", "admin", 100L, 200L);
+    @DisplayName("未过期的Token判断应返回false")
+    void 未过期Token应返回false() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
         assertFalse(jwtUtil.isTokenExpired(token));
     }
 
     @Test
-    @DisplayName("isTokenExpired - 无效Token应返回true")
-    void isTokenExpired_invalidToken() {
-        assertTrue(jwtUtil.isTokenExpired("invalid.token.here"));
+    @DisplayName("过期的Token判断应返回true")
+    void 过期Token应返回true() throws Exception {
+        // 设置过期时间为0分钟，使Token立即过期
+        setField(jwtUtil, "expireMinutes", 0L);
+        jwtUtil.init();
+
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
+        // 等待1秒确保过期
+        Thread.sleep(1000);
+        assertTrue(jwtUtil.isTokenExpired(token));
     }
 
     @Test
-    @DisplayName("refreshToken - 应生成新的有效Token")
-    void refreshToken() {
-        String originalToken = jwtUtil.generateToken(1L, "testuser", "admin", 100L, 200L);
+    @DisplayName("无效Token解析应抛出JwtException")
+    void 无效Token解析应抛异常() {
+        String invalidToken = "invalid.jwt.token";
+
+        assertThrows(JwtException.class, () -> {
+            jwtUtil.parseToken(invalidToken);
+        });
+    }
+
+    @Test
+    @DisplayName("刷新Token应生成新的有效Token")
+    void 刷新Token应生成新Token() {
+        String originalToken = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
         String refreshedToken = jwtUtil.refreshToken(originalToken);
 
         assertNotNull(refreshedToken);
         assertNotEquals(originalToken, refreshedToken);
-
-        // 新Token应包含相同的信息
         assertEquals(1L, jwtUtil.getUserId(refreshedToken));
-        assertEquals("testuser", jwtUtil.getUsername(refreshedToken));
-        assertEquals("admin", jwtUtil.getUserType(refreshedToken));
+        assertEquals("张三", jwtUtil.getUsername(refreshedToken));
     }
 
     @Test
-    @DisplayName("getExpireAt - 应返回未来的过期时间")
-    void getExpireAt() {
-        String token = jwtUtil.generateToken(1L, "testuser", "admin", 100L, 200L);
+    @DisplayName("获取Token过期时间应返回未来时间")
+    void 获取Token过期时间应为未来() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", 100L, 1L);
+
         LocalDateTime expireAt = jwtUtil.getExpireAt(token);
+
         assertNotNull(expireAt);
         assertTrue(expireAt.isAfter(LocalDateTime.now()));
     }
 
     @Test
-    @DisplayName("parseToken - 无效Token应抛出JwtException")
-    void parseToken_invalid() {
-        assertThrows(JwtException.class, () -> jwtUtil.parseToken("invalid.token.string"));
-    }
+    @DisplayName("租户ID和门店ID为null时应正确处理")
+    void 租户ID和门店ID为null() {
+        String token = jwtUtil.generateToken(1L, "张三", "member", null, null);
 
-    @Test
-    @DisplayName("生成Token - storeId为null时应正常工作")
-    void generateToken_nullStoreId() {
-        String token = jwtUtil.generateToken(1L, "admin", "admin", 100L, null);
-        Long storeId = jwtUtil.getStoreId(token);
-        assertNull(storeId);
+        assertNull(jwtUtil.getTenantId(token));
+        assertNull(jwtUtil.getStoreId(token));
+        assertEquals(1L, jwtUtil.getUserId(token));
+        assertEquals("张三", jwtUtil.getUsername(token));
     }
 }
