@@ -61,7 +61,13 @@ public class EmployeeServiceImpl implements IEmployeeService {
 
         // 生成Token
         Long tenantId = TenantContext.getTenantId();
+        if (tenantId == null) {
+            tenantId = 1L; // 默认租户
+        }
         Long storeId = TenantContext.getStoreId();
+        if (storeId == null) {
+            storeId = 0L; // 默认门店
+        }
         String token = jwtUtil.generateToken(employee.getId(), employee.getName(), "employee", tenantId, storeId);
         String refreshToken = jwtUtil.generateToken(employee.getId(), employee.getName(), "employee", tenantId, storeId);
 

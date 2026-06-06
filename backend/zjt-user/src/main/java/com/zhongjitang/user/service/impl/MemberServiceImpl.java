@@ -218,7 +218,13 @@ public class MemberServiceImpl implements IMemberService {
 
     private LoginResponse buildLoginResponse(UserMemberDO member) {
         Long tenantId = TenantContext.getTenantId();
+        if (tenantId == null) {
+            tenantId = 1L; // 默认租户
+        }
         Long storeId = TenantContext.getStoreId();
+        if (storeId == null) {
+            storeId = 0L; // 默认门店
+        }
         String token = jwtUtil.generateToken(member.getId(), member.getName(), "member", tenantId, storeId);
         String refreshToken = jwtUtil.generateToken(member.getId(), member.getName(), "member", tenantId, storeId);
 

@@ -18,7 +18,7 @@ public class UserMemberLevelDO extends BaseDO {
     private String levelCode;
 
     @TableField("min_points")
-    private BigDecimal minSpent;
+    private Integer minPoints;
 
     @TableField(exist = false)
     private Integer minVisits;

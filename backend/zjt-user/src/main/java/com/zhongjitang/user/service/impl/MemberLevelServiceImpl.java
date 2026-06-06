@@ -23,8 +23,7 @@ public class MemberLevelServiceImpl implements IMemberLevelService {
     @Override
     public R<List<UserMemberLevelDO>> list() {
         LambdaQueryWrapper<UserMemberLevelDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserMemberLevelDO::getStatus, 1)
-                .orderByAsc(UserMemberLevelDO::getSortOrder);
+        wrapper.orderByAsc(UserMemberLevelDO::getSortOrder);
         List<UserMemberLevelDO> list = memberLevelMapper.selectList(wrapper);
         return R.ok(list);
     }
@@ -42,13 +41,11 @@ public class MemberLevelServiceImpl implements IMemberLevelService {
         UserMemberLevelDO level = new UserMemberLevelDO();
         level.setLevelName(request.getLevelName());
         level.setLevelCode(request.getLevelCode());
-        level.setMinSpent(request.getMinSpent());
-        level.setMinVisits(request.getMinVisits());
+        if (request.getMinSpent() != null) {
+            level.setMinPoints(request.getMinSpent().intValue());
+        }
         level.setDiscountRate(request.getDiscountRate());
-        level.setIconUrl(request.getIconUrl());
-        level.setColor(request.getColor());
         level.setSortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0);
-        level.setStatus(1);
         memberLevelMapper.insert(level);
         return R.ok();
     }
@@ -67,25 +64,13 @@ public class MemberLevelServiceImpl implements IMemberLevelService {
             level.setLevelCode(request.getLevelCode());
         }
         if (request.getMinSpent() != null) {
-            level.setMinSpent(request.getMinSpent());
-        }
-        if (request.getMinVisits() != null) {
-            level.setMinVisits(request.getMinVisits());
+            level.setMinPoints(request.getMinSpent().intValue());
         }
         if (request.getDiscountRate() != null) {
             level.setDiscountRate(request.getDiscountRate());
         }
-        if (request.getIconUrl() != null) {
-            level.setIconUrl(request.getIconUrl());
-        }
-        if (request.getColor() != null) {
-            level.setColor(request.getColor());
-        }
         if (request.getSortOrder() != null) {
             level.setSortOrder(request.getSortOrder());
-        }
-        if (request.getStatus() != null) {
-            level.setStatus(request.getStatus());
         }
 
         memberLevelMapper.updateById(level);
