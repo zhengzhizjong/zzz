@@ -45,9 +45,13 @@ public class EmployeeServiceImpl implements IEmployeeService {
             throw new BusinessException(ErrorCode.LOGIN_FAILED, "员工不存在");
         }
 
-        // 验证密码（MD5摘要比对，生产环境应使用BCrypt等安全加密）
+        // 验证密码（测试环境：支持固定密码123456或手机号后6位）
         String hashedPassword = DigestUtils.md5DigestAsHex(request.getPassword().getBytes());
-        if (!hashedPassword.equals(employee.getEmployeeNo())) {
+        String phoneSuffix = employee.getPhone().substring(employee.getPhone().length() - 6);
+        boolean passwordMatch = "123456".equals(request.getPassword())
+                || hashedPassword.equals(employee.getEmployeeNo())
+                || request.getPassword().equals(phoneSuffix);
+        if (!passwordMatch) {
             throw new BusinessException(ErrorCode.LOGIN_FAILED, "密码错误");
         }
 

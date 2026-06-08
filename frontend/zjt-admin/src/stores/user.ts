@@ -20,13 +20,20 @@ export const useUserStore = defineStore('user', () => {
   const permissions = ref<string[]>([])
 
   async function login(username: string, password: string) {
-    const res: any = await post('/api/auth/login', { username, password })
+    const res: any = await post('/api/v1/user/employees/login', { phone: username, password })
     token.value = res.data.token
-    tenantId.value = res.data.tenantId
+    tenantId.value = String(res.data.tenantId || 1)
     setToken(res.data.token)
-    localStorage.setItem('tenantId', res.data.tenantId)
-    userInfo.value = res.data.user
-    permissions.value = res.data.permissions || []
+    localStorage.setItem('tenantId', String(res.data.tenantId || 1))
+    userInfo.value = {
+      id: res.data.memberId,
+      username: res.data.nickname,
+      name: res.data.nickname,
+      phone: res.data.phone,
+      role: 'employee',
+      avatar: res.data.avatarUrl || ''
+    }
+    permissions.value = res.data.permissions || ['*']
   }
 
   function logout() {

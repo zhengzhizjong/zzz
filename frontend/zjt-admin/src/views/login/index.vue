@@ -4,7 +4,7 @@
       <h2 class="login-title">忠济堂·管理后台</h2>
       <el-form :model="loginForm" @submit.prevent="handleLogin">
         <el-form-item>
-          <el-input v-model="loginForm.username" placeholder="请输入用户名" prefix-icon="User" />
+          <el-input v-model="loginForm.username" placeholder="请输入手机号" prefix-icon="User" />
         </el-form-item>
         <el-form-item>
           <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" prefix-icon="Lock" show-password />
