@@ -86,24 +86,44 @@ public class MemberServiceImpl implements IMemberService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R<LoginResponse> login(MemberLoginRequest request) {
         // 验证验证码
         if (!smsService.verifyCode(request.getPhone(), request.getVerifyCode())) {
             throw new BusinessException(ErrorCode.LOGIN_FAILED, "验证码错误");
         }
 
-        // 通过手机号查找会员
+        // 通过手机号查找会员，不存在则自动注册
         LambdaQueryWrapper<UserMemberDO> memberWrapper = new LambdaQueryWrapper<>();
         memberWrapper.eq(UserMemberDO::getPhone, request.getPhone());
         UserMemberDO member = memberMapper.selectOne(memberWrapper);
         if (member == null) {
-            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND, "会员不存在，请先注册");
-        }
+            // 自动注册
+            member = new UserMemberDO();
+            member.setMemberNo(generateMemberNo());
+            member.setName("用户" + request.getPhone().substring(7));
+            member.setPhone(request.getPhone());
+            member.setMemberType(1);
+            member.setPoints(0);
+            member.setBalance(BigDecimal.ZERO);
+            member.setSource("phone");
+            member.setStatus(1);
+            memberMapper.insert(member);
 
-        // 更新最后访问时间
-        member.setLastVisitAt(LocalDateTime.now());
-        member.setTotalVisits(member.getTotalVisits() != null ? member.getTotalVisits() + 1 : 1);
-        memberMapper.updateById(member);
+            UserMemberAccountDO account = new UserMemberAccountDO();
+            account.setMemberId(member.getId());
+            account.setAccountType(2);
+            account.setBalance(BigDecimal.ZERO);
+            account.setFrozenAmount(BigDecimal.ZERO);
+            memberAccountMapper.insert(account);
+
+            log.info("会员自动注册: phone={}, memberNo={}", request.getPhone(), member.getMemberNo());
+        } else {
+            // 更新最后访问时间
+            member.setLastVisitAt(LocalDateTime.now());
+            member.setTotalVisits(member.getTotalVisits() != null ? member.getTotalVisits() + 1 : 1);
+            memberMapper.updateById(member);
+        }
 
         return R.ok(buildLoginResponse(member));
     }
