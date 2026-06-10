@@ -33,15 +33,16 @@
 
     <!-- 功能菜单 -->
     <div class="menu-card">
-      <van-cell title="我的订单" is-link @click="goPage('/order/list')" />
-      <van-cell title="我的预约" is-link @click="goPage('/my-appointment/list')" />
-      <van-cell title="健康档案" is-link @click="goPage('/health/profile')" />
-      <van-cell title="我的优惠券" is-link @click="goPage('/coupon/list')" />
-      <van-cell title="我的疗程卡" is-link @click="goPage('/treatment/list')" />
-      <van-cell title="个人信息编辑" is-link @click="goPage('/profile/edit')" />
-      <van-cell title="我的收藏" is-link @click="goPage('/collection/list')" />
-      <van-cell title="意见反馈" is-link @click="goPage('/feedback')" />
-      <van-cell title="关于我们" is-link @click="goPage('/about')" />
+      <van-cell title="我的预约" is-link @click="goPage('/my-appointment/list')" icon="calendar-o" />
+      <van-cell title="我的订单" is-link @click="goPage('/order/list')" icon="orders-o" />
+      <van-cell title="健康档案" is-link @click="goPage('/health/profile')" icon="like-o" />
+      <van-cell title="我的优惠券" is-link @click="goPage('/coupon/list')" icon="coupon-o" />
+      <van-cell title="我的疗程卡" is-link @click="goPage('/treatment/list')" icon="card-o" />
+      <van-cell title="服务项目" is-link @click="goPage('/service/list')" icon="shop-o" />
+    </div>
+    <div class="menu-card">
+      <van-cell title="个人信息编辑" is-link @click="goPage('/profile/edit')" icon="edit" />
+      <van-cell title="关于忠济堂" is-link @click="showAbout" icon="info-o" />
     </div>
 
     <!-- 退出登录 -->
@@ -104,6 +105,14 @@ function handleLogout() {
     userInfo.value = null
     showToast('已退出登录')
   }).catch(() => {})
+}
+
+function showAbout() {
+  showDialog({
+    title: '关于忠济堂',
+    message: '忠济堂·中医养生连锁管理系统\n\n传承中医精髓，守护健康人生\n\n版本：v1.0.0',
+    confirmButtonText: '知道了'
+  })
 }
 </script>
 

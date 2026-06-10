@@ -2,10 +2,10 @@
   <div class="step-technician-page">
     <!-- 步骤条 -->
     <van-steps :active="1" active-color="#07C160">
-      <van-step>选择门店</van-step>
-      <van-step>选择技师</van-step>
-      <van-step>选择时间</van-step>
-      <van-step>确认预约</van-step>
+      <van-step>选门店</van-step>
+      <van-step>选技师</van-step>
+      <van-step>选时间</van-step>
+      <van-step>确认</van-step>
     </van-steps>
 
     <!-- 已选门店 -->
@@ -22,32 +22,27 @@
     >
       <div class="no-tech-left">
         <div class="no-tech-avatar">👤</div>
-        <span class="no-tech-name">不指定技师</span>
+        <div class="no-tech-text">
+          <span class="no-tech-name">不指定技师（到店分配）</span>
+          <span class="no-tech-desc">到店后由门店为您安排技师</span>
+        </div>
       </div>
-      <van-icon v-if="selectedTechId === 0" name="success" color="#07C160" size="20" />
+      <van-icon v-if="selectedTechId === 0" name="success" color="#07C160" size="22" />
     </div>
 
     <!-- 技师列表 -->
     <div class="tech-list" v-if="!loading">
       <div
         class="tech-card"
-        :class="{
-          selected: selectedTechId === item.id,
-          full: item.isFull
-        }"
+        :class="{ selected: selectedTechId === item.id }"
         v-for="item in technicianList"
         :key="item.id"
         @click="onTechnicianTap(item)"
       >
-        <!-- 约满遮罩 -->
-        <div class="full-mask" v-if="item.isFull">
-          <span class="full-text">约满</span>
-        </div>
-
         <div class="tech-content">
           <div class="tech-left">
             <div class="avatar-wrap">
-              <van-image class="tech-avatar" round width="48" height="48" :src="item.avatarUrl || ''" fit="cover">
+              <van-image class="tech-avatar" round width="50" height="50" :src="item.avatarUrl || ''" fit="cover">
                 <template #error><div class="avatar-placeholder">👤</div></template>
               </van-image>
               <span class="online-dot" :class="item.onDuty ? 'online' : 'offline'"></span>
@@ -57,17 +52,20 @@
           <div class="tech-info">
             <div class="tech-name-row">
               <span class="tech-name">{{ item.name }}</span>
-              <van-tag v-if="item.levelName" type="success" size="medium">{{ item.levelName }}</van-tag>
+              <span class="tech-no" v-if="item.technicianNo">{{ item.technicianNo }}</span>
+              <van-tag v-if="item.levelName" type="success" size="medium" class="level-tag">{{ item.levelName }}</van-tag>
             </div>
-            <div class="tech-rating" v-if="item.rating">
-              <span class="rating-star">⭐</span>
-              <span class="rating-value">{{ item.rating }}</span>
+            <div class="tech-duty">
+              <span class="duty-dot" :class="item.onDuty ? 'on' : 'off'"></span>
+              <span class="duty-text">{{ item.onDuty ? '在岗' : '休息' }}</span>
             </div>
             <div class="tech-skills" v-if="item.skillTags && item.skillTags.length">
               <van-tag v-for="tag in item.skillTags" :key="tag" plain size="medium" type="primary">{{ tag }}</van-tag>
             </div>
           </div>
         </div>
+
+        <van-icon v-if="selectedTechId === item.id" name="success" color="#07C160" size="20" class="check-icon" />
       </div>
 
       <van-empty v-if="technicianList.length === 0" description="暂无技师信息" />
@@ -121,14 +119,19 @@ onMounted(() => {
 async function loadTechnicianList() {
   loading.value = true
   try {
-    const res: any = await getTechnicianList({ storeId: storeId.value })
+    const res: any = await getTechnicianList({ storeId: storeId.value, page: 1, pageSize: 50 })
     const list = res.data?.list || res.data || []
-    technicianList.value = list.map((item: any) => ({
-      ...item,
-      name: item.name || item.technicianNo || '技师',
-      levelName: item.levelName || skillLevelMap[item.skillLevel] || ''
-    }))
-  } catch {} finally {
+    technicianList.value = list
+      .map((item: any) => ({
+        ...item,
+        name: item.name || item.technicianNo || '技师',
+        levelName: item.levelName || skillLevelMap[item.skillLevel] || '',
+        skillTags: item.skillTags || item.skilledItems || []
+      }))
+      .sort((a: any, b: any) => (b.skillLevel || 0) - (a.skillLevel || 0))
+  } catch {
+    technicianList.value = []
+  } finally {
     loading.value = false
   }
 }
@@ -139,7 +142,6 @@ function onNoTechTap() {
 }
 
 function onTechnicianTap(item: any) {
-  if (item.isFull) return
   selectedTechId.value = item.id
   selectedTechName.value = item.name
   track('select_tech', { techId: item.id })
@@ -189,28 +191,44 @@ function track(event: string, extra?: Record<string, any>) {
   background: #fff;
   border-radius: 10px;
   border: 2px solid transparent;
+  transition: border-color 0.2s;
 
-  &.selected { border-color: #07C160; }
+  &.selected {
+    border-color: #07C160;
+    background: #f0faf4;
+  }
 
   .no-tech-left {
     display: flex;
     align-items: center;
 
     .no-tech-avatar {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #f0f0f0;
       border-radius: 50%;
-      font-size: 18px;
-      margin-right: 10px;
+      font-size: 20px;
+      margin-right: 12px;
     }
 
-    .no-tech-name {
-      font-size: 15px;
-      color: #303133;
+    .no-tech-text {
+      display: flex;
+      flex-direction: column;
+
+      .no-tech-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #303133;
+      }
+
+      .no-tech-desc {
+        font-size: 12px;
+        color: #909399;
+        margin-top: 2px;
+      }
     }
   }
 }
@@ -226,30 +244,10 @@ function track(event: string, extra?: Record<string, any>) {
   background: #fff;
   border-radius: 10px;
   border: 2px solid transparent;
+  transition: border-color 0.2s;
 
-  &.selected { border-color: #07C160; }
-  &.full { opacity: 0.6; }
-
-  .full-mask {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 60px;
-    height: 60px;
-    overflow: hidden;
-
-    .full-text {
-      position: absolute;
-      top: 8px;
-      right: -16px;
-      width: 80px;
-      text-align: center;
-      background: #fa5151;
-      color: #fff;
-      font-size: 11px;
-      padding: 2px 0;
-      transform: rotate(45deg);
-    }
+  &.selected {
+    border-color: #07C160;
   }
 
   .tech-content {
@@ -265,14 +263,14 @@ function track(event: string, extra?: Record<string, any>) {
       position: relative;
 
       .avatar-placeholder {
-        width: 48px;
-        height: 48px;
+        width: 50px;
+        height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
         background: #f0f0f0;
         border-radius: 50%;
-        font-size: 22px;
+        font-size: 24px;
       }
 
       .online-dot {
@@ -296,7 +294,7 @@ function track(event: string, extra?: Record<string, any>) {
     .tech-name-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 4px;
 
       .tech-name {
@@ -304,16 +302,36 @@ function track(event: string, extra?: Record<string, any>) {
         font-weight: 600;
         color: #303133;
       }
+
+      .tech-no {
+        font-size: 12px;
+        color: #909399;
+      }
+
+      .level-tag {
+        flex-shrink: 0;
+      }
     }
 
-    .tech-rating {
+    .tech-duty {
       display: flex;
       align-items: center;
       gap: 4px;
       margin: 4px 0;
 
-      .rating-star { font-size: 12px; }
-      .rating-value { font-size: 12px; color: #606266; }
+      .duty-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+
+        &.on { background: #07C160; }
+        &.off { background: #c0c4cc; }
+      }
+
+      .duty-text {
+        font-size: 12px;
+        color: #606266;
+      }
     }
 
     .tech-skills {
@@ -322,6 +340,12 @@ function track(event: string, extra?: Record<string, any>) {
       gap: 4px;
       margin-top: 6px;
     }
+  }
+
+  .check-icon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
   }
 }
 

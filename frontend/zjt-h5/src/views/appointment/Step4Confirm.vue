@@ -2,14 +2,15 @@
   <div class="step-confirm-page">
     <!-- 步骤条 -->
     <van-steps :active="3" active-color="#07C160">
-      <van-step>选择门店</van-step>
-      <van-step>选择技师</van-step>
-      <van-step>选择时间</van-step>
-      <van-step>确认预约</van-step>
+      <van-step>选门店</van-step>
+      <van-step>选技师</van-step>
+      <van-step>选时间</van-step>
+      <van-step>确认</van-step>
     </van-steps>
 
     <!-- 5分钟倒计时 -->
     <div class="countdown-bar" :class="{ warning: countdownWarning }">
+      <van-icon name="clock-o" size="16" />
       <span>请在 {{ countdownDisplay }} 内完成预约</span>
     </div>
 
@@ -17,30 +18,48 @@
     <div class="summary-card">
       <div class="summary-title">预约摘要</div>
 
-      <van-cell title="门店" :value="storeName || '--'" />
-      <van-cell title="技师" :value="techName || '--'" />
-      <van-cell title="日期" :value="date || '--'" />
-      <van-cell title="时段" :value="timeSlot || '--'" />
+      <div class="summary-row">
+        <span class="row-label">门店</span>
+        <span class="row-value">{{ storeName || '--' }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="row-label">技师</span>
+        <span class="row-value">{{ techName || '--' }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="row-label">日期</span>
+        <span class="row-value">{{ formatDate(date) }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="row-label">时段</span>
+        <span class="row-value highlight">{{ timeSlot || '--' }}</span>
+      </div>
+    </div>
 
-      <!-- 服务项目（可选） -->
-      <template v-if="serviceItems.length > 0">
-        <div class="service-section">
-          <van-cell title="项目" value="可选" value-class="optional-tag" />
-          <div class="service-list">
-            <div
-              class="service-item"
-              :class="{ selected: selectedServiceItemId === item.id }"
-              v-for="item in serviceItems"
-              :key="item.id"
-              @click="onServiceItemTap(item)"
-            >
-              <span class="service-name">{{ item.name }}</span>
-              <span class="service-price" v-if="item.price">¥{{ item.price }}</span>
-              <van-icon v-if="selectedServiceItemId === item.id" name="success" color="#07C160" />
-            </div>
+    <!-- 服务项目选择 -->
+    <div class="service-card" v-if="serviceItems.length > 0">
+      <div class="service-header">
+        <span class="service-title">服务项目</span>
+        <span class="service-optional">可选</span>
+      </div>
+      <div class="service-list">
+        <div
+          class="service-item"
+          :class="{ selected: selectedServiceItemId === item.id }"
+          v-for="item in serviceItems"
+          :key="item.id"
+          @click="onServiceItemTap(item)"
+        >
+          <div class="service-left">
+            <span class="service-name">{{ item.name }}</span>
+            <span class="service-duration" v-if="item.duration">{{ item.duration }}分钟</span>
+          </div>
+          <div class="service-right">
+            <span class="service-price" v-if="item.price">¥{{ item.price }}</span>
+            <van-icon v-if="selectedServiceItemId === item.id" name="success" color="#07C160" size="18" />
           </div>
         </div>
-      </template>
+      </div>
     </div>
 
     <!-- 确认预约按钮 -->
@@ -49,7 +68,7 @@
         type="primary"
         block
         round
-        :disabled="!storeId || !date || !timeSlot || !lockId || submitting"
+        :disabled="!canSubmit"
         :loading="submitting"
         loading-text="提交中..."
         @click="onSubmit"
@@ -61,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast, showDialog } from 'vant'
 import { createAppointment, trackFunnel } from '@/api/appointment'
@@ -90,6 +109,10 @@ const submitting = ref(false)
 
 let timer: ReturnType<typeof setInterval> | null = null
 
+const canSubmit = computed(() => {
+  return !!storeId.value && !!date.value && !!timeSlot.value && !!lockId.value && !submitting.value
+})
+
 onMounted(() => {
   storeId.value = (route.query.storeId as string) || ''
   storeName.value = decodeURIComponent((route.query.storeName as string) || '')
@@ -114,7 +137,18 @@ async function loadServiceItems() {
   try {
     const res: any = await getServiceItemList({ status: 1 })
     serviceItems.value = res.data || []
-  } catch {}
+  } catch {
+    serviceItems.value = []
+  }
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '--'
+  const d = new Date(dateStr)
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+  const month = (d.getMonth() + 1).toString().padStart(2, '0')
+  const day = d.getDate().toString().padStart(2, '0')
+  return `${month}月${day}日 周${weekDays[d.getDay()]}`
 }
 
 function startCountdown() {
@@ -122,6 +156,7 @@ function startCountdown() {
     const expireTime = new Date(expireAt.value).getTime()
     const remain = Math.max(0, Math.floor((expireTime - Date.now()) / 1000))
     countdown.value = remain
+    updateCountdownDisplay(remain)
   }
 
   timer = setInterval(() => {
@@ -134,15 +169,19 @@ function startCountdown() {
         title: '提示',
         message: '锁定已过期，请重新选择时段'
       }).then(() => {
-        router.back()
+        router.replace('/appointment/step3')
       })
     }
-    const minutes = Math.floor(val / 60).toString().padStart(2, '0')
-    const seconds = (val % 60).toString().padStart(2, '0')
     countdown.value = val
-    countdownDisplay.value = `${minutes}:${seconds}`
-    countdownWarning.value = val < 60
+    updateCountdownDisplay(val)
   }, 1000)
+}
+
+function updateCountdownDisplay(val: number) {
+  const minutes = Math.floor(val / 60).toString().padStart(2, '0')
+  const seconds = (val % 60).toString().padStart(2, '0')
+  countdownDisplay.value = `${minutes}:${seconds}`
+  countdownWarning.value = val < 60
 }
 
 function onServiceItemTap(item: any) {
@@ -189,7 +228,10 @@ function track(event: string, extra?: Record<string, any>) {
 }
 
 .countdown-bar {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 10px;
   background: #e6f9ee;
   color: #07C160;
@@ -206,44 +248,115 @@ function track(event: string, extra?: Record<string, any>) {
   margin: 12px;
   background: #fff;
   border-radius: 10px;
-  overflow: hidden;
+  padding: 16px;
 
   .summary-title {
-    padding: 14px 16px 8px;
     font-size: 16px;
     font-weight: 600;
     color: #303133;
+    margin-bottom: 12px;
   }
 
-  .optional-tag {
-    color: #909399;
-    font-size: 12px;
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f5f5f5;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .row-label {
+      font-size: 14px;
+      color: #909399;
+    }
+
+    .row-value {
+      font-size: 14px;
+      color: #303133;
+      font-weight: 500;
+
+      &.highlight {
+        color: #07C160;
+      }
+    }
   }
 }
 
-.service-section {
+.service-card {
+  margin: 0 12px 12px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+
+  .service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px 8px;
+
+    .service-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .service-optional {
+      font-size: 12px;
+      color: #909399;
+    }
+  }
+
   .service-list {
     padding: 0 16px 12px;
   }
 
   .service-item {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f5f5f5;
 
-    &:last-child { border-bottom: none; }
-
-    .service-name {
-      flex: 1;
-      font-size: 14px;
-      color: #303133;
+    &:last-child {
+      border-bottom: none;
     }
 
-    .service-price {
-      font-size: 14px;
-      color: #fa5151;
-      margin-right: 8px;
+    &.selected {
+      background: #f0faf4;
+      margin: 0 -16px;
+      padding: 10px 16px;
+      border-radius: 6px;
+    }
+
+    .service-left {
+      display: flex;
+      flex-direction: column;
+
+      .service-name {
+        font-size: 14px;
+        color: #303133;
+      }
+
+      .service-duration {
+        font-size: 12px;
+        color: #909399;
+        margin-top: 2px;
+      }
+    }
+
+    .service-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .service-price {
+        font-size: 14px;
+        color: #fa5151;
+        font-weight: 500;
+      }
     }
   }
 }

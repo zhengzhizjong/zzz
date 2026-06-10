@@ -1,11 +1,6 @@
 <template>
   <div class="technician-detail-page">
-    <!-- 导航栏 -->
-    <van-nav-bar
-      title="技师详情"
-      left-arrow
-      @click-left="router.back()"
-    />
+    <van-nav-bar title="技师详情" left-arrow @click-left="router.back()" />
 
     <!-- 加载中 -->
     <div class="loading-wrap" v-if="loading">
@@ -17,26 +12,30 @@
 
     <!-- 技师信息 -->
     <template v-if="!loading && technician">
-      <!-- 技师基本信息卡片 -->
+      <!-- 基本信息卡片 -->
       <div class="profile-card">
         <div class="profile-top">
           <div class="avatar-wrap">
-            <van-image class="tech-avatar" round width="72" height="72" :src="technician.avatarUrl || ''" fit="cover">
-              <template #error><div class="avatar-placeholder">👤</div></template>
-            </van-image>
-            <span class="online-dot" :class="technician.onDuty ? 'online' : 'offline'"></span>
+            <div class="avatar-placeholder" :style="{ background: levelBgColor(technician.skillLevel) }">
+              <span class="level-icon">{{ levelIcon(technician.skillLevel) }}</span>
+            </div>
+            <span class="duty-dot" :class="technician.onDuty ? 'on' : 'off'"></span>
           </div>
           <div class="profile-info">
             <div class="name-row">
-              <span class="tech-name">{{ technician.name || technician.technicianNo || '技师' }}</span>
-              <van-tag v-if="skillLevelText" type="success" size="medium">{{ skillLevelText }}</van-tag>
+              <span class="tech-name">技师{{ techDisplayName }}</span>
+              <van-tag :color="levelColor(technician.skillLevel)" size="medium" text-color="#fff">
+                {{ levelLabel(technician.skillLevel) }}
+              </van-tag>
             </div>
-            <div class="rating-row" v-if="technician.rating">
-              <van-rate v-model="technician.rating" :size="14" color="#07C160" void-color="#eee" readonly allow-half />
-              <span class="rating-value">{{ technician.rating }}</span>
+            <div class="duty-status">
+              <span class="duty-indicator" :class="technician.onDuty ? 'on' : 'off'"></span>
+              <span :class="technician.onDuty ? 'duty-text-on' : 'duty-text-off'">
+                {{ technician.onDuty ? '在岗' : '休息中' }}
+              </span>
             </div>
             <div class="store-name" v-if="technician.storeName" @click="onStoreTap">
-              <van-icon name="shop-o" />
+              <van-icon name="shop-o" size="14" color="#07C160" />
               <span>{{ technician.storeName }}</span>
               <van-icon name="arrow" size="12" color="#c0c4cc" />
             </div>
@@ -44,7 +43,7 @@
         </div>
       </div>
 
-      <!-- 技能标签卡片 -->
+      <!-- 擅长项目卡片 -->
       <div class="skills-card" v-if="skillTags.length">
         <div class="card-title">擅长项目</div>
         <div class="skill-tags">
@@ -53,14 +52,17 @@
             :key="tag"
             plain
             size="large"
-            type="primary"
+            color="#07C160"
+            text-color="#07C160"
           >{{ tag }}</van-tag>
         </div>
       </div>
 
       <!-- 底部预约按钮 -->
       <div class="bottom-bar">
-        <van-button type="primary" block round @click="onBookNow">预约该技师</van-button>
+        <van-button type="primary" block round color="#07C160" @click="onBookNow">
+          预约该技师
+        </van-button>
       </div>
     </template>
   </div>
@@ -78,16 +80,23 @@ const route = useRoute()
 const technician = ref<any>(null)
 const loading = ref(true)
 
-const SKILL_LEVEL_MAP: Record<number, string> = {
-  1: '初级',
-  2: '中级',
-  3: '高级',
-  4: '专家'
-}
+// 技能等级配置
+const LEVEL_MAP: Record<number, string> = { 1: '初级', 2: '中级', 3: '高级', 4: '资深', 5: '首席' }
+const LEVEL_COLOR: Record<number, string> = { 1: '#909399', 2: '#07C160', 3: '#1989fa', 4: '#E6A23C', 5: '#F56C6C' }
+const LEVEL_ICON: Record<number, string> = { 1: '★', 2: '★★', 3: '★★★', 4: '★★★★', 5: '★★★★★' }
 
-const skillLevelText = computed(() => {
-  if (!technician.value) return ''
-  return SKILL_LEVEL_MAP[technician.value.skillLevel] || ''
+function levelLabel(level: number) { return LEVEL_MAP[level] || '未知' }
+function levelColor(level: number) { return LEVEL_COLOR[level] || '#909399' }
+function levelBgColor(level: number) {
+  const c = LEVEL_COLOR[level] || '#909399'
+  return c + '18'
+}
+function levelIcon(level: number) { return LEVEL_ICON[level] || '★' }
+
+const techDisplayName = computed(() => {
+  if (!technician.value?.techNo) return ''
+  const no = String(technician.value.techNo)
+  return no.length > 4 ? no.slice(-4) : no
 })
 
 const skillTags = computed(() => {
@@ -95,7 +104,7 @@ const skillTags = computed(() => {
   const items = technician.value.skilledItems
   if (!items) return []
   if (Array.isArray(items)) return items
-  if (typeof items === 'string') return items.split(',').filter((s: string) => s.trim())
+  if (typeof items === 'string') return items.split(',').map((s: string) => s.trim()).filter(Boolean)
   return []
 })
 
@@ -122,7 +131,7 @@ async function loadTechnicianDetail(id: string) {
 
 function onStoreTap() {
   if (!technician.value?.storeId) return
-  router.push({ path: `/store/detail/${technician.value.storeId}` })
+  router.push(`/store/detail/${technician.value.storeId}`)
 }
 
 function onBookNow() {
@@ -135,8 +144,9 @@ function onBookNow() {
     path: '/appointment/step3',
     query: {
       storeId: String(technician.value.storeId || ''),
+      storeName: encodeURIComponent(technician.value.storeName || ''),
       techId: String(technician.value.id),
-      techName: encodeURIComponent(technician.value.name || '')
+      techName: encodeURIComponent('技师' + (techDisplayName.value || ''))
     }
   })
 }
@@ -157,7 +167,7 @@ function onBookNow() {
 
 .profile-card {
   margin: 10px 12px;
-  padding: 20px 14px;
+  padding: 20px 16px;
   background: #fff;
   border-radius: 10px;
 
@@ -177,12 +187,16 @@ function onBookNow() {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f0f0f0;
       border-radius: 50%;
-      font-size: 32px;
+
+      .level-icon {
+        font-size: 16px;
+        letter-spacing: -3px;
+        line-height: 1;
+      }
     }
 
-    .online-dot {
+    .duty-dot {
       position: absolute;
       bottom: 4px;
       right: 4px;
@@ -191,8 +205,8 @@ function onBookNow() {
       border-radius: 50%;
       border: 2px solid #fff;
 
-      &.online { background: #07C160; }
-      &.offline { background: #c0c4cc; }
+      &.on { background: #07C160; }
+      &.off { background: #c0c4cc; }
     }
   }
 
@@ -203,7 +217,7 @@ function onBookNow() {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
 
       .tech-name {
         font-size: 18px;
@@ -212,16 +226,29 @@ function onBookNow() {
       }
     }
 
-    .rating-row {
+    .duty-status {
       display: flex;
       align-items: center;
       gap: 6px;
       margin-bottom: 8px;
 
-      .rating-value {
-        font-size: 14px;
-        color: #606266;
-        font-weight: 500;
+      .duty-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+
+        &.on { background: #07C160; }
+        &.off { background: #c0c4cc; }
+      }
+
+      .duty-text-on {
+        font-size: 13px;
+        color: #07C160;
+      }
+
+      .duty-text-off {
+        font-size: 13px;
+        color: #909399;
       }
     }
 
@@ -229,7 +256,7 @@ function onBookNow() {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      font-size: 13px;
+      font-size: 14px;
       color: #07C160;
       cursor: pointer;
     }
@@ -238,7 +265,7 @@ function onBookNow() {
 
 .skills-card {
   margin: 10px 12px;
-  padding: 14px;
+  padding: 16px;
   background: #fff;
   border-radius: 10px;
 
@@ -246,7 +273,7 @@ function onBookNow() {
     font-size: 16px;
     font-weight: 600;
     color: #303133;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   .skill-tags {

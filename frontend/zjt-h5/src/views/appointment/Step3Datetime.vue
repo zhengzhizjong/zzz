@@ -2,10 +2,10 @@
   <div class="step-datetime-page">
     <!-- 步骤条 -->
     <van-steps :active="2" active-color="#07C160">
-      <van-step>选择门店</van-step>
-      <van-step>选择技师</van-step>
-      <van-step>选择时间</van-step>
-      <van-step>确认预约</van-step>
+      <van-step>选门店</van-step>
+      <van-step>选技师</van-step>
+      <van-step>选时间</van-step>
+      <van-step>确认</van-step>
     </van-steps>
 
     <!-- 已选门店和技师 -->
@@ -37,21 +37,26 @@
     </div>
 
     <!-- 时段网格 -->
-    <div class="slots-section" v-if="!loading">
+    <div class="slots-section" v-if="!slotsLoading">
       <div class="slots-grid">
         <div
           class="slot-item"
           :class="{
             occupied: item.occupied,
-            selected: selectedTimeSlot === item.timeSlot
+            selected: selectedTimeSlot === item.timeSlot,
+            locking: lockingSlot === item.timeSlot
           }"
           v-for="item in timeSlots"
           :key="item.timeSlot"
           @click="onSlotTap(item)"
         >
           <template v-if="item.occupied">
-            <span class="slot-lock">🔒</span>
-            <span class="slot-text occupied-text">已约</span>
+            <van-icon name="lock" size="14" color="#c0c4cc" />
+            <span class="slot-text occupied-text">{{ item.timeSlot }}</span>
+          </template>
+          <template v-else-if="lockingSlot === item.timeSlot">
+            <van-loading size="16" color="#07C160" />
+            <span class="slot-text">锁定中</span>
           </template>
           <template v-else>
             <span class="slot-text">{{ item.timeSlot }}</span>
@@ -63,13 +68,13 @@
     </div>
 
     <!-- 加载中 -->
-    <div class="loading-wrap" v-if="loading">
-      <van-loading size="24px">加载中...</van-loading>
+    <div class="loading-wrap" v-if="slotsLoading">
+      <van-loading size="24px">加载时段...</van-loading>
     </div>
 
     <!-- 提示文字 -->
     <div class="slot-tip">
-      <span>选中时段后请在5分钟内完成预约</span>
+      <span>点击可用时段将自动锁定，请在5分钟内完成预约</span>
     </div>
   </div>
 </template>
@@ -93,7 +98,8 @@ const dates = ref<any[]>([])
 const selectedDate = ref('')
 const timeSlots = ref<any[]>([])
 const selectedTimeSlot = ref('')
-const loading = ref(true)
+const slotsLoading = ref(true)
+const lockingSlot = ref('')
 
 onMounted(() => {
   storeId.value = (route.query.storeId as string) || ''
@@ -131,12 +137,13 @@ function onDateTap(date: string) {
   if (selectedDate.value === date) return
   selectedDate.value = date
   selectedTimeSlot.value = ''
+  lockingSlot.value = ''
   timeSlots.value = []
   loadTimeSlots(date)
 }
 
 async function loadTimeSlots(date: string) {
-  loading.value = true
+  slotsLoading.value = true
   try {
     const res: any = await getAvailableSlots({
       storeId: storeId.value,
@@ -144,19 +151,21 @@ async function loadTimeSlots(date: string) {
       date
     })
     timeSlots.value = res.data || []
-  } catch {} finally {
-    loading.value = false
+  } catch {
+    timeSlots.value = []
+  } finally {
+    slotsLoading.value = false
   }
 }
 
 async function onSlotTap(item: any) {
   if (item.occupied) return
+  if (lockingSlot.value) return // 正在锁定其他时段
 
   selectedTimeSlot.value = item.timeSlot
+  lockingSlot.value = item.timeSlot
   track('select_time', { date: selectedDate.value, timeSlot: item.timeSlot })
 
-  // 锁定时段
-  showLoadingToast({ message: '锁定时段中...', forbidClick: true })
   try {
     const res: any = await lockTemp({
       storeId: storeId.value,
@@ -164,9 +173,10 @@ async function onSlotTap(item: any) {
       date: selectedDate.value,
       timeSlot: item.timeSlot
     })
-    closeToast()
     const lockId = res.data?.lockId || ''
     const expireAt = res.data?.expireAt || ''
+    lockingSlot.value = ''
+
     router.push({
       path: '/appointment/step4',
       query: {
@@ -182,8 +192,9 @@ async function onSlotTap(item: any) {
       }
     })
   } catch {
-    closeToast()
-    showToast('时段锁定失败，请重试')
+    lockingSlot.value = ''
+    selectedTimeSlot.value = ''
+    showToast('时段锁定失败，请选择其他时段')
   }
 }
 
@@ -234,6 +245,7 @@ function track(event: string, extra?: Record<string, any>) {
     border-radius: 8px;
     background: #f5f5f5;
     cursor: pointer;
+    transition: all 0.2s;
 
     &.selected {
       background: #07C160;
@@ -265,17 +277,28 @@ function track(event: string, extra?: Record<string, any>) {
 }
 
 .slot-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 12px 8px;
   text-align: center;
   border-radius: 8px;
   background: #fff;
   border: 1px solid #e4e7ed;
   cursor: pointer;
+  transition: all 0.2s;
+  min-height: 52px;
 
   &.selected {
     background: #07C160;
     border-color: #07C160;
     color: #fff;
+  }
+
+  &.locking {
+    border-color: #07C160;
+    background: #f0faf4;
   }
 
   &.occupied {
@@ -284,14 +307,15 @@ function track(event: string, extra?: Record<string, any>) {
     cursor: not-allowed;
   }
 
-  .slot-lock { font-size: 12px; }
-
   .slot-text {
     display: block;
     font-size: 14px;
     margin-top: 2px;
 
-    &.occupied-text { color: #c0c4cc; font-size: 12px; }
+    &.occupied-text {
+      color: #c0c4cc;
+      font-size: 12px;
+    }
   }
 }
 

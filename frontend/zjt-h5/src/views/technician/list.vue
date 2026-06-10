@@ -1,127 +1,216 @@
 <template>
   <div class="technician-list-page">
-    <!-- 搜索栏 -->
     <van-sticky>
-      <van-search
-        v-model="keyword"
-        placeholder="搜索技师姓名"
-        shape="round"
-        @search="onSearch"
-        @clear="onSearch"
-      />
+      <van-nav-bar title="技师团队" left-arrow @click-left="router.back()" />
+
+      <!-- 技能等级筛选 -->
+      <div class="level-tabs">
+        <div
+          v-for="tab in levelTabs"
+          :key="tab.value"
+          class="level-tab"
+          :class="{ active: currentLevel === tab.value }"
+          @click="onLevelChange(tab.value)"
+        >{{ tab.label }}</div>
+      </div>
+
+      <!-- 门店筛选 -->
+      <van-dropdown-menu active-color="#07C160">
+        <van-dropdown-item v-model="currentStoreId" :options="storeOptions" @change="onStoreChange" />
+      </van-dropdown-menu>
     </van-sticky>
 
     <!-- 技师列表 -->
-    <div class="tech-list" v-if="!loading">
-      <div
-        class="tech-card"
-        :class="{ 'card-disabled': item.isFullyBooked }"
-        v-for="item in technicians"
-        :key="item.id"
-        @click="onTechnicianTap(item)"
-      >
-        <div class="tech-left">
-          <div class="avatar-wrap">
-            <van-image class="tech-avatar" round width="52" height="52" :src="item.avatarUrl || ''" fit="cover">
-              <template #error><div class="avatar-placeholder">👤</div></template>
-            </van-image>
-            <span class="online-dot" :class="item.isOnline !== false ? 'online' : 'offline'" v-if="!item.isFullyBooked"></span>
-          </div>
-        </div>
-
-        <div class="tech-info">
-          <div class="tech-header">
-            <span class="tech-name" :class="{ 'text-disabled': item.isFullyBooked }">{{ item.name }}</span>
-            <van-tag v-if="item.levelName" type="success" size="medium">{{ item.levelName }}</van-tag>
-          </div>
-
-          <div class="tech-rating" v-if="item.rating">
-            <van-rate v-model="item.rating" :size="12" color="#07C160" void-color="#eee" readonly allow-half />
-            <span class="rating-text">{{ item.rating }}</span>
+    <van-list
+      v-model:loading="listLoading"
+      :finished="finished"
+      finished-text="没有更多了"
+      @load="onLoad"
+    >
+      <div class="tech-list" v-if="technicians.length">
+        <div
+          class="tech-card"
+          v-for="item in technicians"
+          :key="item.id"
+          @click="onTechnicianTap(item)"
+        >
+          <div class="card-left">
+            <div class="avatar-wrap">
+              <div class="avatar-placeholder" :style="{ background: levelBgColor(item.skillLevel) }">
+                <span class="level-icon">{{ levelIcon(item.skillLevel) }}</span>
+              </div>
+              <span class="duty-dot" :class="item.onDuty ? 'on' : 'off'"></span>
+            </div>
           </div>
 
-          <div class="tech-skills" v-if="item.skillTags && item.skillTags.length">
-            <van-tag v-for="tag in item.skillTags" :key="tag" plain size="medium" type="primary">{{ tag }}</van-tag>
-          </div>
-        </div>
+          <div class="card-info">
+            <div class="info-header">
+              <span class="tech-name">技师{{ techDisplayName(item) }}</span>
+              <van-tag :color="levelColor(item.skillLevel)" size="medium" text-color="#fff">
+                {{ levelLabel(item.skillLevel) }}
+              </van-tag>
+            </div>
 
-        <!-- 约满遮罩 -->
-        <div class="fully-booked-mask" v-if="item.isFullyBooked">
-          <span class="fully-booked-text">约满</span>
+            <div class="info-store" v-if="item.storeName">
+              <van-icon name="shop-o" size="13" color="#909399" />
+              <span>{{ item.storeName }}</span>
+            </div>
+
+            <div class="info-skills" v-if="parseSkills(item.skilledItems).length">
+              <van-tag
+                v-for="skill in parseSkills(item.skilledItems)"
+                :key="skill"
+                plain
+                size="medium"
+                color="#07C160"
+                text-color="#07C160"
+              >{{ skill }}</van-tag>
+            </div>
+          </div>
+
+          <van-icon name="arrow" color="#c0c4cc" class="card-arrow" />
         </div>
       </div>
-    </div>
+    </van-list>
 
-    <!-- 加载中 -->
-    <div class="loading-wrap" v-if="loading">
+    <!-- 首次加载中 -->
+    <div class="loading-wrap" v-if="firstLoading">
       <van-loading size="24px">加载中...</van-loading>
     </div>
 
     <!-- 空状态 -->
-    <van-empty v-if="!loading && technicians.length === 0" description="暂无技师信息" />
+    <van-empty v-if="!firstLoading && !listLoading && technicians.length === 0" description="暂无技师信息" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { showToast } from 'vant'
+import { useRouter } from 'vue-router'
 import { getTechnicianList } from '@/api/technician'
+import { getStoreList } from '@/api/store'
 
 const router = useRouter()
-const route = useRoute()
 
+// 技能等级配置
+const LEVEL_MAP: Record<number, string> = { 1: '初级', 2: '中级', 3: '高级', 4: '资深', 5: '首席' }
+const LEVEL_COLOR: Record<number, string> = { 1: '#909399', 2: '#07C160', 3: '#1989fa', 4: '#E6A23C', 5: '#F56C6C' }
+const LEVEL_ICON: Record<number, string> = { 1: '★', 2: '★★', 3: '★★★', 4: '★★★★', 5: '★★★★★' }
+
+const levelTabs = [
+  { label: '全部', value: 0 },
+  { label: '初级', value: 1 },
+  { label: '中级', value: 2 },
+  { label: '高级', value: 3 },
+  { label: '资深', value: 4 },
+  { label: '首席', value: 5 }
+]
+
+// 状态
 const technicians = ref<any[]>([])
-const loading = ref(false)
-const keyword = ref('')
-const storeId = ref('')
+const currentLevel = ref(0)
+const currentStoreId = ref('')
+const storeOptions = ref<{ text: string; value: string }[]>([{ text: '全部门店', value: '' }])
+const listLoading = ref(false)
+const finished = ref(false)
+const firstLoading = ref(true)
+const page = ref(1)
+const pageSize = 10
 
-const SKILL_LEVEL_MAP: Record<number, string> = {
-  1: '初级',
-  2: '中级',
-  3: '高级',
-  4: '专家'
+function levelLabel(level: number) { return LEVEL_MAP[level] || '未知' }
+function levelColor(level: number) { return LEVEL_COLOR[level] || '#909399' }
+function levelBgColor(level: number) {
+  const c = LEVEL_COLOR[level] || '#909399'
+  return c + '18'
+}
+function levelIcon(level: number) { return LEVEL_ICON[level] || '★' }
+
+function techDisplayName(item: any) {
+  if (item.techNo) {
+    const no = String(item.techNo)
+    return no.length > 4 ? no.slice(-4) : no
+  }
+  return ''
 }
 
-onMounted(() => {
-  storeId.value = (route.query.storeId as string) || ''
-  loadTechnicianList()
-})
+function parseSkills(skilledItems: string | undefined) {
+  if (!skilledItems) return []
+  if (Array.isArray(skilledItems)) return skilledItems
+  return String(skilledItems).split(',').map((s: string) => s.trim()).filter(Boolean)
+}
 
-async function loadTechnicianList() {
-  loading.value = true
+// 加载门店列表
+async function loadStores() {
   try {
-    const params: Record<string, any> = { storeId: storeId.value }
-    if (keyword.value) params.keyword = keyword.value
+    const res: any = await getStoreList({ pageSize: 100 })
+    const list = res.data?.list || res.data || []
+    storeOptions.value = [
+      { text: '全部门店', value: '' },
+      ...list.map((s: any) => ({ text: s.name || s.storeName || '', value: String(s.id || s.storeId) }))
+    ]
+  } catch {}
+}
+
+// 加载技师列表
+async function loadList(reset = false) {
+  if (reset) {
+    page.value = 1
+    technicians.value = []
+    finished.value = false
+  }
+
+  listLoading.value = true
+  try {
+    const params: Record<string, any> = { page: page.value, pageSize }
+    if (currentLevel.value) params.skillLevel = currentLevel.value
+    if (currentStoreId.value) params.storeId = currentStoreId.value
 
     const res: any = await getTechnicianList(params)
-    const list = (res.data?.list || res.data || []).map((item: any) => ({
-      ...item,
-      name: item.name || item.technicianNo || '技师',
-      levelName: item.levelName || SKILL_LEVEL_MAP[item.skillLevel] || '',
-      isFullyBooked: item.isFullyBooked || false,
-      isOnline: item.isOnline !== false
-    }))
-    technicians.value = list
-  } catch {} finally {
-    loading.value = false
+    const list = res.data?.list || []
+    const total = res.data?.total || 0
+
+    if (reset) {
+      technicians.value = list
+    } else {
+      technicians.value = [...technicians.value, ...list]
+    }
+
+    // 排序：skillLevel 高→低，再按 storeName
+    technicians.value.sort((a: any, b: any) => {
+      const diff = (b.skillLevel || 0) - (a.skillLevel || 0)
+      if (diff !== 0) return diff
+      return String(a.storeName || '').localeCompare(String(b.storeName || ''))
+    })
+
+    finished.value = technicians.value.length >= total
+    page.value++
+  } catch {
+    finished.value = true
+  } finally {
+    listLoading.value = false
+    firstLoading.value = false
   }
 }
 
-function onSearch() {
-  loadTechnicianList()
+function onLoad() {
+  loadList()
+}
+
+function onLevelChange(val: number) {
+  currentLevel.value = val
+  loadList(true)
+}
+
+function onStoreChange() {
+  loadList(true)
 }
 
 function onTechnicianTap(item: any) {
-  if (item.isFullyBooked) {
-    showToast('该技师已约满')
-    return
-  }
-  router.push({
-    path: '/appointment/step3',
-    query: { storeId: storeId.value, techId: item.id }
-  })
+  router.push(`/technician/detail/${item.id}`)
 }
+
+onMounted(() => {
+  loadStores()
+})
 </script>
 
 <style scoped lang="scss">
@@ -130,24 +219,53 @@ function onTechnicianTap(item: any) {
   background: #f5f5f5;
 }
 
+.level-tabs {
+  display: flex;
+  background: #fff;
+  padding: 0 4px;
+  border-bottom: 1px solid #f0f0f0;
+
+  .level-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 13px;
+    color: #606266;
+    position: relative;
+    transition: color 0.2s;
+
+    &.active {
+      color: #07C160;
+      font-weight: 600;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 3px;
+        background: #07C160;
+        border-radius: 2px;
+      }
+    }
+  }
+}
+
 .tech-list {
   padding: 0 12px;
 }
 
 .tech-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   padding: 14px;
   margin-top: 10px;
   background: #fff;
   border-radius: 10px;
-  position: relative;
 
-  &.card-disabled {
-    opacity: 0.6;
-  }
-
-  .tech-left {
+  .card-left {
     margin-right: 12px;
     flex-shrink: 0;
 
@@ -160,12 +278,16 @@ function onTechnicianTap(item: any) {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f0f0f0;
         border-radius: 50%;
-        font-size: 24px;
+
+        .level-icon {
+          font-size: 12px;
+          letter-spacing: -2px;
+          line-height: 1;
+        }
       }
 
-      .online-dot {
+      .duty-dot {
         position: absolute;
         bottom: 2px;
         right: 2px;
@@ -174,16 +296,17 @@ function onTechnicianTap(item: any) {
         border-radius: 50%;
         border: 2px solid #fff;
 
-        &.online { background: #07C160; }
-        &.offline { background: #c0c4cc; }
+        &.on { background: #07C160; }
+        &.off { background: #c0c4cc; }
       }
     }
   }
 
-  .tech-info {
+  .card-info {
     flex: 1;
+    min-width: 0;
 
-    .tech-header {
+    .info-header {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -193,51 +316,28 @@ function onTechnicianTap(item: any) {
         font-size: 16px;
         font-weight: 600;
         color: #303133;
-
-        &.text-disabled { color: #c0c4cc; }
       }
     }
 
-    .tech-rating {
+    .info-store {
       display: flex;
       align-items: center;
-      gap: 4px;
-      margin: 4px 0;
-
-      .rating-text {
-        font-size: 12px;
-        color: #606266;
-      }
+      gap: 3px;
+      font-size: 12px;
+      color: #909399;
+      margin-bottom: 6px;
     }
 
-    .tech-skills {
+    .info-skills {
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
-      margin-top: 6px;
     }
   }
 
-  .fully-booked-mask {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 60px;
-    height: 60px;
-    overflow: hidden;
-
-    .fully-booked-text {
-      position: absolute;
-      top: 8px;
-      right: -16px;
-      width: 80px;
-      text-align: center;
-      background: #fa5151;
-      color: #fff;
-      font-size: 11px;
-      padding: 2px 0;
-      transform: rotate(45deg);
-    }
+  .card-arrow {
+    flex-shrink: 0;
+    margin-left: 8px;
   }
 }
 

@@ -1,11 +1,6 @@
 <template>
   <div class="store-detail-page">
-    <!-- 导航栏 -->
-    <van-nav-bar
-      title="门店详情"
-      left-arrow
-      @click-left="router.back()"
-    />
+    <van-nav-bar :title="store?.storeName || '门店详情'" left-arrow @click-left="router.back()" />
 
     <!-- 加载中 -->
     <div class="loading-wrap" v-if="loading">
@@ -15,65 +10,73 @@
     <!-- 空状态 -->
     <van-empty v-if="!loading && !store" description="门店信息不存在" />
 
-    <!-- 门店信息 -->
+    <!-- 门店详情内容 -->
     <template v-if="!loading && store">
-      <!-- 门店基本信息卡片 -->
+      <!-- 门店信息卡片 -->
       <div class="info-card">
         <div class="store-header">
-          <span class="store-name">{{ store.storeName || store.name }}</span>
+          <span class="store-name">{{ store.storeName }}</span>
           <van-tag :type="store.status === 1 ? 'success' : 'danger'" size="medium">
             {{ store.status === 1 ? '营业中' : '已打烊' }}
           </van-tag>
         </div>
 
-        <van-cell-group :border="false" class="info-group">
-          <van-cell title="地址" :label="store.address || '暂无地址信息'" icon="location-o" />
-          <van-cell title="营业时间" :label="businessHours" icon="clock-o" />
-          <van-cell title="联系电话" :label="store.contactPhone || '暂无'" icon="phone-o" />
-        </van-cell-group>
+        <div class="info-row">
+          <van-icon name="location-o" size="16" color="#07C160" />
+          <span class="info-text">{{ store.address || '暂无地址信息' }}</span>
+        </div>
+        <div class="info-row">
+          <van-icon name="clock-o" size="16" color="#07C160" />
+          <span class="info-text">{{ businessHours }}</span>
+        </div>
+        <div class="info-row" @click="onCallPhone">
+          <van-icon name="phone-o" size="16" color="#07C160" />
+          <span class="info-text phone-link">{{ store.contactPhone || '暂无' }}</span>
+        </div>
       </div>
 
-      <!-- 门店描述卡片 -->
-      <div class="desc-card" v-if="store.description">
-        <div class="card-title">门店介绍</div>
+      <!-- 地图占位区域 -->
+      <div class="map-placeholder" v-if="store.address">
+        <div class="map-inner">
+          <van-icon name="location-o" size="24" color="#07C160" />
+          <span class="map-address">{{ store.address }}</span>
+        </div>
+      </div>
+
+      <!-- 门店介绍 -->
+      <div class="section-card" v-if="store.description">
+        <div class="section-title">门店介绍</div>
         <div class="desc-content">{{ store.description }}</div>
       </div>
 
-      <!-- 门店技师列表卡片 -->
-      <div class="tech-card">
-        <div class="card-title">门店技师</div>
+      <!-- 门店技师 -->
+      <div class="section-card">
+        <div class="section-title">门店技师</div>
 
         <div class="loading-wrap" v-if="techLoading">
           <van-loading size="20px">加载中...</van-loading>
         </div>
 
         <template v-if="!techLoading">
-          <div
-            class="tech-item"
-            v-for="tech in technicians"
-            :key="tech.id"
-            @click="onTechnicianTap(tech)"
-          >
-            <div class="tech-left">
-              <van-image class="tech-avatar" round width="44" height="44" :src="tech.avatarUrl || ''" fit="cover">
-                <template #error><div class="avatar-placeholder">👤</div></template>
+          <div class="tech-scroll" v-if="technicians.length > 0">
+            <div
+              class="tech-card"
+              v-for="tech in technicians"
+              :key="tech.id"
+              @click="goTechnician(tech)"
+            >
+              <van-image class="tech-avatar" round width="56" height="56" :src="tech.avatarUrl || ''" fit="cover">
+                <template #error>
+                  <div class="avatar-placeholder">👤</div>
+                </template>
               </van-image>
-              <span class="online-dot" :class="tech.onDuty ? 'online' : 'offline'"></span>
+              <span class="tech-name">{{ tech.name || '技师' }}</span>
+              <van-tag v-if="skillLevelText(tech.skillLevel)" type="success" size="medium" plain>
+                {{ skillLevelText(tech.skillLevel) }}
+              </van-tag>
             </div>
-            <div class="tech-info">
-              <div class="tech-name-row">
-                <span class="tech-name">{{ tech.name }}</span>
-                <van-tag v-if="skillLevelText(tech.skillLevel)" type="success" size="medium">{{ skillLevelText(tech.skillLevel) }}</van-tag>
-              </div>
-              <div class="tech-rating" v-if="tech.rating">
-                <van-rate v-model="tech.rating" :size="12" color="#07C160" void-color="#eee" readonly allow-half />
-                <span class="rating-text">{{ tech.rating }}</span>
-              </div>
-            </div>
-            <van-icon name="arrow" color="#c0c4cc" />
           </div>
-
-          <van-empty v-if="technicians.length === 0" description="暂无技师信息" image="search" />
+          <van-empty v-else description="暂无技师信息" image="search" />
         </template>
       </div>
 
@@ -119,10 +122,10 @@ function skillLevelText(level: number) {
 }
 
 onMounted(() => {
-  const id = route.params.id || route.query.id
+  const id = route.params.id as string
   if (id) {
-    loadStoreDetail(id as string)
-    loadTechnicians(id as string)
+    loadStoreDetail(id)
+    loadTechnicians(id)
   } else {
     loading.value = false
   }
@@ -156,8 +159,13 @@ async function loadTechnicians(storeId: string) {
   }
 }
 
-function onTechnicianTap(tech: any) {
-  router.push({ path: `/technician/detail/${tech.id}` })
+function onCallPhone() {
+  if (!store.value?.contactPhone) return
+  window.location.href = `tel:${store.value.contactPhone}`
+}
+
+function goTechnician(tech: any) {
+  router.push(`/technician/detail/${tech.id}`)
 }
 
 function onBookNow() {
@@ -170,7 +178,7 @@ function onBookNow() {
     path: '/appointment/step2',
     query: {
       storeId: String(store.value.id),
-      storeName: encodeURIComponent(store.value.name)
+      storeName: store.value.storeName
     }
   })
 }
@@ -191,7 +199,7 @@ function onBookNow() {
 
 .info-card {
   margin: 10px 12px;
-  padding: 14px;
+  padding: 16px;
   background: #fff;
   border-radius: 10px;
 
@@ -199,119 +207,129 @@ function onBookNow() {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 14px;
 
     .store-name {
       font-size: 18px;
       font-weight: 600;
       color: #303133;
+      flex: 1;
+      margin-right: 8px;
     }
   }
 
-  .info-group {
-    margin-top: 4px;
+  .info-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+
+    .info-text {
+      font-size: 14px;
+      color: #606266;
+      margin-left: 8px;
+      flex: 1;
+    }
+
+    .phone-link {
+      color: #07C160;
+      text-decoration: underline;
+    }
   }
 }
 
-.desc-card {
+.map-placeholder {
   margin: 10px 12px;
-  padding: 14px;
-  background: #fff;
   border-radius: 10px;
-
-  .card-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #303133;
-    margin-bottom: 10px;
-  }
-
-  .desc-content {
-    font-size: 14px;
-    color: #606266;
-    line-height: 1.6;
-  }
-}
-
-.tech-card {
-  margin: 10px 12px;
-  padding: 14px;
-  background: #fff;
-  border-radius: 10px;
-
-  .card-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #303133;
-    margin-bottom: 10px;
-  }
-}
-
-.tech-item {
+  overflow: hidden;
+  background: #e8f5e9;
+  height: 120px;
   display: flex;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  justify-content: center;
 
-  &:last-child {
-    border-bottom: none;
+  .map-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    .map-address {
+      font-size: 13px;
+      color: #606266;
+      max-width: 260px;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+}
+
+.section-card {
+  margin: 10px 12px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 10px;
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
+    margin-bottom: 12px;
+  }
+}
+
+.desc-content {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.6;
+}
+
+.tech-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 
-  .tech-left {
-    position: relative;
-    margin-right: 12px;
+  .tech-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
     flex-shrink: 0;
 
+    .tech-avatar {
+      margin-bottom: 6px;
+    }
+
     .avatar-placeholder {
-      width: 44px;
-      height: 44px;
+      width: 56px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #f0f0f0;
       border-radius: 50%;
-      font-size: 20px;
+      font-size: 24px;
     }
 
-    .online-dot {
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-
-      &.online { background: #07C160; }
-      &.offline { background: #c0c4cc; }
-    }
-  }
-
-  .tech-info {
-    flex: 1;
-
-    .tech-name-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .tech-name {
+      font-size: 13px;
+      color: #303133;
+      font-weight: 500;
       margin-bottom: 4px;
-
-      .tech-name {
-        font-size: 15px;
-        font-weight: 600;
-        color: #303133;
-      }
-    }
-
-    .tech-rating {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      .rating-text {
-        font-size: 12px;
-        color: #606266;
-      }
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
     }
   }
 }
@@ -324,5 +342,11 @@ function onBookNow() {
   padding: 12px 16px;
   background: #fff;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 100;
+
+  :deep(.van-button--primary) {
+    background: #07C160;
+    border-color: #07C160;
+  }
 }
 </style>

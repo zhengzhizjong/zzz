@@ -80,14 +80,14 @@
       </div>
       <div class="tech-list" v-else-if="technicians.length > 0">
         <div class="tech-item" v-for="item in technicians" :key="item.id" @click="goTechnician(item.id)">
-          <van-image class="tech-avatar" round width="48" height="48" :src="item.avatarUrl || ''" fit="cover">
-            <template #error><div class="avatar-placeholder">👤</div></template>
-          </van-image>
+          <div class="tech-avatar-placeholder" :style="{background: item.levelColor || '#f0f0f0'}">
+            <span>{{ item.levelIcon || '⭐' }}</span>
+          </div>
           <div class="tech-info">
             <span class="tech-name">{{ item.name }}</span>
-            <span class="tech-level">{{ item.levelName || '' }}</span>
+            <span class="tech-level">{{ item.levelName || '' }} · {{ item.storeName || '' }}</span>
           </div>
-          <van-rate v-model="item.rating" :size="12" color="#07C160" void-color="#eee" readonly allow-half />
+          <van-tag v-if="item.onDuty" type="success" size="medium">在岗</van-tag>
         </div>
       </div>
       <van-empty v-else description="暂无技师信息" />
@@ -161,8 +161,10 @@ async function loadTechnicians() {
     const list = techRes.data?.list || techRes.data || []
     technicians.value = list.map((item: any) => ({
       ...item,
-      name: item.name || item.technicianNo || '技师',
-      levelName: item.levelName || SKILL_LEVEL_MAP[item.skillLevel] || ''
+      name: item.name || item.techNo || '技师',
+      levelName: item.levelName || SKILL_LEVEL_MAP[item.skillLevel] || '',
+      levelColor: SKILL_LEVEL_COLOR[item.skillLevel] || '#f0f0f0',
+      levelIcon: SKILL_LEVEL_ICON[item.skillLevel] || '⭐'
     }))
   } catch {
     technicians.value = []
@@ -175,7 +177,20 @@ const SKILL_LEVEL_MAP: Record<number, string> = {
   1: '初级',
   2: '中级',
   3: '高级',
-  4: '专家'
+  4: '资深',
+  5: '首席'
+}
+
+const SKILL_LEVEL_COLOR: Record<number, string> = {
+  1: 'rgba(144,147,153,0.15)',
+  2: 'rgba(7,193,96,0.15)',
+  3: 'rgba(25,137,250,0.15)',
+  4: 'rgba(230,162,60,0.15)',
+  5: 'rgba(245,108,108,0.15)'
+}
+
+const SKILL_LEVEL_ICON: Record<number, string> = {
+  1: '🌱', 2: '🌿', 3: '⭐', 4: '🏆', 5: '👑'
 }
 
 function goStore(id: number) {
@@ -349,15 +364,16 @@ function goTechnician(id: number) {
       flex-shrink: 0;
     }
 
-    .avatar-placeholder {
+    .tech-avatar-placeholder {
       width: 48px;
       height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f0f0f0;
       border-radius: 50%;
       font-size: 20px;
+      margin-right: 10px;
+      flex-shrink: 0;
     }
 
     .tech-info {
