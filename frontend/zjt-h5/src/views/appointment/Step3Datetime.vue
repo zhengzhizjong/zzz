@@ -160,7 +160,7 @@ async function onSlotTap(item: any) {
   try {
     const res: any = await lockTemp({
       storeId: storeId.value,
-      techId: techId.value,
+      technicianId: techId.value,
       date: selectedDate.value,
       timeSlot: item.timeSlot
     })

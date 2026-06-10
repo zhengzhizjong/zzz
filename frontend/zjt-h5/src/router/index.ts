@@ -19,10 +19,22 @@ const routes = [
     meta: { title: '门店列表' }
   },
   {
+    path: '/store/detail/:id',
+    name: 'StoreDetail',
+    component: () => import('@/views/store/detail.vue'),
+    meta: { title: '门店详情' }
+  },
+  {
     path: '/technician/list',
     name: 'TechnicianList',
     component: () => import('@/views/technician/list.vue'),
     meta: { title: '技师列表' }
+  },
+  {
+    path: '/technician/detail/:id',
+    name: 'TechnicianDetail',
+    component: () => import('@/views/technician/detail.vue'),
+    meta: { title: '技师详情' }
   },
   {
     path: '/appointment/step1',
@@ -95,6 +107,18 @@ const routes = [
     name: 'TreatmentList',
     component: () => import('@/views/treatment/list.vue'),
     meta: { title: '疗程卡', requireAuth: true }
+  },
+  {
+    path: '/service/list',
+    name: 'ServiceList',
+    component: () => import('@/views/service/list.vue'),
+    meta: { title: '服务项目' }
+  },
+  {
+    path: '/order/list',
+    name: 'OrderList',
+    component: () => import('@/views/order/list.vue'),
+    meta: { title: '我的订单', requireAuth: true }
   }
 ]
 

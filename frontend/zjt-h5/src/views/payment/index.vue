@@ -10,21 +10,21 @@
         <span class="amount-label">支付金额</span>
         <div class="amount-value">
           <span class="amount-symbol">¥</span>
-          <span class="amount-number">{{ orderInfo.amount || '0.00' }}</span>
+          <span class="amount-number">{{ orderInfo.payAmount || '0.00' }}</span>
         </div>
       </div>
 
       <!-- 订单信息 -->
       <div class="order-info">
         <van-cell title="门店" :value="orderInfo.storeName || '-'" />
-        <van-cell title="服务项目" :value="orderInfo.serviceName || '-'" />
+        <van-cell title="服务项目" :value="orderInfo.serviceItemName || '-'" />
         <van-cell title="订单号" :value="orderInfo.orderNo || '-'" />
-        <van-cell v-if="orderInfo.technicianName" title="技师" :value="orderInfo.technicianName" />
-        <van-cell v-if="orderInfo.appointmentTime" title="预约时间" :value="orderInfo.appointmentTime" />
+        <van-cell v-if="orderInfo.discountAmount > 0" title="优惠金额" :value="'¥' + orderInfo.discountAmount" />
+        <van-cell title="订单状态" :value="payStatusText" />
       </div>
 
       <!-- 支付按钮 -->
-      <div class="pay-action">
+      <div class="pay-action" v-if="orderInfo.payStatus !== 1">
         <van-button
           type="primary"
           block
@@ -33,39 +33,61 @@
           loading-text="支付中..."
           @click="handlePay"
         >
-          微信支付 ¥{{ orderInfo.amount || '0.00' }}
+          微信支付 ¥{{ orderInfo.payAmount || '0.00' }}
         </van-button>
+      </div>
+
+      <!-- 已支付提示 -->
+      <div class="pay-action" v-else>
+        <van-button type="success" block round disabled>已支付</van-button>
       </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast, showDialog } from 'vant'
-import { createPayment, getOrder } from '@/api/payment'
+import { createPayment, getPaymentByOrder } from '@/api/payment'
+import { getOrderDetail } from '@/api/order'
 
 const router = useRouter()
 
 const orderId = ref('')
 const orderInfo = ref<any>(null)
+const paymentInfo = ref<any>(null)
 const loading = ref(true)
 const paying = ref(false)
+let pollingTimer: ReturnType<typeof setInterval> | null = null
+
+const payStatusText = computed(() => {
+  if (!orderInfo.value) return '-'
+  const statusMap: Record<number, string> = { 0: '待支付', 1: '已支付', 2: '已取消' }
+  return statusMap[orderInfo.value.payStatus] || '未知'
+})
 
 onMounted(() => {
   const id = router.currentRoute.value.params.id as string
   if (id) {
     orderId.value = id
-    loadOrder(id)
+    loadData(id)
   }
 })
 
-async function loadOrder(id: string) {
+onUnmounted(() => {
+  stopPolling()
+})
+
+async function loadData(id: string) {
   loading.value = true
   try {
-    const res: any = await getOrder(id)
-    orderInfo.value = res.data || null
+    const [orderRes, paymentRes]: any[] = await Promise.all([
+      getOrderDetail(id),
+      getPaymentByOrder(id).catch(() => null)
+    ])
+    orderInfo.value = orderRes.data || null
+    paymentInfo.value = paymentRes?.data || null
   } catch {} finally {
     loading.value = false
   }
@@ -87,6 +109,9 @@ async function handlePay() {
     } else {
       showToast('支付功能暂未开放')
     }
+
+    // 开始轮询支付结果
+    startPolling()
   } catch {
     showDialog({
       title: '支付失败',
@@ -97,6 +122,33 @@ async function handlePay() {
     }).catch(() => {})
   } finally {
     paying.value = false
+  }
+}
+
+function startPolling() {
+  stopPolling()
+  pollingTimer = setInterval(async () => {
+    try {
+      const res: any = await getPaymentByOrder(orderId.value)
+      const payment = res.data
+      if (payment && payment.status === 1) {
+        stopPolling()
+        // 刷新订单信息
+        const orderRes: any = await getOrderDetail(orderId.value)
+        orderInfo.value = orderRes.data || null
+        paymentInfo.value = payment
+        showToast('支付成功')
+      }
+    } catch {
+      // 轮询失败不中断
+    }
+  }, 3000)
+}
+
+function stopPolling() {
+  if (pollingTimer) {
+    clearInterval(pollingTimer)
+    pollingTimer = null
   }
 }
 </script>

@@ -63,6 +63,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getMyCards, getCardUsageHistory } from '@/api/treatment'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const cards = ref<any[]>([])
 const loading = ref(false)
@@ -77,7 +80,9 @@ onMounted(() => {
 async function loadCards() {
   loading.value = true
   try {
-    const res: any = await getMyCards()
+    const memberId = userStore.userInfo?.id
+    if (!memberId) return
+    const res: any = await getMyCards(memberId)
     const list = (res.data || []).map((card: any) => {
       const total = card.totalCount || 0
       const remaining = card.remainingCount || 0

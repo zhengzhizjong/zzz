@@ -19,11 +19,3 @@ export function getProfile() {
 export function updateProfile(data: Record<string, any>) {
   return put('/api/v1/user/members/profile', data)
 }
-
-export function getHealthProfile() {
-  return get('/api/v1/user/members/health-profile')
-}
-
-export function updateHealthProfile(data: Record<string, any>) {
-  return put('/api/v1/user/members/health-profile', data)
-}

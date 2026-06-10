@@ -93,7 +93,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { showToast } from 'vant'
-import { getHealthProfile, updateHealthProfile } from '@/api/user'
+import { useRouter } from 'vue-router'
+import { getHealthProfile, createHealthProfile } from '@/api/health'
+import { useUserStore } from '@/stores/user'
+
+const router = useRouter()
+const userStore = useUserStore()
 
 const CONSTITUTION_MAP: Record<string, { name: string; color: string }> = {
   pinghe: { name: '平和质', color: '#07C160' },
@@ -119,12 +124,17 @@ const notes = ref('')
 const submitting = ref(false)
 
 onMounted(() => {
+  if (!userStore.isLogin || !userStore.userInfo?.id) {
+    router.replace({ path: '/login', query: { redirect: '/health/profile' } })
+    return
+  }
   loadHealthProfile()
 })
 
 async function loadHealthProfile() {
   try {
-    const res: any = await getHealthProfile()
+    const memberId = userStore.userInfo!.id
+    const res: any = await getHealthProfile(memberId)
     const data = res.data || {}
     constitutionType.value = data.constitutionType || ''
     const info = CONSTITUTION_MAP[data.constitutionType] || {}
@@ -142,7 +152,8 @@ async function onSubmit() {
   if (submitting.value) return
   submitting.value = true
   try {
-    await updateHealthProfile({
+    await createHealthProfile({
+      memberId: userStore.userInfo!.id,
       allergies: allergies.value,
       contraindications: contraindications.value,
       medicalHistory: medicalHistory.value,

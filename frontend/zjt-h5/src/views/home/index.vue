@@ -5,6 +5,13 @@
       <div class="header-content">
         <h1 class="title">忠济堂·中医养生</h1>
         <p class="subtitle">传承中医精髓 守护健康人生</p>
+        <div class="member-info" v-if="userStore.isLogin && userStore.userInfo">
+          <span class="member-name">{{ userStore.userInfo.name || userStore.userInfo.nickname || '用户' }}</span>
+          <span class="member-level" v-if="userStore.userInfo.levelName">{{ userStore.userInfo.levelName }}</span>
+        </div>
+        <div class="login-entry" v-else @click="$router.push('/login')">
+          <span>登录/注册</span>
+        </div>
       </div>
     </div>
 
@@ -23,15 +30,20 @@
       <div class="section-header">
         <span class="section-title">热门服务</span>
       </div>
-      <div class="service-list">
-        <div class="service-item" v-for="item in services" :key="item.name">
-          <div class="service-icon">{{ item.icon }}</div>
+      <div v-if="serviceLoading" style="text-align: center; padding: 20px 0;">
+        <van-loading size="24px">加载中...</van-loading>
+      </div>
+      <div class="service-list" v-else-if="services.length > 0">
+        <div class="service-item" v-for="item in services" :key="item.id">
+          <div class="service-icon">💆</div>
           <div class="service-info">
-            <span class="service-name">{{ item.name }}</span>
-            <span class="service-desc">{{ item.desc }}</span>
+            <span class="service-name">{{ item.itemName || item.name }}</span>
+            <span class="service-desc">{{ item.description || '' }}</span>
+            <span class="service-price" v-if="item.price">¥{{ item.price }}</span>
           </div>
         </div>
       </div>
+      <van-empty v-else description="暂无服务项目" />
     </div>
 
     <!-- 附近门店 -->
@@ -40,13 +52,16 @@
         <span class="section-title">附近门店</span>
         <span class="section-more" @click="$router.push('/store/list')">查看更多 ›</span>
       </div>
-      <div class="store-list" v-if="stores.length > 0">
+      <div v-if="storeLoading" style="text-align: center; padding: 20px 0;">
+        <van-loading size="24px">加载中...</van-loading>
+      </div>
+      <div class="store-list" v-else-if="stores.length > 0">
         <div class="store-item" v-for="item in stores" :key="item.id" @click="goStore(item.id)">
-          <div class="store-name">{{ item.name }}</div>
+          <div class="store-name">{{ item.storeName || item.name }}</div>
           <div class="store-address">{{ item.address || '暂无地址信息' }}</div>
           <div class="store-status">
-            <van-tag :type="item.businessStatus === 1 ? 'success' : 'danger'" size="medium">
-              {{ item.businessStatus === 1 ? '营业中' : '已打烊' }}
+            <van-tag :type="item.status === 1 ? 'success' : 'danger'" size="medium">
+              {{ item.status === 1 ? '营业中' : '已打烊' }}
             </van-tag>
           </div>
         </div>
@@ -60,7 +75,10 @@
         <span class="section-title">推荐技师</span>
         <span class="section-more" @click="$router.push('/technician/list')">查看更多 ›</span>
       </div>
-      <div class="tech-list" v-if="technicians.length > 0">
+      <div v-if="techLoading" style="text-align: center; padding: 20px 0;">
+        <van-loading size="24px">加载中...</van-loading>
+      </div>
+      <div class="tech-list" v-else-if="technicians.length > 0">
         <div class="tech-item" v-for="item in technicians" :key="item.id" @click="goTechnician(item.id)">
           <van-image class="tech-avatar" round width="48" height="48" :src="item.avatarUrl || ''" fit="cover">
             <template #error><div class="avatar-placeholder">👤</div></template>
@@ -85,39 +103,87 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getStoreList } from '@/api/store'
 import { getTechnicianList } from '@/api/technician'
+import { getServiceItemList } from '@/api/service'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
-const services = ref([
-  { name: '中医推拿', desc: '舒筋活络 缓解疲劳', icon: '💆' },
-  { name: '艾灸理疗', desc: '温经散寒 扶阳固本', icon: '🔥' },
-  { name: '拔罐养生', desc: '行气活血 祛风散寒', icon: '🫙' }
-])
-
+const services = ref<any[]>([])
 const stores = ref<any[]>([])
 const technicians = ref<any[]>([])
+
+const serviceLoading = ref(false)
+const storeLoading = ref(false)
+const techLoading = ref(false)
 
 onMounted(() => {
   loadHomeData()
 })
 
 async function loadHomeData() {
+  if (userStore.isLogin && !userStore.userInfo) {
+    userStore.fetchProfile()
+  }
+  loadServices()
+  loadStores()
+  loadTechnicians()
+}
+
+async function loadServices() {
+  serviceLoading.value = true
+  try {
+    const res: any = await getServiceItemList({ status: 1 })
+    services.value = res.data?.list || res.data || []
+  } catch {
+    services.value = []
+  } finally {
+    serviceLoading.value = false
+  }
+}
+
+async function loadStores() {
+  storeLoading.value = true
   try {
     const storeRes: any = await getStoreList({ page: 1, pageSize: 3 })
     stores.value = storeRes.data?.list || storeRes.data || []
-  } catch {}
+  } catch {
+    stores.value = []
+  } finally {
+    storeLoading.value = false
+  }
+}
+
+async function loadTechnicians() {
+  techLoading.value = true
   try {
     const techRes: any = await getTechnicianList({ page: 1, pageSize: 3 })
-    technicians.value = techRes.data?.list || techRes.data || []
-  } catch {}
+    const list = techRes.data?.list || techRes.data || []
+    technicians.value = list.map((item: any) => ({
+      ...item,
+      name: item.name || item.technicianNo || '技师',
+      levelName: item.levelName || SKILL_LEVEL_MAP[item.skillLevel] || ''
+    }))
+  } catch {
+    technicians.value = []
+  } finally {
+    techLoading.value = false
+  }
 }
 
-function goStore(_id: number) {
-  router.push(`/store/list`)
+const SKILL_LEVEL_MAP: Record<number, string> = {
+  1: '初级',
+  2: '中级',
+  3: '高级',
+  4: '专家'
 }
 
-function goTechnician(_id: number) {
-  router.push(`/technician/list`)
+function goStore(id: number) {
+  router.push(`/store/detail/${id}`)
+}
+
+function goTechnician(id: number) {
+  router.push(`/technician/detail/${id}`)
 }
 </script>
 
@@ -142,6 +208,35 @@ function goTechnician(_id: number) {
     font-size: 14px;
     opacity: 0.85;
     margin: 0;
+  }
+
+  .member-info {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .member-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .member-level {
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+  }
+
+  .login-entry {
+    margin-top: 10px;
+
+    span {
+      font-size: 14px;
+      opacity: 0.9;
+      cursor: pointer;
+    }
   }
 }
 

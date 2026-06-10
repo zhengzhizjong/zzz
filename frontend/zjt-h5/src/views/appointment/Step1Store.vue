@@ -27,16 +27,16 @@
         @click="onStoreTap(item)"
       >
         <div class="store-header">
-          <span class="store-name">{{ item.name }}</span>
-          <van-tag :type="item.businessStatus === 1 ? 'success' : 'danger'" size="medium">
-            {{ item.businessStatus === 1 ? '🟢 营业中' : '🔴 已打烊' }}
+          <span class="store-name">{{ item.storeName || item.name }}</span>
+          <van-tag :type="item.status === 1 ? 'success' : 'danger'" size="medium">
+            {{ item.status === 1 ? '🟢 营业中' : '🔴 已打烊' }}
           </van-tag>
         </div>
         <div class="store-info">
-          <span>📍 {{ item.address }}</span>
+          <span>📍 {{ item.address || '暂无地址信息' }}</span>
         </div>
         <div class="store-info">
-          <span>🕐 {{ item.businessHoursStart || '09:00' }} - {{ item.businessHoursEnd || '21:00' }}</span>
+          <span>🕐 {{ item.businessStartTime || '09:00' }} - {{ item.businessEndTime || '21:00' }}</span>
         </div>
         <van-icon v-if="selectedStoreId === item.id" name="success" color="#07C160" size="20" class="check-icon" />
       </div>
@@ -77,6 +77,8 @@ const loading = ref(true)
 const keyword = ref('')
 const selectedStoreId = ref<number | string>('')
 const sessionId = ref('')
+const currentPage = ref(1)
+const pageSize = 10
 
 onMounted(() => {
   sessionId.value = 'sid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
@@ -87,8 +89,12 @@ onMounted(() => {
 async function loadStoreList() {
   loading.value = true
   try {
-    const res: any = await getStoreList({ keyword: keyword.value })
-    storeList.value = res.data || []
+    const res: any = await getStoreList({
+      keyword: keyword.value,
+      page: currentPage.value,
+      pageSize
+    })
+    storeList.value = res.data?.list || res.data || []
   } catch {} finally {
     loading.value = false
   }
@@ -106,7 +112,7 @@ function onStoreTap(item: any) {
 function onNextStep() {
   if (!selectedStoreId.value) return
   const store = storeList.value.find(s => s.id === selectedStoreId.value)
-  const storeName = store ? store.name : ''
+  const storeName = store ? (store.storeName || store.name) : ''
   router.push({
     path: '/appointment/step2',
     query: {

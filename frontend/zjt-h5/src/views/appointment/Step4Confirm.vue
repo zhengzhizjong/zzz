@@ -64,7 +64,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast, showDialog } from 'vant'
-import { createAppointment, getAvailableSlots, trackFunnel } from '@/api/appointment'
+import { createAppointment, trackFunnel } from '@/api/appointment'
+import { getServiceItemList } from '@/api/service'
 
 const router = useRouter()
 const route = useRoute()
@@ -111,8 +112,8 @@ onUnmounted(() => {
 
 async function loadServiceItems() {
   try {
-    const res: any = await getAvailableSlots({ storeId: storeId.value, date: date.value })
-    serviceItems.value = res.data?.serviceItems || []
+    const res: any = await getServiceItemList({ status: 1 })
+    serviceItems.value = res.data || []
   } catch {}
 }
 
@@ -159,7 +160,7 @@ async function onSubmit() {
   try {
     await createAppointment({
       storeId: storeId.value,
-      techId: techId.value,
+      technicianId: techId.value,
       date: date.value,
       timeSlot: timeSlot.value,
       lockId: lockId.value,

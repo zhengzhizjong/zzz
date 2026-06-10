@@ -20,16 +20,16 @@
     >
       <div class="store-card" v-for="item in stores" :key="item.id" @click="onStoreTap(item)">
         <div class="store-header">
-          <span class="store-name">{{ item.name }}</span>
-          <van-tag :type="item.businessStatus === 1 ? 'success' : 'danger'" size="medium">
-            {{ item.businessStatus === 1 ? '营业中' : '已打烊' }}
+          <span class="store-name">{{ item.storeName || item.name }}</span>
+          <van-tag :type="item.status === 1 ? 'success' : 'danger'" size="medium">
+            {{ item.status === 1 ? '营业中' : '已打烊' }}
           </van-tag>
         </div>
         <div class="store-info">
           <span class="info-item">📍 {{ item.address || '暂无地址信息' }}</span>
         </div>
         <div class="store-info">
-          <span class="info-item">🕐 {{ item.businessHours || '暂无营业时间' }}</span>
+          <span class="info-item">🕐 {{ item.businessStartTime || '09:00' }} - {{ item.businessEndTime || '21:00' }}</span>
         </div>
       </div>
     </van-list>
@@ -81,7 +81,7 @@ function onSearch() {
 }
 
 function onStoreTap(item: any) {
-  router.push({ path: '/technician/list', query: { storeId: item.id } })
+  router.push(`/store/detail/${item.id}`)
 }
 </script>
 

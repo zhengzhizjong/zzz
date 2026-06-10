@@ -3,13 +3,13 @@
     <!-- 个人信息卡片 -->
     <div class="profile-card">
       <div class="avatar-wrapper">
-        <van-image class="avatar" round width="64" height="64" :src="userInfo?.avatar || ''" fit="cover">
+        <van-image class="avatar" round width="64" height="64" :src="userInfo?.avatarUrl || userInfo?.avatar || ''" fit="cover">
           <template #error><div class="avatar-placeholder">👤</div></template>
         </van-image>
       </div>
       <template v-if="isLogin">
         <div class="user-info">
-          <span class="nickname">{{ userInfo?.nickname || '忠济堂会员' }}</span>
+          <span class="nickname">{{ userInfo?.nickname || userInfo?.name || '忠济堂会员' }}</span>
           <van-tag v-if="userInfo?.levelName" type="success" size="medium">{{ userInfo.levelName }}</van-tag>
         </div>
       </template>
@@ -18,16 +18,30 @@
       </template>
     </div>
 
+    <!-- 积分/余额卡片 -->
+    <div class="stats-card" v-if="isLogin">
+      <div class="stat-item" @click="goPage('/coupon/list')">
+        <span class="stat-value">{{ userInfo?.points ?? '--' }}</span>
+        <span class="stat-label">积分</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">{{ userInfo?.balance != null ? '¥' + userInfo.balance : '--' }}</span>
+        <span class="stat-label">余额</span>
+      </div>
+    </div>
+
     <!-- 功能菜单 -->
     <div class="menu-card">
+      <van-cell title="我的订单" is-link @click="goPage('/order/list')" />
       <van-cell title="我的预约" is-link @click="goPage('/my-appointment/list')" />
       <van-cell title="健康档案" is-link @click="goPage('/health/profile')" />
       <van-cell title="我的优惠券" is-link @click="goPage('/coupon/list')" />
       <van-cell title="我的疗程卡" is-link @click="goPage('/treatment/list')" />
       <van-cell title="个人信息编辑" is-link @click="goPage('/profile/edit')" />
-      <van-cell title="我的收藏" is-link />
-      <van-cell title="意见反馈" is-link />
-      <van-cell title="关于我们" is-link />
+      <van-cell title="我的收藏" is-link @click="goPage('/collection/list')" />
+      <van-cell title="意见反馈" is-link @click="goPage('/feedback')" />
+      <van-cell title="关于我们" is-link @click="goPage('/about')" />
     </div>
 
     <!-- 退出登录 -->
@@ -130,6 +144,44 @@ function handleLogout() {
       font-weight: 600;
       margin-bottom: 4px;
     }
+  }
+}
+
+.stats-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -20px 12px 0;
+  padding: 20px 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index: 1;
+
+  .stat-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #303133;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #909399;
+    }
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 30px;
+    background: #e8e8e8;
   }
 }
 

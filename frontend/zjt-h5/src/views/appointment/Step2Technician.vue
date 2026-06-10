@@ -102,6 +102,14 @@ const selectedTechId = ref(0)
 const selectedTechName = ref('不指定')
 const sessionId = ref('')
 
+const skillLevelMap: Record<number, string> = {
+  1: '初级',
+  2: '中级',
+  3: '高级',
+  4: '资深',
+  5: '首席'
+}
+
 onMounted(() => {
   storeId.value = (route.query.storeId as string) || ''
   storeName.value = decodeURIComponent((route.query.storeName as string) || '')
@@ -114,7 +122,12 @@ async function loadTechnicianList() {
   loading.value = true
   try {
     const res: any = await getTechnicianList({ storeId: storeId.value })
-    technicianList.value = res.data || []
+    const list = res.data?.list || res.data || []
+    technicianList.value = list.map((item: any) => ({
+      ...item,
+      name: item.name || item.technicianNo || '技师',
+      levelName: item.levelName || skillLevelMap[item.skillLevel] || ''
+    }))
   } catch {} finally {
     loading.value = false
   }

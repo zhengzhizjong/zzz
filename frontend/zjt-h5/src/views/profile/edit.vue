@@ -13,8 +13,8 @@
     <!-- 表单 -->
     <div class="form-card">
       <van-cell-group inset>
-        <van-field v-model="nickname" label="昵称" placeholder="请输入昵称" />
-        <van-field v-model="realName" label="真实姓名" placeholder="请输入真实姓名" />
+        <van-field v-model="name" label="姓名" placeholder="请输入姓名" />
+        <van-field v-model="phone" label="手机号" readonly />
         <van-field
           v-model="genderText"
           is-link
@@ -31,7 +31,7 @@
           placeholder="请选择生日"
           @click="showBirthdayPicker = true"
         />
-        <van-field v-model="phone" label="手机号" readonly />
+        <van-field v-model="memberNo" label="会员编号" readonly />
       </van-cell-group>
     </div>
 
@@ -79,13 +79,13 @@ import { getProfile, updateProfile } from '@/api/user'
 
 const router = useRouter()
 
-const nickname = ref('')
-const realName = ref('')
+const name = ref('')
 const gender = ref(0)
 const genderText = ref('未设置')
 const birthday = ref('')
 const phone = ref('')
 const avatarUrl = ref('')
+const memberNo = ref('')
 const submitting = ref(false)
 
 const showGenderPicker = ref(false)
@@ -100,14 +100,16 @@ onMounted(() => {
 async function loadProfile() {
   try {
     const res: any = await getProfile()
-    const data = res.data || {}
-    nickname.value = data.nickname || ''
-    realName.value = data.realName || ''
-    gender.value = data.gender || 0
+    // 后端返回 {member: {...}, level: {...}}
+    const raw = res.data || {}
+    const data = raw.member || raw
+    name.value = data.name || data.realName || data.nickname || ''
+    gender.value = data.gender ?? 0
     genderText.value = genderOptions[data.gender]?.text || '未设置'
     birthday.value = data.birthday || ''
     phone.value = data.phone || ''
-    avatarUrl.value = data.avatar || ''
+    avatarUrl.value = data.avatarUrl || data.avatar || ''
+    memberNo.value = data.memberNo || ''
     if (data.birthday) {
       birthdayDate.value = data.birthday.split('-')
     }
@@ -146,16 +148,15 @@ function onBirthdayConfirm({ selectedValues }: any) {
 
 async function onSubmit() {
   if (submitting.value) return
-  if (!nickname.value.trim()) {
-    showToast('请输入昵称')
+  if (!name.value.trim()) {
+    showToast('请输入姓名')
     return
   }
 
   submitting.value = true
   try {
     await updateProfile({
-      nickname: nickname.value.trim(),
-      realName: realName.value.trim(),
+      name: name.value.trim(),
       gender: gender.value,
       birthday: birthday.value,
       avatar: avatarUrl.value

@@ -7,12 +7,20 @@ import router from '@/router'
 interface UserInfo {
   id: number
   nickname: string
+  name: string
   realName: string
   phone: string
   avatar: string
   gender: number
   birthday: string
   levelName: string
+  memberType: string
+  points: number
+  balance: number
+  constitutionType: string
+  memberNo: string
+  source: string
+  status: number
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -37,7 +45,9 @@ export const useUserStore = defineStore('user', () => {
   async function fetchProfile() {
     try {
       const res: any = await get('/api/v1/user/members/profile')
-      userInfo.value = res.data || null
+      // 后端返回 {member: {...}, level: {...}}
+      const data = res.data || {}
+      userInfo.value = data.member || data
     } catch {
       userInfo.value = null
     }

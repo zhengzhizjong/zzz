@@ -97,6 +97,7 @@ async function loadTechnicianList() {
     const res: any = await getTechnicianList(params)
     const list = (res.data?.list || res.data || []).map((item: any) => ({
       ...item,
+      name: item.name || item.technicianNo || '技师',
       levelName: item.levelName || SKILL_LEVEL_MAP[item.skillLevel] || '',
       isFullyBooked: item.isFullyBooked || false,
       isOnline: item.isOnline !== false
