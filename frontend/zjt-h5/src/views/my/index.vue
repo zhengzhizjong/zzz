@@ -94,6 +94,14 @@ function goPage(path: string) {
   router.push(path)
 }
 
+function showAbout() {
+  showDialog({
+    title: '关于忠济堂',
+    message: '忠济堂·中医养生连锁\n传承中医精髓 守护健康人生\n\n版本：v1.0.0',
+    confirmButtonText: '知道了'
+  })
+}
+
 function handleLogout() {
   showDialog({
     title: '提示',
@@ -105,14 +113,6 @@ function handleLogout() {
     userInfo.value = null
     showToast('已退出登录')
   }).catch(() => {})
-}
-
-function showAbout() {
-  showDialog({
-    title: '关于忠济堂',
-    message: '忠济堂·中医养生连锁管理系统\n\n传承中医精髓，守护健康人生\n\n版本：v1.0.0',
-    confirmButtonText: '知道了'
-  })
 }
 </script>
 
