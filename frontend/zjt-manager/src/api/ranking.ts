@@ -1,9 +1,9 @@
-import request from '@/utils/request'
+import { get } from '@/utils/request'
 
 export function getStoreRanking(params?: Record<string, any>) {
-  return request.get('/data/ranking', { params })
+  return get('/api/v1/data/ranking/store', { params })
 }
 
 export function getTechnicianRanking(params?: Record<string, any>) {
-  return request.get('/data/ranking/technicians', { params })
+  return get('/api/v1/data/ranking/technician', { params })
 }

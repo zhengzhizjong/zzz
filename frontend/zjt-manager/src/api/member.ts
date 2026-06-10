@@ -1,9 +1,9 @@
-import request from '@/utils/request'
+import { get } from '@/utils/request'
 
 export function getMemberList(params?: Record<string, any>) {
-  return request.get('/members', { params })
+  return get('/api/v1/user/members', { params })
 }
 
-export function getMemberDetail(id: string) {
-  return request.get(`/members/${id}`)
+export function getMemberDetail(id: number | string) {
+  return get(`/api/v1/user/members/${id}`)
 }

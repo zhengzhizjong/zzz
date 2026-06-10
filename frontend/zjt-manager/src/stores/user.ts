@@ -1,39 +1,46 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import request from '@/utils/request'
+import { post, get } from '@/utils/request'
 
 export const useUserStore = defineStore('user', () => {
-  const token = ref(localStorage.getItem('token') || '')
-  const userInfo = ref<Record<string, any>>({})
-  const storeId = ref(localStorage.getItem('storeId') || '')
+  const token = ref(localStorage.getItem('manager_token') || '')
+  const userInfo = ref<any>(null)
+  const storeId = ref(localStorage.getItem('manager_store_id') || '')
+  const isLogin = ref(!!localStorage.getItem('manager_token'))
 
-  async function login(username: string, password: string) {
-    const res: any = await request.post('/auth/login', { username, password, role: 'manager' })
+  async function login(phone: string, password: string) {
+    const res: any = await post('/api/v1/user/employees/login', { phone, password })
     token.value = res.data.token
-    userInfo.value = res.data.user
-    storeId.value = res.data.user?.storeId || ''
-    localStorage.setItem('token', res.data.token)
-    localStorage.setItem('storeId', storeId.value)
-    return res
+    isLogin.value = true
+    localStorage.setItem('manager_token', res.data.token)
+    if (res.data.storeId) {
+      storeId.value = String(res.data.storeId)
+      localStorage.setItem('manager_store_id', String(res.data.storeId))
+    }
+    return res.data
+  }
+
+  async function fetchProfile() {
+    try {
+      const res: any = await get('/api/v1/user/employees/profile')
+      userInfo.value = res.data
+      if (res.data?.storeId) {
+        storeId.value = String(res.data.storeId)
+        localStorage.setItem('manager_store_id', String(res.data.storeId))
+      }
+    } catch {
+      userInfo.value = null
+    }
   }
 
   function logout() {
     token.value = ''
-    userInfo.value = {}
+    userInfo.value = null
     storeId.value = ''
-    localStorage.removeItem('token')
-    localStorage.removeItem('storeId')
+    isLogin.value = false
+    localStorage.removeItem('manager_token')
+    localStorage.removeItem('manager_store_id')
   }
 
-  async function getUserInfo() {
-    const res: any = await request.get('/auth/me')
-    userInfo.value = res.data
-    if (res.data?.storeId) {
-      storeId.value = res.data.storeId
-      localStorage.setItem('storeId', res.data.storeId)
-    }
-    return res
-  }
-
-  return { token, userInfo, storeId, login, logout, getUserInfo }
+  return { token, userInfo, storeId, isLogin, login, fetchProfile, logout }
 })

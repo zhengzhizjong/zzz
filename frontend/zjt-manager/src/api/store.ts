@@ -1,9 +1,9 @@
-import request from '@/utils/request'
+import { get } from '@/utils/request'
 
-export function getStoreDetail(storeId: string) {
-  return request.get(`/stores/${storeId}`)
+export function getStoreDetail(id: number | string) {
+  return get(`/api/v1/store/stores/${id}`)
 }
 
 export function getStoreList(params?: Record<string, any>) {
-  return request.get('/stores', { params })
+  return get('/api/v1/store/stores', { params })
 }

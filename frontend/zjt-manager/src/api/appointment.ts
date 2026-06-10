@@ -1,17 +1,21 @@
-import request from '@/utils/request'
+import { get, put, post } from '@/utils/request'
 
 export function getAppointmentList(params?: Record<string, any>) {
-  return request.get('/appointments', { params })
+  return get('/api/v1/trade/appointments', { params })
 }
 
-export function modifyAppointment(id: string, data: Record<string, any>) {
-  return request.put(`/appointments/${id}`, data)
+export function getAppointmentDetail(id: number | string) {
+  return get(`/api/v1/trade/appointments/${id}`)
 }
 
-export function cancelAppointment(id: string) {
-  return request.put(`/appointments/${id}/cancel`)
+export function modifyAppointment(id: number | string, data: Record<string, any>) {
+  return put(`/api/v1/trade/appointments/${id}/modify`, data)
+}
+
+export function cancelAppointment(id: number | string, data?: Record<string, any>) {
+  return put(`/api/v1/trade/appointments/${id}/cancel`, data)
 }
 
 export function createAppointment(data: Record<string, any>) {
-  return request.post('/appointments', data)
+  return post('/api/v1/trade/appointments', data)
 }

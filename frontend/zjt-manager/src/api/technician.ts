@@ -1,17 +1,17 @@
-import request from '@/utils/request'
+import { get, put } from '@/utils/request'
 
 export function getTechnicianList(params?: Record<string, any>) {
-  return request.get('/technicians', { params })
+  return get('/api/v1/store/technicians', { params })
 }
 
-export function getTechnicianDetail(id: string) {
-  return request.get(`/technicians/${id}`)
+export function getTechnicianDetail(id: number | string) {
+  return get(`/api/v1/store/technicians/${id}`)
 }
 
-export function checkIn(id: string) {
-  return request.post(`/technicians/${id}/check-in`)
+export function checkIn(id: number | string) {
+  return put(`/api/v1/store/technicians/${id}/check-in`)
 }
 
-export function checkOut(id: string) {
-  return request.post(`/technicians/${id}/check-out`)
+export function checkOut(id: number | string) {
+  return put(`/api/v1/store/technicians/${id}/check-out`)
 }

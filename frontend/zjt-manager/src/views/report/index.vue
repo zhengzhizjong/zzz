@@ -71,7 +71,7 @@
         </div>
       </template>
       <div v-if="dailyReport" class="daily-report" v-html="dailyReport"></div>
-      <el-empty v-else description="点击"生成日报"获取AI智能分析" :image-size="80" />
+      <el-empty v-else description="点击生成日报获取AI智能分析" :image-size="80" />
     </el-card>
   </div>
 </template>
