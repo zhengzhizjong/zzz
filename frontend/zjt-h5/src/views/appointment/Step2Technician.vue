@@ -126,7 +126,7 @@ async function loadTechnicianList() {
         ...item,
         name: item.name || item.technicianNo || '技师',
         levelName: item.levelName || skillLevelMap[item.skillLevel] || '',
-        skillTags: item.skillTags || item.skilledItems || []
+        skillTags: parseSkilledItems(item.skilledItems)
       }))
       .sort((a: any, b: any) => (b.skillLevel || 0) - (a.skillLevel || 0))
   } catch {
@@ -134,6 +134,16 @@ async function loadTechnicianList() {
   } finally {
     loading.value = false
   }
+}
+
+function parseSkilledItems(skilledItems: any): string[] {
+  if (!skilledItems) return []
+  if (Array.isArray(skilledItems)) return skilledItems
+  try {
+    const parsed = JSON.parse(String(skilledItems))
+    if (Array.isArray(parsed)) return parsed
+  } catch {}
+  return String(skilledItems).split(',').map((s: string) => s.trim()).filter(Boolean)
 }
 
 function onNoTechTap() {

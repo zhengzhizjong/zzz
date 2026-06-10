@@ -174,11 +174,13 @@ function onBookNow() {
     showToast('该门店已打烊，暂时无法预约')
     return
   }
+  const sessionId = 'sid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
   router.push({
     path: '/appointment/step2',
     query: {
       storeId: String(store.value.id),
-      storeName: store.value.storeName
+      storeName: encodeURIComponent(store.value.storeName || ''),
+      sessionId
     }
   })
 }

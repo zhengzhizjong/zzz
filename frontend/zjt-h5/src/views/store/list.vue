@@ -157,7 +157,7 @@ async function fetchStores(isRefresh = false) {
       sortStoresByDistance()
     } else {
       // 没有位置信息时给每项加 _distanceNum 用于后续排序
-      stores.value.forEach((item, idx) => {
+      stores.value.forEach((item) => {
         if (item._distanceNum === undefined) item._distanceNum = Infinity
       })
     }

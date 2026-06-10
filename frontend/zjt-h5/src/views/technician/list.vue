@@ -135,6 +135,10 @@ function techDisplayName(item: any) {
 function parseSkills(skilledItems: string | undefined) {
   if (!skilledItems) return []
   if (Array.isArray(skilledItems)) return skilledItems
+  try {
+    const parsed = JSON.parse(String(skilledItems))
+    if (Array.isArray(parsed)) return parsed
+  } catch {}
   return String(skilledItems).split(',').map((s: string) => s.trim()).filter(Boolean)
 }
 

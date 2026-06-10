@@ -194,7 +194,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { showToast, showConfirmDialog } from 'vant'
+import { showToast } from 'vant'
 import {
   getMyAppointments,
   modifyAppointment,

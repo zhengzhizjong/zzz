@@ -176,11 +176,11 @@ async function handleClaimCoupon(item: any) {
   }
 }
 
-function handleBuyCard(item: any) {
+function handleBuyCard(_item: any) {
   showToast('购买功能开发中')
 }
 
-function handleBookService(item: any) {
+function handleBookService(_item: any) {
   router.push('/appointment/step1')
 }
 </script>

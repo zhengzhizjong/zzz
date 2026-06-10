@@ -104,8 +104,11 @@ const skillTags = computed(() => {
   const items = technician.value.skilledItems
   if (!items) return []
   if (Array.isArray(items)) return items
-  if (typeof items === 'string') return items.split(',').map((s: string) => s.trim()).filter(Boolean)
-  return []
+  try {
+    const parsed = JSON.parse(String(items))
+    if (Array.isArray(parsed)) return parsed
+  } catch {}
+  return String(items).split(',').map((s: string) => s.trim()).filter(Boolean)
 })
 
 onMounted(() => {
@@ -140,13 +143,15 @@ function onBookNow() {
     showToast('该技师暂不可预约')
     return
   }
+  const sessionId = 'sid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
   router.push({
     path: '/appointment/step3',
     query: {
       storeId: String(technician.value.storeId || ''),
       storeName: encodeURIComponent(technician.value.storeName || ''),
       techId: String(technician.value.id),
-      techName: encodeURIComponent('技师' + (techDisplayName.value || ''))
+      techName: encodeURIComponent('技师' + (techDisplayName.value || '')),
+      sessionId
     }
   })
 }

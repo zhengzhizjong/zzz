@@ -56,7 +56,7 @@
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-icon><UserFilled /></el-icon>
-              {{ userStore.userInfo.name || '店长' }}
+              {{ userStore.userInfo?.name || '店长' }}
               <el-icon><ArrowDown /></el-icon>
             </span>
             <template #dropdown>

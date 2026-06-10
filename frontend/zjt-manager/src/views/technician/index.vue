@@ -167,7 +167,7 @@ async function handleCheckOut(row: Record<string, any>) {
   loadData()
 }
 
-function handleViewSchedule(row: Record<string, any>) {
+function handleViewSchedule(_row: Record<string, any>) {
   // 模拟排班数据，实际应从API获取
   scheduleList.value = Array.from({ length: 7 }, (_, i) => {
     const d = new Date()

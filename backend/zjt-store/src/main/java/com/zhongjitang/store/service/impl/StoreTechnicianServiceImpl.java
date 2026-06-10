@@ -8,12 +8,15 @@ import com.zhongjitang.common.core.result.PageResult;
 import com.zhongjitang.common.core.result.R;
 import com.zhongjitang.store.domain.dto.TechnicianCreateRequest;
 import com.zhongjitang.store.domain.dto.TechnicianUpdateRequest;
+import com.zhongjitang.store.domain.entity.StoreInfoDO;
 import com.zhongjitang.store.domain.entity.StoreTechnicianDO;
 import com.zhongjitang.store.domain.vo.TechnicianPerformanceVO;
 import com.zhongjitang.store.domain.vo.TechnicianWorkspaceVO;
+import com.zhongjitang.store.mapper.StoreInfoMapper;
 import com.zhongjitang.store.mapper.StoreTechnicianMapper;
 import com.zhongjitang.store.service.IStoreTechnicianService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -30,6 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class StoreTechnicianServiceImpl implements IStoreTechnicianService {
 
     private final StoreTechnicianMapper storeTechnicianMapper;
+    private final StoreInfoMapper storeInfoMapper;
+    private final JdbcTemplate jdbcTemplate;
 
     private static final AtomicInteger SEQUENCE = new AtomicInteger(1);
 
@@ -56,6 +61,8 @@ public class StoreTechnicianServiceImpl implements IStoreTechnicianService {
         }
         wrapper.orderByDesc(StoreTechnicianDO::getCreatedAt);
         Page<StoreTechnicianDO> result = storeTechnicianMapper.selectPage(pageParam, wrapper);
+        // 填充关联字段
+        fillRelatedFields(result.getRecords());
         return R.ok(PageResult.of(result.getRecords(), result.getTotal(), page, pageSize));
     }
 
@@ -65,6 +72,8 @@ public class StoreTechnicianServiceImpl implements IStoreTechnicianService {
         if (technician == null) {
             throw new BusinessException(ErrorCode.TECHNICIAN_NOT_FOUND, "技师ID: " + id);
         }
+        // 填充关联字段
+        fillRelatedFields(List.of(technician));
         return R.ok(technician);
     }
 
@@ -222,5 +231,36 @@ public class StoreTechnicianServiceImpl implements IStoreTechnicianService {
             seq = 1;
         }
         return "T" + datePart + String.format("%04d", seq);
+    }
+
+    /**
+     * 填充技师的关联字段：姓名、头像、门店名称
+     */
+    private void fillRelatedFields(List<StoreTechnicianDO> technicians) {
+        for (StoreTechnicianDO tech : technicians) {
+            // 填充员工姓名
+            if (tech.getEmployeeId() != null) {
+                try {
+                    String sql = "SELECT name FROM user_employee WHERE id = ? AND is_deleted = 0";
+                    List<String> names = jdbcTemplate.queryForList(sql, String.class, tech.getEmployeeId());
+                    if (!names.isEmpty()) {
+                        tech.setName(names.get(0));
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+            // 填充门店名称
+            if (tech.getStoreId() != null) {
+                try {
+                    StoreInfoDO store = storeInfoMapper.selectById(tech.getStoreId());
+                    if (store != null) {
+                        tech.setStoreName(store.getStoreName());
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
     }
 }
