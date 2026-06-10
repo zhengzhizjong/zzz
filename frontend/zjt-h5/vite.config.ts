@@ -22,6 +22,10 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 3100,
+      host: '0.0.0.0',
+      hmr: {
+        port: 3100
+      },
       proxy: {
         '/api': { target: env.VITE_API_BASE_URL, changeOrigin: true }
       }
