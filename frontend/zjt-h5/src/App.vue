@@ -4,6 +4,8 @@
     <van-tabbar v-model="activeTab" route active-color="#07C160" inactive-color="#999" v-if="showTabBar">
       <van-tabbar-item to="/home" icon="home-o">首页</van-tabbar-item>
       <van-tabbar-item to="/appointment/step1" icon="calendar-o">预约</van-tabbar-item>
+      <van-tabbar-item to="/mall" icon="shop-o">商场</van-tabbar-item>
+      <van-tabbar-item to="/promotion" icon="gift-o">推广</van-tabbar-item>
       <van-tabbar-item to="/my" icon="user-o">我的</van-tabbar-item>
     </van-tabbar>
   </div>
@@ -23,7 +25,9 @@ const showTabBar = computed(() => {
 watch(() => route.path, (path) => {
   if (path.startsWith('/home')) activeTab.value = 0
   else if (path.startsWith('/appointment/step1')) activeTab.value = 1
-  else if (path.startsWith('/my')) activeTab.value = 2
+  else if (path.startsWith('/mall')) activeTab.value = 2
+  else if (path.startsWith('/promotion')) activeTab.value = 3
+  else if (path.startsWith('/my')) activeTab.value = 4
 }, { immediate: true })
 </script>
 

@@ -119,6 +119,18 @@ const routes = [
     name: 'OrderList',
     component: () => import('@/views/order/list.vue'),
     meta: { title: '我的订单', requireAuth: true }
+  },
+  {
+    path: '/mall',
+    name: 'Mall',
+    component: () => import('@/views/mall/index.vue'),
+    meta: { title: '商场', showTabBar: true }
+  },
+  {
+    path: '/promotion',
+    name: 'Promotion',
+    component: () => import('@/views/promotion/index.vue'),
+    meta: { title: '推广中心', showTabBar: true }
   }
 ]
 
