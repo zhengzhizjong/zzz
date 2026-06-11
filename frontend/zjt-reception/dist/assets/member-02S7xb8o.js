@@ -1,0 +1,1 @@
+import{g as r}from"./request-By7PDNyl.js";function a(e){return r("/api/v1/user/members",{params:e})}function i(e){return r(`/api/v1/user/members/${e}`)}function s(e){return r(`/api/v1/user/health-profiles/${e}`)}export{i as a,s as b,a as g};

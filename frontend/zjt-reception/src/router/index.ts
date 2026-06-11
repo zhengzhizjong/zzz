@@ -44,6 +44,24 @@ const router = createRouter({
           name: 'Member',
           component: () => import('@/views/member/index.vue'),
           meta: { title: '会员查询' }
+        },
+        {
+          path: 'member/detail/:id',
+          name: 'MemberDetail',
+          component: () => import('@/views/member/detail.vue'),
+          meta: { title: '会员详情' }
+        },
+        {
+          path: 'lead',
+          name: 'LeadList',
+          component: () => import('@/views/lead/index.vue'),
+          meta: { title: '线索管理' }
+        },
+        {
+          path: 'consultation',
+          name: 'Consultation',
+          component: () => import('@/views/consultation/index.vue'),
+          meta: { title: '咨询工作台' }
         }
       ]
     },

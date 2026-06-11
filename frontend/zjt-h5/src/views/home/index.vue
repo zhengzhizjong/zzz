@@ -3,8 +3,17 @@
     <!-- 顶部Banner -->
     <div class="header">
       <div class="header-content">
-        <h1 class="title">忠济堂·中医养生</h1>
-        <p class="subtitle">传承中医精髓 守护健康人生</p>
+        <div class="header-top">
+          <div>
+            <h1 class="title">忠济堂·中医养生</h1>
+            <p class="subtitle">传承中医精髓 守护健康人生</p>
+          </div>
+          <div class="header-actions">
+            <van-icon name="search" size="22" color="#fff" @click="$router.push('/search')" />
+            <van-icon name="bell" size="22" color="#fff" badge-dot @click="$router.push('/notification/list')" />
+            <van-icon name="service-o" size="22" color="#fff" @click="$router.push('/service/customer-service')" />
+          </div>
+        </div>
         <div class="member-info" v-if="userStore.isLogin && userStore.userInfo">
           <span class="member-name">{{ userStore.userInfo.name || userStore.userInfo.nickname || '用户' }}</span>
           <span class="member-level" v-if="userStore.userInfo.levelName">{{ userStore.userInfo.levelName }}</span>
@@ -18,10 +27,14 @@
     <!-- 快捷入口 -->
     <div class="quick-entry">
       <van-grid :column-num="4" :border="false">
-        <van-grid-item icon="shop-o" text="门店" to="/store/list" />
-        <van-grid-item icon="friends-o" text="技师" to="/technician/list" />
-        <van-grid-item icon="calendar-o" text="预约" to="/appointment/step1" />
-        <van-grid-item icon="coupon-o" text="优惠券" to="/coupon/list" />
+        <van-grid-item icon="chat-o" text="AI问诊" to="/ai/consultation" />
+        <van-grid-item icon="calendar-o" text="预约咨询" to="/appointment/step1" />
+        <van-grid-item icon="shop-o" text="门店导航" to="/store/list" />
+        <van-grid-item icon="gift-o" text="活动专区" to="/promotion" />
+        <van-grid-item icon="like-o" text="健康档案" to="/health/profile" />
+        <van-grid-item icon="bookmark-o" text="知识百科" to="/knowledge" />
+        <van-grid-item icon="medal-o" text="会员等级" to="/member/level" />
+        <van-grid-item icon="gold-coin-o" text="积分商城" to="/points/mall" />
       </van-grid>
     </div>
 
@@ -212,6 +225,19 @@ function goTechnician(id: number) {
   background: linear-gradient(135deg, #07C160, #06ad56);
   padding: 40px 20px 30px;
   color: #fff;
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 4px;
+  }
 
   .title {
     font-size: 24px;

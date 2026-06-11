@@ -34,6 +34,18 @@ const router = createRouter({
           meta: { title: '技师管理' }
         },
         {
+          path: 'schedule',
+          name: 'Schedule',
+          component: () => import('@/views/schedule/index.vue'),
+          meta: { title: '排班管理' }
+        },
+        {
+          path: 'room',
+          name: 'Room',
+          component: () => import('@/views/room/index.vue'),
+          meta: { title: '房间管理' }
+        },
+        {
           path: 'order',
           name: 'Order',
           component: () => import('@/views/order/index.vue'),

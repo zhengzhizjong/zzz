@@ -1,1 +1,0 @@
-import{g as a}from"./_plugin-vue_export-helper-B3vnM2Bp.js";function e(t){return a("/api/v1/trade/treatment-cards/my",{params:{memberId:t}})}function s(t){return a(`/api/v1/trade/treatment-cards/${t}/usage-history`)}export{s as a,e as g};

@@ -25,6 +25,14 @@
           <el-icon><User /></el-icon>
           <template #title>技师管理</template>
         </el-menu-item>
+        <el-menu-item index="/schedule">
+          <el-icon><Clock /></el-icon>
+          <template #title>排班管理</template>
+        </el-menu-item>
+        <el-menu-item index="/room">
+          <el-icon><House /></el-icon>
+          <template #title>房间管理</template>
+        </el-menu-item>
         <el-menu-item index="/order">
           <el-icon><Document /></el-icon>
           <template #title>订单管理</template>
@@ -78,7 +86,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  DataBoard, Calendar, User, Document, UserFilled,
+  DataBoard, Calendar, User, Clock, House, Document, UserFilled,
   TrendCharts, Setting, Fold, Expand, ArrowDown
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'

@@ -1,0 +1,1 @@
+import{R as a,S as p,T as e}from"./index-CGl967rt.js";function o(t){return a("/api/v1/trade/appointments",{params:t})}function r(t,n){return p(`/api/v1/trade/appointments/${t}/modify`,n)}function m(t,n){return p(`/api/v1/trade/appointments/${t}/cancel`,n)}function s(t){return e("/api/v1/trade/appointments",t)}export{s as a,m as c,o as g,r as m};

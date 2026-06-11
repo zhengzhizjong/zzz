@@ -131,6 +131,48 @@ const routes = [
     name: 'Promotion',
     component: () => import('@/views/promotion/index.vue'),
     meta: { title: '推广中心', showTabBar: true }
+  },
+  {
+    path: '/ai/consultation',
+    name: 'AiConsultation',
+    component: () => import('@/views/ai/consultation.vue'),
+    meta: { title: 'AI智能问诊' }
+  },
+  {
+    path: '/notification/list',
+    name: 'NotificationList',
+    component: () => import('@/views/notification/list.vue'),
+    meta: { title: '通知' }
+  },
+  {
+    path: '/search',
+    name: 'Search',
+    component: () => import('@/views/search/index.vue'),
+    meta: { title: '搜索' }
+  },
+  {
+    path: '/service/customer-service',
+    name: 'CustomerService',
+    component: () => import('@/views/service/customer-service.vue'),
+    meta: { title: '在线客服' }
+  },
+  {
+    path: '/knowledge',
+    name: 'Knowledge',
+    component: () => import('@/views/knowledge/index.vue'),
+    meta: { title: '养生知识' }
+  },
+  {
+    path: '/points/mall',
+    name: 'PointsMall',
+    component: () => import('@/views/points/mall.vue'),
+    meta: { title: '积分商城' }
+  },
+  {
+    path: '/member/level',
+    name: 'MemberLevel',
+    component: () => import('@/views/member/level.vue'),
+    meta: { title: '会员等级' }
   }
 ]
 

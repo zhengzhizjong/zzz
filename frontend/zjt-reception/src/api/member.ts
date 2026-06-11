@@ -11,3 +11,7 @@ export function getMemberDetail(id: number | string) {
 export function getMemberProfile() {
   return get('/api/v1/user/members/profile')
 }
+
+export function getMemberHealthProfile(memberId: number | string) {
+  return get(`/api/v1/user/health-profiles/${memberId}`)
+}

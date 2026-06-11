@@ -33,6 +33,14 @@
           <el-icon><Search /></el-icon>
           <template #title>会员查询</template>
         </el-menu-item>
+        <el-menu-item index="/lead">
+          <el-icon><Promotion /></el-icon>
+          <template #title>线索管理</template>
+        </el-menu-item>
+        <el-menu-item index="/consultation">
+          <el-icon><ChatDotRound /></el-icon>
+          <template #title>咨询工作台</template>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 

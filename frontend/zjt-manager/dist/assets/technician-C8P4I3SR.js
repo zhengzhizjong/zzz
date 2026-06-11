@@ -1,0 +1,1 @@
+import{R as t,S as c}from"./index-CGl967rt.js";function e(n){return t("/api/v1/store/technicians",{params:n})}function a(n){return t(`/api/v1/store/technicians/${n}`)}function r(n){return c(`/api/v1/store/technicians/${n}/check-in`)}function s(n){return c(`/api/v1/store/technicians/${n}/check-out`)}export{a,s as b,r as c,e as g};

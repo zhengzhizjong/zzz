@@ -1,0 +1,1 @@
+import{g as a,p as t}from"./request-BMM7sk6N.js";function p(o){return a("/api/v1/trade/coupon-records/my",{params:o})}function u(o,n){return t(`/api/v1/trade/coupons/${o}/claim`,null,{params:{memberId:n}})}function s(o){return a("/api/v1/trade/coupons",{params:o})}export{s as a,u as c,p as g};

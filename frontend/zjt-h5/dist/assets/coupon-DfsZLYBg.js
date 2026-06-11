@@ -1,1 +1,0 @@
-import{g as a,p as t}from"./_plugin-vue_export-helper-B3vnM2Bp.js";function p(o){return a("/api/v1/trade/coupon-records/my",{params:o})}function u(o,n){return t(`/api/v1/trade/coupons/${o}/claim`,null,{params:{memberId:n}})}function s(o){return a("/api/v1/trade/coupons",{params:o})}export{s as a,u as c,p as g};

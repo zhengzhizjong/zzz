@@ -1,0 +1,1 @@
+import{R as e,S as a}from"./index-CGl967rt.js";function d(r){return e("/api/v1/trade/orders",{params:r})}function i(r){return e(`/api/v1/trade/orders/${r}`)}function o(r,t){return a(`/api/v1/trade/orders/${r}/cancel`,t)}export{i as a,d as g,o as r};

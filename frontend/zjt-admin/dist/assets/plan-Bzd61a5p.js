@@ -1,0 +1,1 @@
+import{s as n}from"./request-Qw2zjTiV.js";function e(){return n.get("/api/v1/admin/plans")}function p(a){return n.post("/api/v1/admin/plans",a)}function r(a,t){return n.put(`/api/v1/admin/plans/${a}`,t)}export{p as c,e as g,r as u};
