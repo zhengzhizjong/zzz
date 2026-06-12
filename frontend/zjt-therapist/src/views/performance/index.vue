@@ -73,14 +73,28 @@ async function loadData() {
     const res: any = await getPerformance(techId)
     const data = res.data || {}
     stats.value = {
-      serviceCount: data.serviceCount || 0,
-      revenue: data.revenue ? Number(data.revenue).toFixed(2) : '0.00',
-      rating: data.rating ? Number(data.rating).toFixed(1) : '0.0'
+      serviceCount: data.monthServiceCount || 0,
+      revenue: data.monthRevenue ? Number(data.monthRevenue).toFixed(2) : '0.00',
+      rating: data.monthRating ? Number(data.monthRating).toFixed(1) : '0.0'
     }
-    revenueTrend.value = data.revenueTrend || []
-    serviceDistribution.value = data.serviceDistribution || []
+    // 后端暂无趋势和分布数据，使用模拟
+    if (!revenueTrend.value.length) {
+      revenueTrend.value = [
+        { label: '周一', value: 480 }, { label: '周二', value: 520 },
+        { label: '周三', value: 600 }, { label: '周四', value: 450 },
+        { label: '周五', value: 580 }, { label: '周六', value: 720 },
+        { label: '周日', value: 210 }
+      ]
+    }
+    if (!serviceDistribution.value.length) {
+      serviceDistribution.value = [
+        { name: '推拿', percent: 35, color: '#07C160' },
+        { name: '艾灸', percent: 25, color: '#1989fa' },
+        { name: '拔罐', percent: 20, color: '#ff976a' },
+        { name: '足疗', percent: 20, color: '#07c160' }
+      ]
+    }
   } catch {
-    // 使用模拟数据
     stats.value = { serviceCount: 28, revenue: '3560.00', rating: '4.8' }
     revenueTrend.value = [
       { label: '周一', value: 480 }, { label: '周二', value: 520 },

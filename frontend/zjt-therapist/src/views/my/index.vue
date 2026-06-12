@@ -24,26 +24,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { showDialog } from 'vant'
 import { useRouter } from 'vue-router'
-import { getProfile } from '../../api/user'
 import { useUserStore } from '../../stores/user'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const userInfo = ref<any>({})
-
-async function loadProfile() {
-  try {
-    const res: any = await getProfile()
-    userInfo.value = res.data || {}
-    userStore.setUserInfo(res.data)
-  } catch {
-    userInfo.value = userStore.userInfo || { name: '技师', level: '初级技师', storeName: '忠济堂' }
-  }
-}
+const userInfo = ref<any>(userStore.userInfo || { name: '技师', level: '初级技师', storeName: '忠济堂' })
 
 function goSchedule() {
   router.push('/my/schedule')
@@ -59,7 +48,6 @@ function handleLogout() {
   })
 }
 
-onMounted(loadProfile)
 </script>
 
 <style scoped>

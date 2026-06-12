@@ -7,3 +7,7 @@ export function getWorkspace(technicianId: number) {
 export function getPerformance(technicianId: number) {
   return request.get(`/api/v1/store/technicians/${technicianId}/performance`)
 }
+
+export function getTechnicianDetail(technicianId: number) {
+  return request.get(`/api/v1/store/technicians/${technicianId}`)
+}

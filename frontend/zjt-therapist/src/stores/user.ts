@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { login } from '../api/user'
+import { login as loginApi, getProfile } from '../api/user'
 import { setToken, removeToken, getToken } from '../utils/auth'
 
 export const useUserStore = defineStore('user', () => {
@@ -8,13 +8,33 @@ export const useUserStore = defineStore('user', () => {
   const isLoggedIn = ref(!!getToken())
 
   async function doLogin(phone: string, password: string) {
-    const res: any = await login({ phone, password })
-    const token = res.data?.token || res.token
+    const res: any = await loginApi({ phone, password })
+    const data = res.data || res
+    const token = data.token
     if (token) {
       setToken(token)
       isLoggedIn.value = true
+      // 保存基本信息
+      userInfo.value = {
+        id: data.memberId,
+        name: data.nickname,
+        phone: data.phone,
+        avatarUrl: data.avatarUrl
+      }
     }
     return res
+  }
+
+  async function fetchProfile() {
+    try {
+      const res: any = await getProfile()
+      const data = res.data || res
+      if (data) {
+        userInfo.value = data
+      }
+    } catch {
+      // ignore
+    }
   }
 
   function logout() {
@@ -31,6 +51,7 @@ export const useUserStore = defineStore('user', () => {
     userInfo,
     isLoggedIn,
     doLogin,
+    fetchProfile,
     logout,
     setUserInfo
   }

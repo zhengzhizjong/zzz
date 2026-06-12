@@ -7,7 +7,7 @@
         <div class="info-detail">
           <div class="name">{{ technicianInfo.name || '技师' }}</div>
           <div class="tags">
-            <van-tag type="primary" size="medium">{{ technicianInfo.level || '初级技师' }}</van-tag>
+            <van-tag type="primary" size="medium">{{ levelText }}</van-tag>
             <van-tag plain size="medium">{{ technicianInfo.storeName || '忠济堂' }}</van-tag>
           </div>
         </div>
@@ -27,10 +27,10 @@
       <van-empty v-if="appointments.length === 0" description="暂无预约" />
       <div v-else class="appointment-list">
         <div v-for="item in appointments" :key="item.id" class="appointment-item" @click="goDetail(item.id)">
-          <div class="time">{{ item.appointmentTime }}</div>
+          <div class="time">{{ formatTime(item.appointmentTime) }}</div>
           <div class="info">
-            <div class="customer">{{ item.customerName }}</div>
-            <div class="service">{{ item.serviceName }}</div>
+            <div class="customer">{{ item.memberName || item.memberId || '客户' }}</div>
+            <div class="service">{{ item.serviceName || '理疗服务' }}</div>
           </div>
           <van-tag :type="getStatusType(item.status)">{{ getStatusText(item.status) }}</van-tag>
         </div>
@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { showToast } from 'vant'
-import { getWorkspace, getPerformance } from '../../api/technician'
+import { getWorkspace, getPerformance, getTechnicianDetail } from '../../api/technician'
 import { getTodayAppointments, checkIn, checkOut } from '../../api/appointment'
 import { useUserStore } from '../../stores/user'
 
@@ -50,39 +50,79 @@ const userStore = useUserStore()
 const technicianInfo = ref<any>({})
 const appointments = ref<any[]>([])
 const isCheckedIn = ref(false)
+const techId = ref<number>(0)
+
+const levelMap: Record<number, string> = { 1: '初级技师', 2: '中级技师', 3: '高级技师', 4: '资深技师', 5: '首席技师' }
+const levelText = computed(() => levelMap[technicianInfo.value.skillLevel] || '技师')
 
 const statusType = computed(() => isCheckedIn.value ? 'success' : 'warning')
 const statusText = computed(() => isCheckedIn.value ? '在岗' : '未签到')
 
-function getStatusType(status: string) {
-  const map: Record<string, string> = { pending: 'warning', confirmed: 'primary', in_service: 'success', completed: 'default' }
+function getStatusType(status: number) {
+  const map: Record<number, string> = { 0: 'warning', 1: 'primary', 2: 'success', 3: 'default', 4: 'danger' }
   return map[status] || 'default'
 }
 
-function getStatusText(status: string) {
-  const map: Record<string, string> = { pending: '待确认', confirmed: '已确认', in_service: '服务中', completed: '已完成' }
-  return map[status] || status
+function getStatusText(status: number) {
+  const map: Record<number, string> = { 0: '待确认', 1: '已确认', 2: '服务中', 3: '已完成', 4: '已取消' }
+  return map[status] || '未知'
+}
+
+function formatTime(time: string) {
+  if (!time) return ''
+  return time.substring(11, 16) || time
 }
 
 async function loadData() {
   try {
-    const techId = userStore.userInfo?.id || 1
-    const [wsRes, aptRes] = await Promise.all([
-      getWorkspace(techId),
-      getTodayAppointments(techId)
-    ])
-    technicianInfo.value = (wsRes as any).data || { name: '技师', level: '初级技师', storeName: '忠济堂' }
-    appointments.value = (aptRes as any).data?.records || (aptRes as any).data || []
-    isCheckedIn.value = (wsRes as any).data?.checkedIn || false
+    // 从登录信息获取员工ID，查询对应的技师记录
+    const empId = userStore.userInfo?.id
+    if (!empId) return
+
+    // 先获取技师详情（通过员工ID关联）
+    // 后端技师列表API支持查询，先用workspace获取基本信息
+    const wsRes: any = await getWorkspace(empId)
+    const wsData = wsRes.data || {}
+
+    // 获取技师详情
+    try {
+      const detailRes: any = await getTechnicianDetail(empId)
+      const detail = detailRes.data || {}
+      technicianInfo.value = {
+        name: detail.name || userStore.userInfo?.name || '技师',
+        skillLevel: detail.skillLevel || 1,
+        storeName: detail.storeName || '忠济堂',
+        id: detail.id
+      }
+      techId.value = detail.id || empId
+    } catch {
+      technicianInfo.value = {
+        name: userStore.userInfo?.name || '技师',
+        skillLevel: 1,
+        storeName: '忠济堂',
+        id: empId
+      }
+      techId.value = empId
+    }
+
+    // 获取预约列表
+    try {
+      const aptRes: any = await getTodayAppointments({ pageSize: 50 })
+      const records = aptRes.data?.records || aptRes.data || []
+      appointments.value = Array.isArray(records) ? records : []
+    } catch {
+      appointments.value = []
+    }
+
+    isCheckedIn.value = wsData.technicianInfo?.isOnline === 1
   } catch {
-    technicianInfo.value = { name: '技师', level: '初级技师', storeName: '忠济堂' }
+    technicianInfo.value = { name: userStore.userInfo?.name || '技师', skillLevel: 1, storeName: '忠济堂' }
   }
 }
 
 async function handleCheckIn() {
   try {
-    const techId = userStore.userInfo?.id || 1
-    await checkIn(techId)
+    await checkIn(techId.value)
     isCheckedIn.value = true
     showToast('签到成功')
   } catch {
@@ -92,8 +132,7 @@ async function handleCheckIn() {
 
 async function handleCheckOut() {
   try {
-    const techId = userStore.userInfo?.id || 1
-    await checkOut(techId)
+    await checkOut(techId.value)
     isCheckedIn.value = false
     showToast('签退成功')
   } catch {

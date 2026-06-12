@@ -88,7 +88,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { showToast } from 'vant'
-import { getPromotion, getPromotionStats } from '../../api/promotion'
+import { getPromotion, getPromotionStats, getCommissions, getRanking } from '../../api/promotion'
 import { useUserStore } from '../../stores/user'
 
 const userStore = useUserStore()
@@ -115,37 +115,61 @@ function copyCode() {
 async function loadData() {
   try {
     const techId = userStore.userInfo?.id || 1
+    const today = new Date()
+    const monthAgo = new Date(today.getTime() - 30 * 86400000)
+    const startDate = monthAgo.toISOString().split('T')[0]
+    const endDate = today.toISOString().split('T')[0]
+
     const [promoRes, statsRes] = await Promise.all([
       getPromotion(techId),
-      getPromotionStats(techId)
+      getPromotionStats(techId, startDate, endDate)
     ])
     const promoData = (promoRes as any).data || {}
     const statsData = (statsRes as any).data || {}
-    inviteCode.value = promoData.inviteCode || 'ZJT888'
-    promotionStats.value = statsData.stats || promotionStats.value
-    commission.value = statsData.commission || commission.value
-    commissionList.value = statsData.commissionList || []
-    rankList.value = statsData.rankList || []
+    inviteCode.value = promoData.promoCode || 'ZJT888'
+    promotionStats.value = {
+      clicks: statsData.totalClicks || 0,
+      registrations: statsData.totalRegistrations || 0,
+      visits: statsData.totalVisits || 0,
+      conversionRate: statsData.conversionRate ? Number(statsData.conversionRate).toFixed(1) : '0.0'
+    }
   } catch {
     // 模拟数据
     promotionStats.value = { clicks: 256, registrations: 48, visits: 32, conversionRate: '12.5' }
+  }
+
+  // 佣金
+  try {
+    const techId = userStore.userInfo?.id || 1
+    const commRes: any = await getCommissions(techId)
+    const commData = commRes.data || {}
+    commission.value = {
+      settled: commData.settledAmount ? Number(commData.settledAmount).toFixed(2) : '0.00',
+      pending: commData.pendingAmount ? Number(commData.pendingAmount).toFixed(2) : '0.00'
+    }
+    commissionList.value = commData.records || []
+  } catch {
     commission.value = { settled: '680.00', pending: '320.00' }
     commissionList.value = [
       { id: 1, name: '张三到店消费', date: '2024-01-15', amount: '50.00', status: 'settled' },
       { id: 2, name: '李四注册成功', date: '2024-01-14', amount: '30.00', status: 'pending' },
       { id: 3, name: '王五到店消费', date: '2024-01-13', amount: '50.00', status: 'settled' }
     ]
+  }
+
+  // 排行
+  try {
+    const techId = userStore.userInfo?.id || 1
+    const rankRes: any = await getRanking(techId)
+    const rankData = rankRes.data || {}
+    rankList.value = rankData.rankings || []
+  } catch {
     rankList.value = [
       { name: '王技师', count: 15 },
       { name: '李技师', count: 12 },
       { name: '张技师', count: 10 },
       { name: '赵技师', count: 8 },
-      { name: '刘技师', count: 6 },
-      { name: '陈技师', count: 5 },
-      { name: '杨技师', count: 4 },
-      { name: '黄技师', count: 3 },
-      { name: '周技师', count: 2 },
-      { name: '吴技师', count: 1 }
+      { name: '刘技师', count: 6 }
     ]
   }
 }
