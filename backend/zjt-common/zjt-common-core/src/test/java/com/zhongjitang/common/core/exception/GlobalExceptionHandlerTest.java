@@ -4,7 +4,6 @@ import com.zhongjitang.common.core.result.R;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -102,7 +101,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("处理HttpRequestMethodNotSupportedException - 应返回40003")
     void handleHttpRequestMethodNotSupportedException() {
         HttpRequestMethodNotSupportedException e =
-                new HttpRequestMethodNotSupportedException("DELETE", HttpMethod.GET, HttpMethod.POST);
+                new HttpRequestMethodNotSupportedException("DELETE", new String[]{"GET", "POST"});
         R<Void> result = handler.handleHttpRequestMethodNotSupportedException(e);
 
         assertEquals(40003, result.getCode());
