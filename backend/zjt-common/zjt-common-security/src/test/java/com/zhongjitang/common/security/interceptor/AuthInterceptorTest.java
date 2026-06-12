@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -26,7 +27,7 @@ class AuthInterceptorTest {
     private AuthInterceptor authInterceptor;
     private JwtUtil jwtUtil;
     private HttpServletRequest request;
-    private HttpServletRequest response;
+    private HttpServletResponse response;
 
     @BeforeEach
     void setUp() {
@@ -38,7 +39,7 @@ class AuthInterceptorTest {
 
         authInterceptor = new AuthInterceptor(jwtUtil, Arrays.asList("/api/v1/auth/**", "/swagger-ui/**"));
         request = mock(HttpServletRequest.class);
-        response = mock(javax.servlet.http.HttpServletResponse.class);
+        response = mock(HttpServletResponse.class);
     }
 
     @AfterEach

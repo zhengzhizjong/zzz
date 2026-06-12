@@ -8,6 +8,7 @@ import com.zhongjitang.billing.domain.entity.BillingTenantDO;
 import com.zhongjitang.billing.domain.vo.TenantVO;
 import com.zhongjitang.billing.mapper.BillingPlanMapper;
 import com.zhongjitang.billing.mapper.BillingTenantMapper;
+import com.zhongjitang.billing.service.impl.BillingTenantServiceImpl;
 import com.zhongjitang.common.core.exception.BusinessException;
 import com.zhongjitang.common.core.exception.ErrorCode;
 import com.zhongjitang.common.core.result.PageResult;

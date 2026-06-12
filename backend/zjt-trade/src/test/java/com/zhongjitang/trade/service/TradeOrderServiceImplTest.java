@@ -7,6 +7,7 @@ import com.zhongjitang.common.core.exception.ErrorCode;
 import com.zhongjitang.common.core.result.R;
 import com.zhongjitang.trade.domain.entity.TradeAppointmentDO;
 import com.zhongjitang.trade.domain.entity.TradeOrderDO;
+import com.zhongjitang.trade.domain.entity.TradeOrderItemDO;
 import com.zhongjitang.trade.mapper.TradeAppointmentMapper;
 import com.zhongjitang.trade.mapper.TradeOrderItemMapper;
 import com.zhongjitang.trade.mapper.TradeOrderMapper;
@@ -79,7 +80,7 @@ class TradeOrderServiceImplTest {
         when(tradeAppointmentMapper.selectById(1L)).thenReturn(appointment);
         when(tradeOrderMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
         when(tradeOrderMapper.insert(any(TradeOrderDO.class))).thenReturn(1);
-        when(tradeOrderItemMapper.insert(any())).thenReturn(1);
+        when(tradeOrderItemMapper.insert(any(TradeOrderItemDO.class))).thenReturn(1);
 
         R<TradeOrderDO> result = tradeOrderService.createFromAppointment(1L);
 
@@ -91,7 +92,7 @@ class TradeOrderServiceImplTest {
         assertEquals(100L, result.getData().getMemberId());
 
         verify(tradeOrderMapper, times(1)).insert(any(TradeOrderDO.class));
-        verify(tradeOrderItemMapper, times(1)).insert(any());
+        verify(tradeOrderItemMapper, times(1)).insert(any(TradeOrderItemDO.class));
     }
 
     @Test

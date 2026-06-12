@@ -10,6 +10,7 @@ import com.zhongjitang.store.domain.dto.StoreCreateRequest;
 import com.zhongjitang.store.domain.dto.StoreUpdateRequest;
 import com.zhongjitang.store.domain.entity.StoreInfoDO;
 import com.zhongjitang.store.mapper.StoreInfoMapper;
+import com.zhongjitang.store.service.impl.StoreInfoServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

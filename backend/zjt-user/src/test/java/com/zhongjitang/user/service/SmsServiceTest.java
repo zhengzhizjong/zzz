@@ -30,7 +30,7 @@ class SmsServiceTest {
     @Test
     void testSendVerifyCode() {
         when(redisUtil.hasKey(any())).thenReturn(false);
-        when(redisUtil.setWithExpire(any(), any(), anyLong(), any())).thenReturn(true);
+        doNothing().when(redisUtil).setWithExpire(any(), any(), anyLong(), any());
 
         assertDoesNotThrow(() -> {
             smsService.sendVerifyCode(TEST_PHONE);

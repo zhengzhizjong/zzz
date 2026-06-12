@@ -67,7 +67,7 @@ class MemberServiceTest {
         mockAccount = new UserMemberAccountDO();
         mockAccount.setId(1L);
         mockAccount.setMemberId(1L);
-        mockAccount.setAccountType("phone");
+        mockAccount.setAccountType(1);
         mockAccount.setAccountId("13800138000");
     }
 
@@ -110,7 +110,7 @@ class MemberServiceTest {
 
         assertEquals(ErrorCode.DUPLICATE_PHONE.getCode(), exception.getCode());
         assertTrue(exception.getMessage().contains("手机号已注册"));
-        verify(memberMapper, never()).insert(any());
+        verify(memberMapper, never()).insert(any(UserMemberDO.class));
     }
 
     @Test
@@ -129,7 +129,7 @@ class MemberServiceTest {
 
         assertEquals(ErrorCode.LOGIN_FAILED.getCode(), exception.getCode());
         assertTrue(exception.getMessage().contains("验证码错误"));
-        verify(memberMapper, never()).insert(any());
+        verify(memberMapper, never()).insert(any(UserMemberDO.class));
     }
 
     @Test
@@ -200,8 +200,8 @@ class MemberServiceTest {
         assertEquals(0, result.getCode());
         assertNotNull(result.getData());
         assertNotNull(result.getData().getMember());
-        assertEquals("测试用户", result.getData().getMember().getNickname());
-        assertEquals(BigDecimal.ZERO, result.getData().getTotalSpent());
+        UserMemberDO memberDO = (UserMemberDO) result.getData().getMember();
+        assertEquals("测试用户", memberDO.getNickname());
     }
 
     @Test

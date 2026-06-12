@@ -10,6 +10,7 @@ import com.zhongjitang.store.domain.dto.TechnicianCreateRequest;
 import com.zhongjitang.store.domain.dto.TechnicianUpdateRequest;
 import com.zhongjitang.store.domain.entity.StoreTechnicianDO;
 import com.zhongjitang.store.mapper.StoreTechnicianMapper;
+import com.zhongjitang.store.service.impl.StoreTechnicianServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

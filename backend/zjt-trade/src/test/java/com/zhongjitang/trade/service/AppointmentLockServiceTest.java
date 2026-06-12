@@ -89,7 +89,7 @@ class AppointmentLockServiceTest {
 
         assertEquals(ErrorCode.SLOT_LOCKED.getCode(), exception.getCode());
         assertTrue(exception.getMessage().contains("时段"));
-        verify(tradeAppointmentLockMapper, never()).insert(any());
+        verify(tradeAppointmentLockMapper, never()).insert(any(TradeAppointmentLockDO.class));
     }
 
     @Test
@@ -103,7 +103,7 @@ class AppointmentLockServiceTest {
         });
 
         assertEquals(ErrorCode.SLOT_TEMP_LOCKED.getCode(), exception.getCode());
-        verify(tradeAppointmentLockMapper, never()).insert(any());
+        verify(tradeAppointmentLockMapper, never()).insert(any(TradeAppointmentLockDO.class));
     }
 
     @Test
@@ -118,7 +118,7 @@ class AppointmentLockServiceTest {
         });
 
         assertEquals(ErrorCode.LOCK_ACQUIRE_FAILED.getCode(), exception.getCode());
-        verify(tradeAppointmentLockMapper, never()).insert(any());
+        verify(tradeAppointmentLockMapper, never()).insert(any(TradeAppointmentLockDO.class));
     }
 
     @Test
@@ -151,7 +151,7 @@ class AppointmentLockServiceTest {
 
         appointmentLockService.releaseLock("LOCK_NOTEXIST");
 
-        verify(tradeAppointmentLockMapper, never()).updateById(any());
+        verify(tradeAppointmentLockMapper, never()).updateById(any(TradeAppointmentLockDO.class));
         verify(redisUtil, never()).delete(anyString());
         verify(distributedLockUtil, never()).unlock(anyString());
     }

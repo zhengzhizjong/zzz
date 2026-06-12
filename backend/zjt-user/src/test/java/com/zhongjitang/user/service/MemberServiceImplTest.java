@@ -73,7 +73,7 @@ class MemberServiceImplTest {
         mockAccount = new UserMemberAccountDO();
         mockAccount.setId(1L);
         mockAccount.setMemberId(1L);
-        mockAccount.setAccountType("phone");
+        mockAccount.setAccountType(1);
         mockAccount.setAccountId("13800138000");
     }
 
@@ -183,7 +183,8 @@ class MemberServiceImplTest {
         assertEquals(0, result.getCode());
         assertNotNull(result.getData());
         assertNotNull(result.getData().getLevel());
-        assertEquals("普通会员", result.getData().getLevel().getLevelName());
+        UserMemberLevelDO levelVO = (UserMemberLevelDO) result.getData().getLevel();
+        assertEquals("普通会员", levelVO.getLevelName());
     }
 
     @Test

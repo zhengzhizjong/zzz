@@ -4,6 +4,7 @@ import com.zhongjitang.common.core.result.R;
 import com.zhongjitang.store.domain.entity.StoreTimeSlotConfigDO;
 import com.zhongjitang.store.domain.vo.TimeSlotVO;
 import com.zhongjitang.store.mapper.StoreTimeSlotConfigMapper;
+import com.zhongjitang.store.service.impl.TimeSlotServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
