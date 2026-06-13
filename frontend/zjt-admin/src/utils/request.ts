@@ -17,6 +17,8 @@ service.interceptors.request.use(
     const tenantId = localStorage.getItem('tenantId')
     if (tenantId) {
       config.headers['X-Tenant-Id'] = tenantId
+    } else {
+      config.headers['X-Tenant-Id'] = '1'
     }
     return config
   },

@@ -4,19 +4,19 @@ import type { R, PageResult } from '@/types/api'
 export interface RefundInfo {
   id: number
   refundNo: string
+  orderId: number
   orderNo: string
   customerName: string
-  amount: number
-  reason: string
-  status: number
-  statusName: string
+  refundAmount: number
+  refundReason: string
+  refundStatus: number
   createdAt: string
 }
 
 export function getRefundList(params: {
   page: number
   pageSize: number
-  status?: number
+  refundStatus?: number
   keyword?: string
 }) {
   return request.get<R<PageResult<RefundInfo>>>('/api/v1/trade/refunds', { params })

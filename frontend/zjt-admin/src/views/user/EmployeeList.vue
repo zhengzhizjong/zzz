@@ -7,12 +7,12 @@
           <el-input v-model="searchForm.keyword" placeholder="工号/姓名/手机号" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="部门">
-          <el-select v-model="searchForm.department" placeholder="全部部门" clearable>
+          <el-select v-model="searchForm.departmentId" placeholder="全部部门" clearable>
             <el-option
               v-for="dept in DEPARTMENT_OPTIONS"
-              :key="dept"
-              :label="dept"
-              :value="dept"
+              :key="dept.id"
+              :label="dept.name"
+              :value="dept.id"
             />
           </el-select>
         </el-form-item>
@@ -42,7 +42,7 @@
         <el-table-column prop="employeeNo" label="工号" width="110" />
         <el-table-column prop="name" label="姓名" width="100" />
         <el-table-column prop="phone" label="手机号" width="130" />
-        <el-table-column prop="department" label="部门" width="120" />
+        <el-table-column prop="departmentName" label="部门" width="120" />
         <el-table-column prop="position" label="职位" width="120" />
         <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
@@ -107,13 +107,13 @@
         <el-form-item label="手机号" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="11" />
         </el-form-item>
-        <el-form-item label="部门" prop="department">
-          <el-select v-model="form.department" placeholder="请选择部门" style="width: 100%">
+        <el-form-item label="部门" prop="departmentId">
+          <el-select v-model="form.departmentId" placeholder="请选择部门" style="width: 100%">
             <el-option
               v-for="dept in DEPARTMENT_OPTIONS"
-              :key="dept"
-              :label="dept"
-              :value="dept"
+              :key="dept.id"
+              :label="dept.name"
+              :value="dept.id"
             />
           </el-select>
         </el-form-item>
@@ -135,7 +135,14 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getEmployeeList, createEmployee, updateEmployee, updateEmployeeStatus, type EmployeeInfo } from '@/api/user/employee'
 
-const DEPARTMENT_OPTIONS = ['管理部', '运营部', '技术部', '客服部', '市场部', '财务部']
+const DEPARTMENT_OPTIONS = [
+  { id: 1, name: '管理部' },
+  { id: 2, name: '运营部' },
+  { id: 3, name: '技术部' },
+  { id: 4, name: '客服部' },
+  { id: 5, name: '市场部' },
+  { id: 6, name: '财务部' },
+]
 const STATUS_OPTIONS = [
   { value: 1, label: '在职', type: 'success' },
   { value: 0, label: '离职', type: 'danger' },
@@ -150,7 +157,7 @@ const formRef = ref<FormInstance>()
 
 const searchForm = reactive({
   keyword: '',
-  department: undefined as string | undefined,
+  departmentId: undefined as number | undefined,
   status: undefined as number | undefined,
 })
 
@@ -164,7 +171,7 @@ const form = reactive({
   employeeNo: '',
   name: '',
   phone: '',
-  department: '',
+  departmentId: undefined as number | undefined,
   position: '',
 })
 
@@ -175,7 +182,7 @@ const formRules: FormRules = {
     { required: true, message: '请输入手机号', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' },
   ],
-  department: [{ required: true, message: '请选择部门', trigger: 'change' }],
+  departmentId: [{ required: true, message: '请选择部门', trigger: 'change' }],
   position: [{ required: true, message: '请输入职位', trigger: 'blur' }],
 }
 
@@ -194,7 +201,7 @@ async function fetchData() {
       page: pagination.page,
       pageSize: pagination.pageSize,
       keyword: searchForm.keyword || undefined,
-      department: searchForm.department,
+      departmentId: searchForm.departmentId,
       status: searchForm.status,
     })
     tableData.value = res.data.list || []
@@ -213,7 +220,7 @@ function handleSearch() {
 
 function handleReset() {
   searchForm.keyword = ''
-  searchForm.department = undefined
+  searchForm.departmentId = undefined
   searchForm.status = undefined
   pagination.page = 1
   fetchData()
@@ -223,7 +230,7 @@ function resetForm() {
   form.employeeNo = ''
   form.name = ''
   form.phone = ''
-  form.department = ''
+  form.departmentId = undefined
   form.position = ''
 }
 
@@ -238,7 +245,7 @@ function handleEdit(row: EmployeeInfo) {
   form.employeeNo = row.employeeNo
   form.name = row.name
   form.phone = row.phone
-  form.department = row.department
+  form.departmentId = row.departmentId
   form.position = row.position
   formVisible.value = true
 }
@@ -253,7 +260,7 @@ async function handleSubmit() {
       await updateEmployee(currentEmployeeId.value, {
         name: form.name,
         phone: form.phone,
-        department: form.department,
+        departmentId: form.departmentId,
         position: form.position,
       })
       ElMessage.success('更新成功')
@@ -262,7 +269,7 @@ async function handleSubmit() {
         employeeNo: form.employeeNo,
         name: form.name,
         phone: form.phone,
-        department: form.department,
+        departmentId: form.departmentId!,
         position: form.position,
       })
       ElMessage.success('新增成功')

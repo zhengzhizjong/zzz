@@ -3,9 +3,9 @@ import type { R, PageResult } from '@/types/api'
 
 export interface ActivityInfo {
   id: number
-  name: string
-  type: number
-  rule: string
+  activityName: string
+  activityType: number
+  rulesJson: string
   startTime: string
   endTime: string
   status: number

@@ -3,12 +3,13 @@ import type { R, PageResult } from '@/types/api'
 
 export interface TreatmentCardInfo {
   id: number
-  name: string
-  projectName: string
-  totalCount: number
-  remainingCount: number
+  cardNo: string
+  cardName: string
+  totalUses: number
+  usedUses: number
+  remainingUses: number
+  purchaseAmount: number
   memberName: string
-  price: number
   status: number
   createdAt: string
 }

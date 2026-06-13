@@ -19,8 +19,8 @@
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
-        <el-table-column prop="name" label="角色名称" width="160" />
-        <el-table-column prop="code" label="角色编码" width="160" />
+        <el-table-column prop="roleName" label="角色名称" width="160" />
+        <el-table-column prop="roleCode" label="角色编码" width="160" />
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column prop="createdAt" label="创建时间" width="170" />
         <el-table-column label="操作" width="220" align="center" fixed="right">
@@ -139,8 +139,14 @@ async function fetchData() {
       pageSize: pagination.pageSize,
       keyword: searchForm.keyword || undefined,
     })
-    tableData.value = res.data.list || []
-    pagination.total = res.data.pagination.total
+    // 后端返回data是数组，不是分页格式
+    const list = Array.isArray(res.data) ? res.data : (res.data?.list || [])
+    tableData.value = list
+    if (res.data?.pagination) {
+      pagination.total = res.data.pagination.total
+    } else {
+      pagination.total = list.length
+    }
   } catch {
     tableData.value = []
   } finally {
@@ -173,8 +179,8 @@ function handleAdd() {
 
 function handleEdit(row: RoleInfo) {
   currentRoleId.value = row.id
-  form.name = row.name
-  form.code = row.code
+  form.name = row.roleName
+  form.code = row.roleCode
   form.description = row.description
   formVisible.value = true
 }
@@ -211,7 +217,7 @@ async function handleSubmit() {
 
 async function handleDelete(row: RoleInfo) {
   try {
-    await ElMessageBox.confirm(`确认删除角色「${row.name}」？删除后不可恢复`, '删除确认', {
+    await ElMessageBox.confirm(`确认删除角色「${row.roleName}」？删除后不可恢复`, '删除确认', {
       confirmButtonText: '确认',
       cancelButtonText: '取消',
       type: 'warning',

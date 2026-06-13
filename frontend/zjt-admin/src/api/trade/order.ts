@@ -4,16 +4,16 @@ import type { R, PageResult } from '@/types/api'
 export interface OrderInfo {
   id: number
   orderNo: string
-  customerName: string
-  customerPhone: string
+  memberName: string
+  memberPhone: string
   storeName: string
-  serviceName: string
-  amount: number
-  status: number
-  statusName: string
+  totalAmount: number
+  discountAmount: number
+  paidAmount: number
+  paymentMethod: number
+  paymentStatus: number
+  paymentTime: string
   createdAt: string
-  paidAt: string
-  completedAt: string
 }
 
 export function getOrderList(params: {

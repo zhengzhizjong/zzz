@@ -27,17 +27,17 @@ export interface AvailableSlot {
 }
 
 export function getTimeSlotConfig(storeId: number) {
-  return request.get<R<TimeSlotConfig>>(`/api/v1/store/timeslot/config/${storeId}`)
+  return request.get<R<TimeSlotConfig>>(`/api/v1/store/time-slot-config/${storeId}`)
 }
 
 export function createTimeSlotConfig(data: TimeSlotConfigRequest) {
-  return request.post<R<TimeSlotConfig>>('/api/v1/store/timeslot/config', data)
+  return request.post<R<TimeSlotConfig>>('/api/v1/store/time-slot-config', data)
 }
 
 export function updateTimeSlotConfig(id: number, data: TimeSlotConfigRequest) {
-  return request.put<R<TimeSlotConfig>>(`/api/v1/store/timeslot/config/${id}`, data)
+  return request.put<R<TimeSlotConfig>>(`/api/v1/store/time-slot-config/${id}`, data)
 }
 
 export function getAvailableSlots(params: { storeId: number; technicianId?: number; date: string }) {
-  return request.get<R<AvailableSlot[]>>('/api/v1/store/timeslot/available', { params })
+  return request.get<R<AvailableSlot[]>>('/api/v1/store/time-slots/available', { params })
 }

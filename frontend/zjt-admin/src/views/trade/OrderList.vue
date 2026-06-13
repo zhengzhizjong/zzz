@@ -14,7 +14,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="全部状态" clearable>
+          <el-select v-model="searchForm.paymentStatus" placeholder="全部状态" clearable>
             <el-option
               v-for="item in STATUS_OPTIONS"
               :key="item.value"
@@ -49,21 +49,20 @@
         <el-table-column prop="orderNo" label="订单号" width="160" />
         <el-table-column label="客户" width="140">
           <template #default="{ row }">
-            <div>{{ row.customerName }}</div>
-            <div class="sub-text">{{ row.customerPhone }}</div>
+            <div>{{ row.memberName }}</div>
+            <div class="sub-text">{{ row.memberPhone }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="storeName" label="门店" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="serviceName" label="服务项目" width="120" show-overflow-tooltip />
-        <el-table-column prop="amount" label="金额" width="100" align="right">
+        <el-table-column prop="paidAmount" label="金额" width="100" align="right">
           <template #default="{ row }">
-            ¥{{ row.amount?.toFixed(2) ?? '0.00' }}
+            ¥{{ row.paidAmount?.toFixed(2) ?? '0.00' }}
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="90" align="center">
+        <el-table-column prop="paymentStatus" label="状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" size="small">
-              {{ getStatusLabel(row.status) }}
+            <el-tag :type="getStatusType(row.paymentStatus)" size="small">
+              {{ getStatusLabel(row.paymentStatus) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -72,7 +71,7 @@
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleViewDetail(row)">详情</el-button>
             <el-button
-              v-if="row.status === 1"
+              v-if="row.paymentStatus === 1"
               type="success"
               link
               size="small"
@@ -81,7 +80,7 @@
               完成
             </el-button>
             <el-button
-              v-if="row.status === 0 || row.status === 1"
+              v-if="row.paymentStatus === 0 || row.paymentStatus === 1"
               type="danger"
               link
               size="small"
@@ -111,18 +110,18 @@
       <el-descriptions :column="2" border v-if="currentDetail">
         <el-descriptions-item label="订单号">{{ currentDetail.orderNo }}</el-descriptions-item>
         <el-descriptions-item label="状态">
-          <el-tag :type="getStatusType(currentDetail.status)" size="small">
-            {{ getStatusLabel(currentDetail.status) }}
+          <el-tag :type="getStatusType(currentDetail.paymentStatus)" size="small">
+            {{ getStatusLabel(currentDetail.paymentStatus) }}
           </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="客户姓名">{{ currentDetail.customerName }}</el-descriptions-item>
-        <el-descriptions-item label="联系电话">{{ currentDetail.customerPhone }}</el-descriptions-item>
+        <el-descriptions-item label="客户姓名">{{ currentDetail.memberName }}</el-descriptions-item>
+        <el-descriptions-item label="联系电话">{{ currentDetail.memberPhone }}</el-descriptions-item>
         <el-descriptions-item label="门店">{{ currentDetail.storeName }}</el-descriptions-item>
-        <el-descriptions-item label="服务项目">{{ currentDetail.serviceName }}</el-descriptions-item>
-        <el-descriptions-item label="金额">¥{{ currentDetail.amount?.toFixed(2) ?? '0.00' }}</el-descriptions-item>
+        <el-descriptions-item label="总金额">¥{{ currentDetail.totalAmount?.toFixed(2) ?? '0.00' }}</el-descriptions-item>
+        <el-descriptions-item label="优惠金额">¥{{ currentDetail.discountAmount?.toFixed(2) ?? '0.00' }}</el-descriptions-item>
+        <el-descriptions-item label="实付金额">¥{{ currentDetail.paidAmount?.toFixed(2) ?? '0.00' }}</el-descriptions-item>
         <el-descriptions-item label="下单时间">{{ currentDetail.createdAt }}</el-descriptions-item>
-        <el-descriptions-item label="支付时间">{{ currentDetail.paidAt || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="完成时间">{{ currentDetail.completedAt || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="支付时间">{{ currentDetail.paymentTime || '-' }}</el-descriptions-item>
       </el-descriptions>
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
@@ -157,7 +156,7 @@ const dateRange = ref<[string, string] | null>(null)
 
 const searchForm = reactive({
   storeId: undefined as number | undefined,
-  status: undefined as number | undefined,
+  paymentStatus: undefined as number | undefined,
   keyword: '',
 })
 
@@ -192,7 +191,7 @@ async function fetchData() {
       pageSize: pagination.pageSize,
       keyword: searchForm.keyword || undefined,
       storeId: searchForm.storeId,
-      status: searchForm.status,
+      paymentStatus: searchForm.paymentStatus,
     }
     if (dateRange.value && dateRange.value.length === 2) {
       params.startDate = dateRange.value[0]
@@ -215,7 +214,7 @@ function handleSearch() {
 
 function handleReset() {
   searchForm.storeId = undefined
-  searchForm.status = undefined
+  searchForm.paymentStatus = undefined
   searchForm.keyword = ''
   dateRange.value = null
   pagination.page = 1

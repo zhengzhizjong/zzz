@@ -19,9 +19,9 @@ export function updateTechnician(id: number, data: TechnicianUpdateRequest) {
 }
 
 export function checkIn(id: number) {
-  return request.put<R<void>>(`/api/v1/store/technicians/${id}/check-in`)
+  return request.post<R<void>>(`/api/v1/store/technicians/${id}/check-in`)
 }
 
 export function checkOut(id: number) {
-  return request.put<R<void>>(`/api/v1/store/technicians/${id}/check-out`)
+  return request.post<R<void>>(`/api/v1/store/technicians/${id}/check-out`)
 }

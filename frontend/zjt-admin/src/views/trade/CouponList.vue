@@ -14,7 +14,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="searchForm.type" placeholder="全部类型" clearable>
+          <el-select v-model="searchForm.couponType" placeholder="全部类型" clearable>
             <el-option
               v-for="item in COUPON_TYPE_OPTIONS"
               :key="item.value"
@@ -36,15 +36,15 @@
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
-        <el-table-column prop="name" label="名称" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="type" label="类型" width="100" align="center">
+        <el-table-column prop="couponName" label="名称" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="couponType" label="类型" width="100" align="center">
           <template #default="{ row }">
-            {{ getCouponTypeLabel(row.type) }}
+            {{ getCouponTypeLabel(row.couponType) }}
           </template>
         </el-table-column>
         <el-table-column label="优惠值" width="110" align="right">
           <template #default="{ row }">
-            {{ row.type === 1 ? `¥${row.value}` : `${row.value}折` }}
+            {{ row.couponType === 1 ? `¥${row.discountValue}` : `${row.discountValue}折` }}
           </template>
         </el-table-column>
         <el-table-column label="门槛" width="110" align="right">
@@ -54,12 +54,12 @@
         </el-table-column>
         <el-table-column label="库存" width="100" align="center">
           <template #default="{ row }">
-            {{ row.stock - row.usedCount }} / {{ row.stock }}
+            {{ row.remainCount }} / {{ row.totalCount }}
           </template>
         </el-table-column>
         <el-table-column label="有效期" min-width="180" align="center">
           <template #default="{ row }">
-            {{ row.validStartTime }} ~ {{ row.validEndTime }}
+            {{ row.startTime }} ~ {{ row.endTime }}
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="90" align="center">
@@ -98,11 +98,11 @@
       destroy-on-close
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入优惠券名称" />
+        <el-form-item label="名称" prop="couponName">
+          <el-input v-model="form.couponName" placeholder="请输入优惠券名称" />
         </el-form-item>
-        <el-form-item label="类型" prop="type">
-          <el-select v-model="form.type" placeholder="请选择类型" style="width: 100%">
+        <el-form-item label="类型" prop="couponType">
+          <el-select v-model="form.couponType" placeholder="请选择类型" style="width: 100%">
             <el-option
               v-for="item in COUPON_TYPE_OPTIONS"
               :key="item.value"
@@ -111,14 +111,14 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="优惠值" prop="value">
-          <el-input-number v-model="form.value" :min="0" :precision="2" style="width: 100%" />
+        <el-form-item label="优惠值" prop="discountValue">
+          <el-input-number v-model="form.discountValue" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
         <el-form-item label="使用门槛" prop="minAmount">
           <el-input-number v-model="form.minAmount" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="库存" prop="stock">
-          <el-input-number v-model="form.stock" :min="1" style="width: 100%" />
+        <el-form-item label="库存" prop="totalCount">
+          <el-input-number v-model="form.totalCount" :min="1" style="width: 100%" />
         </el-form-item>
         <el-form-item label="有效期" prop="validDateRange">
           <el-date-picker
@@ -147,7 +147,7 @@
     >
       <el-form ref="issueFormRef" :model="issueForm" :rules="issueFormRules" label-width="80px">
         <el-form-item label="优惠券">
-          <el-input :model-value="currentCoupon?.name" disabled />
+          <el-input :model-value="currentCoupon?.couponName" disabled />
         </el-form-item>
         <el-form-item label="会员ID" prop="memberIds">
           <el-select
@@ -201,7 +201,7 @@ const issueFormRef = ref<FormInstance>()
 
 const searchForm = reactive({
   status: undefined as number | undefined,
-  type: undefined as number | undefined,
+  couponType: undefined as number | undefined,
 })
 
 const pagination = reactive({
@@ -211,19 +211,19 @@ const pagination = reactive({
 })
 
 const form = reactive({
-  name: '',
-  type: undefined as number | undefined,
-  value: 0,
+  couponName: '',
+  couponType: undefined as number | undefined,
+  discountValue: 0,
   minAmount: 0,
-  stock: 100,
+  totalCount: 100,
   validDateRange: null as [string, string] | null,
 })
 
 const formRules: FormRules = {
-  name: [{ required: true, message: '请输入优惠券名称', trigger: 'blur' }],
-  type: [{ required: true, message: '请选择类型', trigger: 'change' }],
-  value: [{ required: true, message: '请输入优惠值', trigger: 'blur' }],
-  stock: [{ required: true, message: '请输入库存', trigger: 'blur' }],
+  couponName: [{ required: true, message: '请输入优惠券名称', trigger: 'blur' }],
+  couponType: [{ required: true, message: '请选择类型', trigger: 'change' }],
+  discountValue: [{ required: true, message: '请输入优惠值', trigger: 'blur' }],
+  totalCount: [{ required: true, message: '请输入库存', trigger: 'blur' }],
   validDateRange: [{ required: true, message: '请选择有效期', trigger: 'change' }],
 }
 
@@ -254,7 +254,7 @@ async function fetchData() {
       page: pagination.page,
       pageSize: pagination.pageSize,
       status: searchForm.status,
-      type: searchForm.type,
+      couponType: searchForm.couponType,
     }
     const res: any = await getCouponList(params)
     tableData.value = res.data.list || []
@@ -273,7 +273,7 @@ function handleSearch() {
 
 function handleReset() {
   searchForm.status = undefined
-  searchForm.type = undefined
+  searchForm.couponType = undefined
   pagination.page = 1
   fetchData()
 }
@@ -282,11 +282,11 @@ function handleAdd() {
   isEdit.value = false
   currentId.value = undefined
   Object.assign(form, {
-    name: '',
-    type: undefined,
-    value: 0,
+    couponName: '',
+    couponType: undefined,
+    discountValue: 0,
     minAmount: 0,
-    stock: 100,
+    totalCount: 100,
     validDateRange: null,
   })
   formVisible.value = true
@@ -296,12 +296,12 @@ function handleEdit(row: CouponInfo) {
   isEdit.value = true
   currentId.value = row.id
   Object.assign(form, {
-    name: row.name,
-    type: row.type,
-    value: row.value,
+    couponName: row.couponName,
+    couponType: row.couponType,
+    discountValue: row.discountValue,
     minAmount: row.minAmount,
-    stock: row.stock,
-    validDateRange: [row.validStartTime, row.validEndTime] as [string, string],
+    totalCount: row.totalCount,
+    validDateRange: [row.startTime, row.endTime] as [string, string],
   })
   formVisible.value = true
 }
@@ -314,13 +314,13 @@ async function handleSubmit() {
   submitLoading.value = true
   try {
     const data = {
-      name: form.name,
-      type: form.type,
-      value: form.value,
+      couponName: form.couponName,
+      couponType: form.couponType,
+      discountValue: form.discountValue,
       minAmount: form.minAmount,
-      stock: form.stock,
-      validStartTime: form.validDateRange[0],
-      validEndTime: form.validDateRange[1],
+      totalCount: form.totalCount,
+      startTime: form.validDateRange[0],
+      endTime: form.validDateRange[1],
     }
     if (isEdit.value && currentId.value) {
       await updateCoupon(currentId.value, data)

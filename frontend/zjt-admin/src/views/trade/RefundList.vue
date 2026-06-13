@@ -4,7 +4,7 @@
     <el-card class="search-card" shadow="never">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="全部状态" clearable>
+          <el-select v-model="searchForm.refundStatus" placeholder="全部状态" clearable>
             <el-option
               v-for="item in STATUS_OPTIONS"
               :key="item.value"
@@ -29,16 +29,16 @@
         <el-table-column prop="refundNo" label="退款号" width="160" />
         <el-table-column prop="orderNo" label="订单号" width="160" />
         <el-table-column prop="customerName" label="客户" width="120" />
-        <el-table-column prop="amount" label="退款金额" width="110" align="right">
+        <el-table-column prop="refundAmount" label="退款金额" width="110" align="right">
           <template #default="{ row }">
-            ¥{{ row.amount?.toFixed(2) ?? '0.00' }}
+            ¥{{ row.refundAmount?.toFixed(2) ?? '0.00' }}
           </template>
         </el-table-column>
-        <el-table-column prop="reason" label="退款原因" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" width="90" align="center">
+        <el-table-column prop="refundReason" label="退款原因" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="refundStatus" label="状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" size="small">
-              {{ getStatusLabel(row.status) }}
+            <el-tag :type="getStatusType(row.refundStatus)" size="small">
+              {{ getStatusLabel(row.refundStatus) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -46,7 +46,7 @@
         <el-table-column label="操作" width="140" align="center" fixed="right">
           <template #default="{ row }">
             <el-button
-              v-if="row.status === 0"
+              v-if="row.refundStatus === 0"
               type="success"
               link
               size="small"
@@ -55,7 +55,7 @@
               通过
             </el-button>
             <el-button
-              v-if="row.status === 0"
+              v-if="row.refundStatus === 0"
               type="danger"
               link
               size="small"
@@ -86,8 +86,8 @@
         <el-descriptions-item label="退款号">{{ currentRefund.refundNo }}</el-descriptions-item>
         <el-descriptions-item label="订单号">{{ currentRefund.orderNo }}</el-descriptions-item>
         <el-descriptions-item label="客户">{{ currentRefund.customerName }}</el-descriptions-item>
-        <el-descriptions-item label="退款金额">¥{{ currentRefund.amount?.toFixed(2) ?? '0.00' }}</el-descriptions-item>
-        <el-descriptions-item label="退款原因">{{ currentRefund.reason }}</el-descriptions-item>
+        <el-descriptions-item label="退款金额">¥{{ currentRefund.refundAmount?.toFixed(2) ?? '0.00' }}</el-descriptions-item>
+        <el-descriptions-item label="退款原因">{{ currentRefund.refundReason }}</el-descriptions-item>
       </el-descriptions>
       <div v-if="approveAction === 'reject'" style="margin-top: 16px">
         <el-form ref="rejectFormRef" :model="rejectForm" :rules="rejectFormRules" label-width="80px">
@@ -142,7 +142,7 @@ const currentRefund = ref<RefundInfo | null>(null)
 const rejectFormRef = ref<FormInstance>()
 
 const searchForm = reactive({
-  status: undefined as number | undefined,
+  refundStatus: undefined as number | undefined,
   keyword: '',
 })
 
@@ -174,7 +174,7 @@ async function fetchData() {
     const res: any = await getRefundList({
       page: pagination.page,
       pageSize: pagination.pageSize,
-      status: searchForm.status,
+      refundStatus: searchForm.refundStatus,
       keyword: searchForm.keyword || undefined,
     })
     tableData.value = res.data.list || []
@@ -192,7 +192,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  searchForm.status = undefined
+  searchForm.refundStatus = undefined
   searchForm.keyword = ''
   pagination.page = 1
   fetchData()

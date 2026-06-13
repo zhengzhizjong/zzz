@@ -3,8 +3,8 @@ import type { R, PageResult } from '@/types/api'
 
 export interface RoleInfo {
   id: number
-  name: string
-  code: string
+  roleName: string
+  roleCode: string
   description: string
   permissions: number[]
   createdAt: string

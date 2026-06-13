@@ -6,10 +6,10 @@
         <el-form-item label="关键词">
           <el-input v-model="searchForm.keyword" placeholder="会员号/昵称/手机号" clearable @keyup.enter="handleSearch" />
         </el-form-item>
-        <el-form-item label="等级">
-          <el-select v-model="searchForm.level" placeholder="全部等级" clearable>
+        <el-form-item label="类型">
+          <el-select v-model="searchForm.memberType" placeholder="全部类型" clearable>
             <el-option
-              v-for="item in LEVEL_OPTIONS"
+              v-for="item in MEMBER_TYPE_OPTIONS"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -27,12 +27,12 @@
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
         <el-table-column prop="memberNo" label="会员号" width="130" />
-        <el-table-column prop="nickname" label="昵称" width="120" />
+        <el-table-column prop="name" label="姓名" width="120" />
         <el-table-column prop="phone" label="手机号" width="130" />
-        <el-table-column prop="level" label="等级" width="100" align="center">
+        <el-table-column prop="memberType" label="类型" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="getLevelType(row.level)" size="small">
-              {{ getLevelLabel(row.level) }}
+            <el-tag :type="getMemberTypeTag(row.memberType)" size="small">
+              {{ getMemberTypeLabel(row.memberType) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -73,11 +73,11 @@
     <el-dialog v-model="detailVisible" title="会员详情" width="560px" destroy-on-close>
       <el-descriptions :column="2" border v-if="currentDetail">
         <el-descriptions-item label="会员号">{{ currentDetail.memberNo }}</el-descriptions-item>
-        <el-descriptions-item label="昵称">{{ currentDetail.nickname }}</el-descriptions-item>
+        <el-descriptions-item label="姓名">{{ currentDetail.name }}</el-descriptions-item>
         <el-descriptions-item label="手机号">{{ currentDetail.phone }}</el-descriptions-item>
-        <el-descriptions-item label="等级">
-          <el-tag :type="getLevelType(currentDetail.level)" size="small">
-            {{ getLevelLabel(currentDetail.level) }}
+        <el-descriptions-item label="类型">
+          <el-tag :type="getMemberTypeTag(currentDetail.memberType)" size="small">
+            {{ getMemberTypeLabel(currentDetail.memberType) }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="消费总额">¥{{ currentDetail.totalConsumption?.toFixed(2) ?? '0.00' }}</el-descriptions-item>
@@ -93,13 +93,13 @@
     <!-- 编辑弹窗 -->
     <el-dialog v-model="editVisible" title="编辑会员" width="500px" destroy-on-close>
       <el-form ref="editFormRef" :model="editForm" :rules="editFormRules" label-width="80px">
-        <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="editForm.nickname" placeholder="请输入昵称" />
+        <el-form-item label="姓名" prop="name">
+          <el-input v-model="editForm.name" placeholder="请输入姓名" />
         </el-form-item>
-        <el-form-item label="等级" prop="level">
-          <el-select v-model="editForm.level" placeholder="请选择等级" style="width: 100%">
+        <el-form-item label="类型" prop="memberType">
+          <el-select v-model="editForm.memberType" placeholder="请选择类型" style="width: 100%">
             <el-option
-              v-for="item in LEVEL_OPTIONS"
+              v-for="item in MEMBER_TYPE_OPTIONS"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -121,11 +121,10 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getMemberList, getMemberDetail, updateMember, type MemberInfo } from '@/api/user/member'
 
-const LEVEL_OPTIONS = [
-  { value: 1, label: '普通会员', type: 'info' },
-  { value: 2, label: '银卡会员', type: '' },
-  { value: 3, label: '金卡会员', type: 'warning' },
-  { value: 4, label: '钻石会员', type: 'danger' },
+const MEMBER_TYPE_OPTIONS = [
+  { value: 1, label: '散客', tag: 'info' },
+  { value: 2, label: '会员', tag: '' },
+  { value: 3, label: 'VIP', tag: 'warning' },
 ]
 
 const loading = ref(false)
@@ -139,7 +138,7 @@ const editFormRef = ref<FormInstance>()
 
 const searchForm = reactive({
   keyword: '',
-  level: undefined as number | undefined,
+  memberType: undefined as number | undefined,
 })
 
 const pagination = reactive({
@@ -149,21 +148,21 @@ const pagination = reactive({
 })
 
 const editForm = reactive({
-  nickname: '',
-  level: undefined as number | undefined,
+  name: '',
+  memberType: undefined as number | undefined,
 })
 
 const editFormRules: FormRules = {
-  nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
-  level: [{ required: true, message: '请选择等级', trigger: 'change' }],
+  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  memberType: [{ required: true, message: '请选择类型', trigger: 'change' }],
 }
 
-function getLevelLabel(level: number): string {
-  return LEVEL_OPTIONS.find(o => o.value === level)?.label || '未知'
+function getMemberTypeLabel(type: number): string {
+  return MEMBER_TYPE_OPTIONS.find(o => o.value === type)?.label || '未知'
 }
 
-function getLevelType(level: number): string {
-  return LEVEL_OPTIONS.find(o => o.value === level)?.type || 'info'
+function getMemberTypeTag(type: number): string {
+  return MEMBER_TYPE_OPTIONS.find(o => o.value === type)?.tag || 'info'
 }
 
 async function fetchData() {
@@ -173,7 +172,7 @@ async function fetchData() {
       page: pagination.page,
       pageSize: pagination.pageSize,
       keyword: searchForm.keyword || undefined,
-      level: searchForm.level,
+      memberLevelId: searchForm.memberType,
     })
     tableData.value = res.data.list || []
     pagination.total = res.data.pagination.total
@@ -191,7 +190,7 @@ function handleSearch() {
 
 function handleReset() {
   searchForm.keyword = ''
-  searchForm.level = undefined
+  searchForm.memberType = undefined
   pagination.page = 1
   fetchData()
 }
@@ -208,8 +207,8 @@ async function handleViewDetail(row: MemberInfo) {
 
 function handleEdit(row: MemberInfo) {
   currentEditId.value = row.id
-  editForm.nickname = row.nickname
-  editForm.level = row.level
+  editForm.name = row.name
+  editForm.memberType = row.memberType
   editVisible.value = true
 }
 
@@ -220,8 +219,8 @@ async function handleEditSubmit() {
   editLoading.value = true
   try {
     await updateMember(currentEditId.value!, {
-      nickname: editForm.nickname,
-      level: editForm.level,
+      name: editForm.name,
+      memberLevelId: editForm.memberType,
     })
     ElMessage.success('更新成功')
     editVisible.value = false

@@ -3,14 +3,15 @@ import type { R, PageResult } from '@/types/api'
 
 export interface CouponInfo {
   id: number
-  name: string
-  type: number
-  value: number
+  couponNo: string
+  couponName: string
+  couponType: number
+  discountValue: number
   minAmount: number
-  stock: number
-  usedCount: number
-  validStartTime: string
-  validEndTime: string
+  totalCount: number
+  remainCount: number
+  startTime: string
+  endTime: string
   status: number
   createdAt: string
 }

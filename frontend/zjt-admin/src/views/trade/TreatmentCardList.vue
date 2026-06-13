@@ -29,18 +29,17 @@
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
-        <el-table-column prop="name" label="卡名" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="projectName" label="项目" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="totalCount" label="总次数" width="90" align="center" />
-        <el-table-column prop="remainingCount" label="剩余" width="90" align="center">
+        <el-table-column prop="cardName" label="卡名" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="totalUses" label="总次数" width="90" align="center" />
+        <el-table-column prop="remainingUses" label="剩余" width="90" align="center">
           <template #default="{ row }">
-            <span :class="{ 'text-danger': row.remainingCount <= 2 }">{{ row.remainingCount }}</span>
+            <span :class="{ 'text-danger': row.remainingUses <= 2 }">{{ row.remainingUses }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="memberName" label="会员" width="120" />
-        <el-table-column prop="price" label="价格" width="100" align="right">
+        <el-table-column prop="purchaseAmount" label="价格" width="100" align="right">
           <template #default="{ row }">
-            ¥{{ row.price?.toFixed(2) ?? '0.00' }}
+            ¥{{ row.purchaseAmount?.toFixed(2) ?? '0.00' }}
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="90" align="center">
@@ -78,17 +77,14 @@
       destroy-on-close
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="90px">
-        <el-form-item label="卡名" prop="name">
-          <el-input v-model="form.name" placeholder="请输入疗程卡名称" />
+        <el-form-item label="卡名" prop="cardName">
+          <el-input v-model="form.cardName" placeholder="请输入疗程卡名称" />
         </el-form-item>
-        <el-form-item label="项目" prop="projectName">
-          <el-input v-model="form.projectName" placeholder="请输入关联项目" />
+        <el-form-item label="总次数" prop="totalUses">
+          <el-input-number v-model="form.totalUses" :min="1" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="总次数" prop="totalCount">
-          <el-input-number v-model="form.totalCount" :min="1" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="价格" prop="price">
-          <el-input-number v-model="form.price" :min="0" :precision="2" style="width: 100%" />
+        <el-form-item label="价格" prop="purchaseAmount">
+          <el-input-number v-model="form.purchaseAmount" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
         <el-form-item label="会员ID" prop="memberId">
           <el-input-number v-model="form.memberId" :min="1" style="width: 100%" placeholder="请输入会员ID" />
@@ -154,18 +150,16 @@ const pagination = reactive({
 })
 
 const form = reactive({
-  name: '',
-  projectName: '',
-  totalCount: 10,
-  price: 0,
+  cardName: '',
+  totalUses: 10,
+  purchaseAmount: 0,
   memberId: undefined as number | undefined,
 })
 
 const formRules: FormRules = {
-  name: [{ required: true, message: '请输入疗程卡名称', trigger: 'blur' }],
-  projectName: [{ required: true, message: '请输入关联项目', trigger: 'blur' }],
-  totalCount: [{ required: true, message: '请输入总次数', trigger: 'blur' }],
-  price: [{ required: true, message: '请输入价格', trigger: 'blur' }],
+  cardName: [{ required: true, message: '请输入疗程卡名称', trigger: 'blur' }],
+  totalUses: [{ required: true, message: '请输入总次数', trigger: 'blur' }],
+  purchaseAmount: [{ required: true, message: '请输入价格', trigger: 'blur' }],
   memberId: [{ required: true, message: '请输入会员ID', trigger: 'blur' }],
 }
 
@@ -210,10 +204,9 @@ function handleReset() {
 
 function handleAdd() {
   Object.assign(form, {
-    name: '',
-    projectName: '',
-    totalCount: 10,
-    price: 0,
+    cardName: '',
+    totalUses: 10,
+    purchaseAmount: 0,
     memberId: undefined,
   })
   formVisible.value = true

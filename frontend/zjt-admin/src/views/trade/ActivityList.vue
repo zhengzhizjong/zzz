@@ -4,7 +4,7 @@
     <el-card class="search-card" shadow="never">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="类型">
-          <el-select v-model="searchForm.type" placeholder="全部类型" clearable>
+          <el-select v-model="searchForm.activityType" placeholder="全部类型" clearable>
             <el-option
               v-for="item in ACTIVITY_TYPE_OPTIONS"
               :key="item.value"
@@ -36,13 +36,13 @@
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
-        <el-table-column prop="name" label="活动名" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="type" label="类型" width="100" align="center">
+        <el-table-column prop="activityName" label="活动名" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="activityType" label="类型" width="100" align="center">
           <template #default="{ row }">
-            {{ getTypeLabel(row.type) }}
+            {{ getTypeLabel(row.activityType) }}
           </template>
         </el-table-column>
-        <el-table-column prop="rule" label="优惠规则" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="rulesJson" label="优惠规则" min-width="180" show-overflow-tooltip />
         <el-table-column prop="startTime" label="开始时间" width="170" />
         <el-table-column prop="endTime" label="结束时间" width="170" />
         <el-table-column prop="status" label="状态" width="100" align="center">
@@ -88,11 +88,11 @@
       destroy-on-close
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="活动名" prop="name">
-          <el-input v-model="form.name" placeholder="请输入活动名称" />
+        <el-form-item label="活动名" prop="activityName">
+          <el-input v-model="form.activityName" placeholder="请输入活动名称" />
         </el-form-item>
-        <el-form-item label="类型" prop="type">
-          <el-select v-model="form.type" placeholder="请选择类型" style="width: 100%">
+        <el-form-item label="类型" prop="activityType">
+          <el-select v-model="form.activityType" placeholder="请选择类型" style="width: 100%">
             <el-option
               v-for="item in ACTIVITY_TYPE_OPTIONS"
               :key="item.value"
@@ -101,8 +101,8 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="优惠规则" prop="rule">
-          <el-input v-model="form.rule" placeholder="请输入优惠规则，如：满100减20" />
+        <el-form-item label="优惠规则" prop="rulesJson">
+          <el-input v-model="form.rulesJson" placeholder="请输入优惠规则，如：满100减20" />
         </el-form-item>
         <el-form-item label="时间范围" prop="dateRange">
           <el-date-picker
@@ -161,7 +161,7 @@ const currentId = ref<number | undefined>(undefined)
 const formRef = ref<FormInstance>()
 
 const searchForm = reactive({
-  type: undefined as number | undefined,
+  activityType: undefined as number | undefined,
   status: undefined as number | undefined,
 })
 
@@ -172,17 +172,17 @@ const pagination = reactive({
 })
 
 const form = reactive({
-  name: '',
-  type: undefined as number | undefined,
-  rule: '',
+  activityName: '',
+  activityType: undefined as number | undefined,
+  rulesJson: '',
   dateRange: null as [string, string] | null,
   status: undefined as number | undefined,
 })
 
 const formRules: FormRules = {
-  name: [{ required: true, message: '请输入活动名称', trigger: 'blur' }],
-  type: [{ required: true, message: '请选择类型', trigger: 'change' }],
-  rule: [{ required: true, message: '请输入优惠规则', trigger: 'blur' }],
+  activityName: [{ required: true, message: '请输入活动名称', trigger: 'blur' }],
+  activityType: [{ required: true, message: '请选择类型', trigger: 'change' }],
+  rulesJson: [{ required: true, message: '请输入优惠规则', trigger: 'blur' }],
   dateRange: [{ required: true, message: '请选择时间范围', trigger: 'change' }],
   status: [{ required: true, message: '请选择状态', trigger: 'change' }],
 }
@@ -205,7 +205,7 @@ async function fetchData() {
     const params: any = {
       page: pagination.page,
       pageSize: pagination.pageSize,
-      type: searchForm.type,
+      activityType: searchForm.activityType,
       status: searchForm.status,
     }
     const res: any = await getActivityList(params)
@@ -224,7 +224,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  searchForm.type = undefined
+  searchForm.activityType = undefined
   searchForm.status = undefined
   pagination.page = 1
   fetchData()
@@ -234,9 +234,9 @@ function handleAdd() {
   isEdit.value = false
   currentId.value = undefined
   Object.assign(form, {
-    name: '',
-    type: undefined,
-    rule: '',
+    activityName: '',
+    activityType: undefined,
+    rulesJson: '',
     dateRange: null,
     status: undefined,
   })
@@ -247,9 +247,9 @@ function handleEdit(row: ActivityInfo) {
   isEdit.value = true
   currentId.value = row.id
   Object.assign(form, {
-    name: row.name,
-    type: row.type,
-    rule: row.rule,
+    activityName: row.activityName,
+    activityType: row.activityType,
+    rulesJson: row.rulesJson,
     dateRange: [row.startTime, row.endTime] as [string, string],
     status: row.status,
   })
@@ -264,9 +264,9 @@ async function handleSubmit() {
   submitLoading.value = true
   try {
     const data = {
-      name: form.name,
-      type: form.type,
-      rule: form.rule,
+      activityName: form.activityName,
+      activityType: form.activityType,
+      rulesJson: form.rulesJson,
       startTime: form.dateRange[0],
       endTime: form.dateRange[1],
       status: form.status,

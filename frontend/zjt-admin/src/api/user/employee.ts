@@ -6,7 +6,8 @@ export interface EmployeeInfo {
   employeeNo: string
   name: string
   phone: string
-  department: string
+  departmentId: number
+  departmentName: string
   position: string
   status: number
   createdAt: string
@@ -16,7 +17,7 @@ export function getEmployeeList(params: {
   page: number
   pageSize: number
   keyword?: string
-  department?: string
+  departmentId?: number
   status?: number
 }) {
   return request.get<R<PageResult<EmployeeInfo>>>('/api/v1/user/employees', { params })
@@ -26,7 +27,7 @@ export function createEmployee(data: {
   employeeNo: string
   name: string
   phone: string
-  department: string
+  departmentId: number
   position: string
 }) {
   return request.post<R<void>>('/api/v1/user/employees', data)
@@ -35,7 +36,7 @@ export function createEmployee(data: {
 export function updateEmployee(id: number, data: {
   name?: string
   phone?: string
-  department?: string
+  departmentId?: number
   position?: string
 }) {
   return request.put<R<void>>(`/api/v1/user/employees/${id}`, data)

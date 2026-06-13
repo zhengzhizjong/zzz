@@ -22,35 +22,35 @@ export interface DictItemInfo {
 }
 
 export function getDictList(params: { page: number; pageSize: number; keyword?: string }) {
-  return request.get<R<PageResult<DictInfo>>>('/api/v1/system/dicts', { params })
+  return request.get<R<PageResult<DictInfo>>>('/api/v1/admin/dicts', { params })
 }
 
 export function createDict(data: { dictType: string; dictName: string; remark?: string }) {
-  return request.post<R<void>>('/api/v1/system/dicts', data)
+  return request.post<R<void>>('/api/v1/admin/dicts', data)
 }
 
 export function updateDict(id: number, data: { dictName?: string; remark?: string }) {
-  return request.put<R<void>>(`/api/v1/system/dicts/${id}`, data)
+  return request.put<R<void>>(`/api/v1/admin/dicts/${id}`, data)
 }
 
 export function deleteDict(id: number) {
-  return request.delete<R<void>>(`/api/v1/system/dicts/${id}`)
+  return request.delete<R<void>>(`/api/v1/admin/dicts/${id}`)
 }
 
 export function getDictItems(dictType: string) {
-  return request.get<R<DictItemInfo[]>>(`/api/v1/system/dicts/${dictType}/items`)
+  return request.get<R<DictItemInfo[]>>(`/api/v1/admin/dicts/${dictType}/items`)
 }
 
 export function createDictItem(data: { dictType: string; itemValue: string; itemLabel: string; sort?: number; remark?: string }) {
-  return request.post<R<void>>('/api/v1/system/dict-items', data)
+  return request.post<R<void>>('/api/v1/admin/dict-items', data)
 }
 
 export function updateDictItem(id: number, data: { itemValue?: string; itemLabel?: string; sort?: number; remark?: string }) {
-  return request.put<R<void>>(`/api/v1/system/dict-items/${id}`, data)
+  return request.put<R<void>>(`/api/v1/admin/dict-items/${id}`, data)
 }
 
 export function deleteDictItem(id: number) {
-  return request.delete<R<void>>(`/api/v1/system/dict-items/${id}`)
+  return request.delete<R<void>>(`/api/v1/admin/dict-items/${id}`)
 }
 
 // ===== 配置管理 =====
@@ -65,11 +65,11 @@ export interface ConfigInfo {
 }
 
 export function getConfigList(params: { page: number; pageSize: number; keyword?: string }) {
-  return request.get<R<PageResult<ConfigInfo>>>('/api/v1/system/configs', { params })
+  return request.get<R<PageResult<ConfigInfo>>>('/api/v1/admin/configs', { params })
 }
 
 export function updateConfig(id: number, data: { configValue: string }) {
-  return request.put<R<void>>(`/api/v1/system/configs/${id}`, data)
+  return request.put<R<void>>(`/api/v1/admin/configs/${id}`, data)
 }
 
 // ===== 功能开关 =====
@@ -85,21 +85,21 @@ export interface FeatureFlagInfo {
 }
 
 export function getFeatureFlagList(params: { page: number; pageSize: number; keyword?: string }) {
-  return request.get<R<PageResult<FeatureFlagInfo>>>('/api/v1/system/feature-flags', { params })
+  return request.get<R<PageResult<FeatureFlagInfo>>>('/api/v1/admin/feature-flags', { params })
 }
 
 export function createFeatureFlag(data: { flagKey: string; flagName: string; enabled?: boolean; grayPercent?: number; description?: string }) {
-  return request.post<R<void>>('/api/v1/system/feature-flags', data)
+  return request.post<R<void>>('/api/v1/admin/feature-flags', data)
 }
 
 export function updateFeatureFlag(id: number, data: { flagName?: string; enabled?: boolean; grayPercent?: number; description?: string }) {
-  return request.put<R<void>>(`/api/v1/system/feature-flags/${id}`, data)
+  return request.put<R<void>>(`/api/v1/admin/feature-flags/${id}`, data)
 }
 
 export function toggleFeatureFlag(id: number, enabled: boolean) {
-  return request.put<R<void>>(`/api/v1/system/feature-flags/${id}/toggle`, { enabled })
+  return request.put<R<void>>(`/api/v1/admin/feature-flags/${id}/toggle`, { enabled })
 }
 
 export function deleteFeatureFlag(id: number) {
-  return request.delete<R<void>>(`/api/v1/system/feature-flags/${id}`)
+  return request.delete<R<void>>(`/api/v1/admin/feature-flags/${id}`)
 }
