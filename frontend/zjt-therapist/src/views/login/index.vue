@@ -3,6 +3,7 @@
     <div class="login-header">
       <div class="logo">忠济堂</div>
       <div class="subtitle">技师端</div>
+      <div class="system-desc">签到签退 · 业绩查看 · 推广管理</div>
     </div>
 
     <van-form @submit="handleLogin" class="login-form">
@@ -69,11 +70,25 @@ async function handleLogin() {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #07C160 0%, #f5f5f5 50%);
+  background: linear-gradient(180deg, #07C160 0%, #06ad56 40%, #f5f5f5 70%);
   padding: 0 20px;
+  position: relative;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50vh;
+  background: linear-gradient(180deg, #07C160 0%, #06ad56 100%);
+  z-index: 0;
 }
 
 .login-header {
+  position: relative;
+  z-index: 1;
   text-align: center;
   padding: 80px 0 40px;
   color: #fff;
@@ -83,15 +98,26 @@ async function handleLogin() {
   font-size: 36px;
   font-weight: bold;
   letter-spacing: 4px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .subtitle {
-  font-size: 16px;
+  font-size: 18px;
   margin-top: 8px;
-  opacity: 0.85;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.system-desc {
+  font-size: 13px;
+  margin-top: 12px;
+  opacity: 0.75;
+  letter-spacing: 3px;
 }
 
 .login-form {
+  position: relative;
+  z-index: 1;
   margin-top: 20px;
 }
 

@@ -1,9 +1,11 @@
 <template>
   <div class="login-container">
     <div class="login-card">
+      <div class="card-accent"></div>
       <div class="login-header">
         <h1>忠济堂</h1>
-        <p>店长管理系统</p>
+        <p class="system-name">店长管理系统</p>
+        <p class="system-desc">门店运营 · 排班管理 · 数据分析</p>
       </div>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="0" size="large">
         <el-form-item prop="phone">
@@ -68,11 +70,21 @@ async function handleLogin() {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 }
 .login-card {
-  width: 400px;
-  padding: 40px;
+  position: relative;
+  width: 420px;
+  padding: 48px 40px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+.card-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, #f6d365, #fda085);
 }
 .login-header {
   text-align: center;
@@ -83,9 +95,16 @@ async function handleLogin() {
   color: #303133;
   margin: 0 0 8px;
 }
-.login-header p {
-  font-size: 14px;
+.login-header .system-name {
+  font-size: 16px;
+  color: #d4a017;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+.login-header .system-desc {
+  font-size: 13px;
   color: #909399;
   margin: 0;
+  letter-spacing: 2px;
 }
 </style>
