@@ -37,7 +37,7 @@ public class TradeOrderServiceImpl implements ITradeOrderService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     @Override
-    public R<PageResult<TradeOrderDO>> page(Integer page, Integer pageSize, Long storeId, Long memberId, Integer status) {
+    public R<PageResult<TradeOrderDO>> page(Integer page, Integer pageSize, Long storeId, Long memberId, Integer status, String keyword, String startDate, String endDate) {
         Page<TradeOrderDO> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<TradeOrderDO> wrapper = new LambdaQueryWrapper<>();
         if (storeId != null) {
@@ -48,6 +48,16 @@ public class TradeOrderServiceImpl implements ITradeOrderService {
         }
         if (status != null) {
             wrapper.eq(TradeOrderDO::getPaymentStatus, status);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            wrapper.and(w -> w.like(TradeOrderDO::getOrderNo, keyword)
+                    .or().like(TradeOrderDO::getMemberName, keyword));
+        }
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            wrapper.ge(TradeOrderDO::getCreatedAt, startDate + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            wrapper.le(TradeOrderDO::getCreatedAt, endDate + " 23:59:59");
         }
         wrapper.orderByDesc(TradeOrderDO::getCreatedAt);
         Page<TradeOrderDO> result = tradeOrderMapper.selectPage(pageParam, wrapper);

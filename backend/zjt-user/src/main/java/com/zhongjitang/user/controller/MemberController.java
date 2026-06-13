@@ -65,6 +65,18 @@ public class MemberController {
         return memberService.page(page, pageSize, keyword, levelId);
     }
 
+    @GetMapping("/{id}")
+    @Operation(summary = "会员详情(管理端)")
+    public R<UserMemberDO> getDetail(@PathVariable Long id) {
+        return memberService.getDetail(id);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "更新会员(管理端)")
+    public R<Void> updateMember(@PathVariable Long id, @RequestBody MemberAdminUpdateRequest request) {
+        return memberService.adminUpdate(id, request);
+    }
+
     @PostMapping("/bind-wechat")
     @Operation(summary = "绑定微信")
     public R<Void> bindWechat(@RequestParam String code) {

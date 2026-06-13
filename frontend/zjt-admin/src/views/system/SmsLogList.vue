@@ -7,9 +7,10 @@
           <el-input v-model="searchForm.phone" placeholder="请输入手机号" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="全部状态" clearable>
-            <el-option label="成功" :value="1" />
-            <el-option label="失败" :value="0" />
+          <el-select v-model="searchForm.sendStatus" placeholder="全部状态" clearable>
+            <el-option label="发送中" :value="1" />
+            <el-option label="成功" :value="2" />
+            <el-option label="失败" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="日期范围">
@@ -33,16 +34,16 @@
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
         <el-table-column prop="phone" label="手机号" width="140" />
-        <el-table-column prop="templateName" label="模板名" width="160" show-overflow-tooltip />
+        <el-table-column prop="templateCode" label="模板编码" width="160" show-overflow-tooltip />
         <el-table-column prop="content" label="内容" min-width="250" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" width="90" align="center">
+        <el-table-column prop="sendStatus" label="状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
-              {{ row.status === 1 ? '成功' : '失败' }}
+            <el-tag :type="getSendStatusType(row.sendStatus)" size="small">
+              {{ getSendStatusLabel(row.sendStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="sentAt" label="发送时间" width="170" />
+        <el-table-column prop="sendTime" label="发送时间" width="170" />
       </el-table>
 
       <div class="pagination-wrapper">
@@ -70,7 +71,7 @@ const dateRange = ref<[string, string] | null>(null)
 
 const searchForm = reactive({
   phone: '',
-  status: undefined as number | undefined,
+  sendStatus: undefined as number | undefined,
 })
 
 const pagination = reactive({
@@ -79,6 +80,20 @@ const pagination = reactive({
   total: 0,
 })
 
+function getSendStatusLabel(status: number): string {
+  if (status === 1) return '发送中'
+  if (status === 2) return '成功'
+  if (status === 3) return '失败'
+  return '未知'
+}
+
+function getSendStatusType(status: number): string {
+  if (status === 1) return 'warning'
+  if (status === 2) return 'success'
+  if (status === 3) return 'danger'
+  return 'info'
+}
+
 async function fetchData() {
   loading.value = true
   try {
@@ -86,7 +101,7 @@ async function fetchData() {
       page: pagination.page,
       pageSize: pagination.pageSize,
       phone: searchForm.phone || undefined,
-      status: searchForm.status,
+      status: searchForm.sendStatus,
     }
     if (dateRange.value && dateRange.value.length === 2) {
       params.startDate = dateRange.value[0]
@@ -109,7 +124,7 @@ function handleSearch() {
 
 function handleReset() {
   searchForm.phone = ''
-  searchForm.status = undefined
+  searchForm.sendStatus = undefined
   dateRange.value = null
   pagination.page = 1
   fetchData()

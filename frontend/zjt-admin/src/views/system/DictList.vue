@@ -4,7 +4,7 @@
     <el-card class="search-card" shadow="never">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="关键词">
-          <el-input v-model="searchForm.keyword" placeholder="字典类型/名称" clearable @keyup.enter="handleSearch" />
+          <el-input v-model="searchForm.keyword" placeholder="字典编码/名称" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">搜索</el-button>
@@ -19,9 +19,16 @@
     <!-- 字典列表 -->
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
-        <el-table-column prop="dictType" label="字典类型" width="180" />
+        <el-table-column prop="dictCode" label="字典编码" width="180" />
         <el-table-column prop="dictName" label="字典名称" min-width="160" />
-        <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
+        <el-table-column label="状态" width="90" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
+              {{ row.status === 1 ? '启用' : '停用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="170" />
         <el-table-column label="操作" width="200" align="center" fixed="right">
           <template #default="{ row }">
@@ -53,14 +60,14 @@
       destroy-on-close
     >
       <el-form ref="dictFormRef" :model="dictForm" :rules="dictRules" label-width="90px">
-        <el-form-item label="字典类型" prop="dictType">
-          <el-input v-model="dictForm.dictType" :disabled="isEditDict" placeholder="请输入字典类型" />
+        <el-form-item label="字典编码" prop="dictCode">
+          <el-input v-model="dictForm.dictCode" :disabled="isEditDict" placeholder="请输入字典编码" />
         </el-form-item>
         <el-form-item label="字典名称" prop="dictName">
           <el-input v-model="dictForm.dictName" placeholder="请输入字典名称" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="dictForm.remark" type="textarea" :rows="3" placeholder="请输入备注" />
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="dictForm.description" type="textarea" :rows="3" placeholder="请输入描述" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -80,10 +87,17 @@
         <el-button type="primary" size="small" @click="handleAddItem">新增字典项</el-button>
       </div>
       <el-table :data="dictItems" v-loading="itemLoading" stripe border size="small">
-        <el-table-column prop="itemValue" label="值" width="140" />
-        <el-table-column prop="itemLabel" label="标签" width="140" />
-        <el-table-column prop="sort" label="排序" width="80" align="center" />
-        <el-table-column prop="remark" label="备注" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="itemCode" label="编码" width="120" />
+        <el-table-column prop="itemName" label="名称" width="120" />
+        <el-table-column prop="itemValue" label="值" width="120" />
+        <el-table-column prop="sortOrder" label="排序" width="80" align="center" />
+        <el-table-column label="状态" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
+              {{ row.status === 1 ? '启用' : '停用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="140" align="center">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleEditItem(row)">编辑</el-button>
@@ -101,17 +115,17 @@
         destroy-on-close
       >
         <el-form ref="itemFormRef" :model="itemForm" :rules="itemRules" label-width="80px">
+          <el-form-item label="编码" prop="itemCode">
+            <el-input v-model="itemForm.itemCode" placeholder="请输入字典项编码" />
+          </el-form-item>
+          <el-form-item label="名称" prop="itemName">
+            <el-input v-model="itemForm.itemName" placeholder="请输入字典项名称" />
+          </el-form-item>
           <el-form-item label="值" prop="itemValue">
             <el-input v-model="itemForm.itemValue" placeholder="请输入字典项值" />
           </el-form-item>
-          <el-form-item label="标签" prop="itemLabel">
-            <el-input v-model="itemForm.itemLabel" placeholder="请输入字典项标签" />
-          </el-form-item>
-          <el-form-item label="排序" prop="sort">
-            <el-input-number v-model="itemForm.sort" :min="0" :max="9999" />
-          </el-form-item>
-          <el-form-item label="备注" prop="remark">
-            <el-input v-model="itemForm.remark" type="textarea" :rows="2" placeholder="请输入备注" />
+          <el-form-item label="排序" prop="sortOrder">
+            <el-input-number v-model="itemForm.sortOrder" :min="0" :max="9999" />
           </el-form-item>
         </el-form>
         <template #footer>
@@ -144,13 +158,13 @@ const searchForm = reactive({ keyword: '' })
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 
 const dictForm = reactive({
-  dictType: '',
+  dictCode: '',
   dictName: '',
-  remark: '',
+  description: '',
 })
 
 const dictRules: FormRules = {
-  dictType: [{ required: true, message: '请输入字典类型', trigger: 'blur' }],
+  dictCode: [{ required: true, message: '请输入字典编码', trigger: 'blur' }],
   dictName: [{ required: true, message: '请输入字典名称', trigger: 'blur' }],
 }
 
@@ -160,21 +174,21 @@ const itemFormVisible = ref(false)
 const itemLoading = ref(false)
 const isEditItem = ref(false)
 const currentItem = ref<DictItemInfo | undefined>(undefined)
-const currentDictType = ref('')
+const currentDictIdForItems = ref<number>(0)
 const currentDictName = ref('')
 const dictItems = ref<DictItemInfo[]>([])
 const itemFormRef = ref<FormInstance>()
 
 const itemForm = reactive({
+  itemCode: '',
+  itemName: '',
   itemValue: '',
-  itemLabel: '',
-  sort: 0,
-  remark: '',
+  sortOrder: 0,
 })
 
 const itemRules: FormRules = {
-  itemValue: [{ required: true, message: '请输入字典项值', trigger: 'blur' }],
-  itemLabel: [{ required: true, message: '请输入字典项标签', trigger: 'blur' }],
+  itemCode: [{ required: true, message: '请输入字典项编码', trigger: 'blur' }],
+  itemName: [{ required: true, message: '请输入字典项名称', trigger: 'blur' }],
 }
 
 async function fetchData() {
@@ -208,18 +222,18 @@ function handleReset() {
 function handleAddDict() {
   isEditDict.value = false
   currentDictId.value = undefined
-  dictForm.dictType = ''
+  dictForm.dictCode = ''
   dictForm.dictName = ''
-  dictForm.remark = ''
+  dictForm.description = ''
   dictDialogVisible.value = true
 }
 
 function handleEditDict(row: DictInfo) {
   isEditDict.value = true
   currentDictId.value = row.id
-  dictForm.dictType = row.dictType
+  dictForm.dictCode = row.dictCode
   dictForm.dictName = row.dictName
-  dictForm.remark = row.remark
+  dictForm.description = row.description
   dictDialogVisible.value = true
 }
 
@@ -230,14 +244,14 @@ async function handleSaveDict() {
     if (isEditDict.value && currentDictId.value) {
       await updateDict(currentDictId.value, {
         dictName: dictForm.dictName,
-        remark: dictForm.remark,
+        description: dictForm.description,
       })
       ElMessage.success('编辑成功')
     } else {
       await createDict({
-        dictType: dictForm.dictType,
+        dictCode: dictForm.dictCode,
         dictName: dictForm.dictName,
-        remark: dictForm.remark,
+        description: dictForm.description,
       })
       ElMessage.success('新增成功')
     }
@@ -265,7 +279,7 @@ async function handleDeleteDict(row: DictInfo) {
 
 // 字典项管理
 async function handleViewItems(row: DictInfo) {
-  currentDictType.value = row.dictType
+  currentDictIdForItems.value = row.id
   currentDictName.value = row.dictName
   itemDialogVisible.value = true
   await fetchDictItems()
@@ -274,7 +288,7 @@ async function handleViewItems(row: DictInfo) {
 async function fetchDictItems() {
   itemLoading.value = true
   try {
-    const res: any = await getDictItems(currentDictType.value)
+    const res: any = await getDictItems(currentDictIdForItems.value)
     dictItems.value = res.data || []
   } catch {
     dictItems.value = []
@@ -286,20 +300,20 @@ async function fetchDictItems() {
 function handleAddItem() {
   isEditItem.value = false
   currentItem.value = undefined
+  itemForm.itemCode = ''
+  itemForm.itemName = ''
   itemForm.itemValue = ''
-  itemForm.itemLabel = ''
-  itemForm.sort = 0
-  itemForm.remark = ''
+  itemForm.sortOrder = 0
   itemFormVisible.value = true
 }
 
 function handleEditItem(row: DictItemInfo) {
   isEditItem.value = true
   currentItem.value = row
+  itemForm.itemCode = row.itemCode
+  itemForm.itemName = row.itemName
   itemForm.itemValue = row.itemValue
-  itemForm.itemLabel = row.itemLabel
-  itemForm.sort = row.sort
-  itemForm.remark = row.remark
+  itemForm.sortOrder = row.sortOrder
   itemFormVisible.value = true
 }
 
@@ -309,19 +323,18 @@ async function handleSaveItem() {
   try {
     if (isEditItem.value && currentItem.value) {
       await updateDictItem(currentItem.value.id, {
+        itemCode: itemForm.itemCode,
+        itemName: itemForm.itemName,
         itemValue: itemForm.itemValue,
-        itemLabel: itemForm.itemLabel,
-        sort: itemForm.sort,
-        remark: itemForm.remark,
+        sortOrder: itemForm.sortOrder,
       })
       ElMessage.success('编辑成功')
     } else {
-      await createDictItem({
-        dictType: currentDictType.value,
+      await createDictItem(currentDictIdForItems.value, {
+        itemCode: itemForm.itemCode,
+        itemName: itemForm.itemName,
         itemValue: itemForm.itemValue,
-        itemLabel: itemForm.itemLabel,
-        sort: itemForm.sort,
-        remark: itemForm.remark,
+        sortOrder: itemForm.sortOrder,
       })
       ElMessage.success('新增成功')
     }
@@ -334,7 +347,7 @@ async function handleSaveItem() {
 
 async function handleDeleteItem(row: DictItemInfo) {
   try {
-    await ElMessageBox.confirm(`确认删除字典项「${row.itemLabel}」？`, '删除确认', {
+    await ElMessageBox.confirm(`确认删除字典项「${row.itemName}」？`, '删除确认', {
       confirmButtonText: '确认',
       cancelButtonText: '取消',
       type: 'warning',

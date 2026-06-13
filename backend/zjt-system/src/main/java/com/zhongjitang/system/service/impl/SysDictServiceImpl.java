@@ -95,6 +95,21 @@ public class SysDictServiceImpl implements ISysDictService {
     }
 
     @Override
+    public R<Void> delete(Long id) {
+        SysDictDO dict = sysDictMapper.selectById(id);
+        if (dict == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "字典不存在");
+        }
+        // 删除字典项
+        LambdaQueryWrapper<SysDictItemDO> itemWrapper = new LambdaQueryWrapper<>();
+        itemWrapper.eq(SysDictItemDO::getDictId, id);
+        sysDictItemMapper.delete(itemWrapper);
+        // 删除字典
+        sysDictMapper.deleteById(id);
+        return R.ok();
+    }
+
+    @Override
     public R<List<SysDictItemDO>> getItems(Long dictId) {
         SysDictDO dict = sysDictMapper.selectById(dictId);
         if (dict == null) {

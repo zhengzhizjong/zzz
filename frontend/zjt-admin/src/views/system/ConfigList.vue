@@ -19,7 +19,7 @@
         <el-table-column prop="configKey" label="配置键" width="200" />
         <el-table-column prop="configName" label="配置名称" width="180" />
         <el-table-column prop="configValue" label="配置值" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="description" label="描述" min-width="180" show-overflow-tooltip />
         <el-table-column prop="updatedAt" label="更新时间" width="170" />
         <el-table-column label="操作" width="100" align="center" fixed="right">
           <template #default="{ row }">

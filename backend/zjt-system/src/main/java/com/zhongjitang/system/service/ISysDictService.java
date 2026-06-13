@@ -21,6 +21,8 @@ public interface ISysDictService {
 
     R<Void> update(Long id, SysDictUpdateRequest request);
 
+    R<Void> delete(Long id);
+
     R<List<SysDictItemDO>> getItems(Long dictId);
 
     R<Void> addItem(SysDictItemCreateRequest request);

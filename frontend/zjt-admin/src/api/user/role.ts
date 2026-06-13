@@ -11,8 +11,15 @@ export interface RoleInfo {
 }
 
 export interface PermissionNode {
-  id: number
-  label: string
+  permission: {
+    id: number
+    permissionName: string
+    permissionCode: string
+    resourceType: string
+    parentId: number
+    sortOrder: number
+    status: number
+  }
   children?: PermissionNode[]
 }
 
@@ -20,11 +27,11 @@ export function getRoleList(params: { page: number; pageSize: number; keyword?: 
   return request.get<R<PageResult<RoleInfo>>>('/api/v1/user/roles', { params })
 }
 
-export function createRole(data: { name: string; code: string; description?: string }) {
+export function createRole(data: { roleName: string; roleCode: string; description?: string }) {
   return request.post<R<void>>('/api/v1/user/roles', data)
 }
 
-export function updateRole(id: number, data: { name?: string; code?: string; description?: string }) {
+export function updateRole(id: number, data: { roleName?: string; roleCode?: string; description?: string }) {
   return request.put<R<void>>(`/api/v1/user/roles/${id}`, data)
 }
 

@@ -6,7 +6,7 @@ import com.zhongjitang.trade.domain.entity.TradeOrderDO;
 
 public interface ITradeOrderService {
 
-    R<PageResult<TradeOrderDO>> page(Integer page, Integer pageSize, Long storeId, Long memberId, Integer status);
+    R<PageResult<TradeOrderDO>> page(Integer page, Integer pageSize, Long storeId, Long memberId, Integer status, String keyword, String startDate, String endDate);
 
     R<TradeOrderDO> getById(Long id);
 

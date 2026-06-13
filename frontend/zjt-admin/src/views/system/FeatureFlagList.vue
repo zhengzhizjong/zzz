@@ -24,7 +24,7 @@
         <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-switch
-              :model-value="row.enabled"
+              :model-value="row.defaultValue === 1"
               active-color="#07C160"
               @change="handleToggle(row, $event)"
             />
@@ -32,7 +32,7 @@
         </el-table-column>
         <el-table-column label="灰度百分比" width="140" align="center">
           <template #default="{ row }">
-            {{ row.grayPercent }}%
+            {{ row.percentage != null ? row.percentage + '%' : '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
@@ -72,11 +72,11 @@
         <el-form-item label="开关名称" prop="flagName">
           <el-input v-model="form.flagName" placeholder="请输入开关名称" />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enabled">
-          <el-switch v-model="form.enabled" active-color="#07C160" />
+        <el-form-item label="启用状态" prop="defaultValue">
+          <el-switch v-model="form.defaultValue" :active-value="1" :inactive-value="0" active-color="#07C160" />
         </el-form-item>
-        <el-form-item label="灰度百分比" prop="grayPercent">
-          <el-slider v-model="form.grayPercent" :min="0" :max="100" :step="1" show-input />
+        <el-form-item label="灰度百分比" prop="percentage">
+          <el-slider v-model="form.percentage" :min="0" :max="100" :step="1" show-input />
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入描述" />
@@ -113,8 +113,8 @@ const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const form = reactive({
   flagKey: '',
   flagName: '',
-  enabled: true,
-  grayPercent: 100,
+  defaultValue: 1,
+  percentage: 100,
   description: '',
 })
 
@@ -156,8 +156,8 @@ function handleAdd() {
   currentId.value = undefined
   form.flagKey = ''
   form.flagName = ''
-  form.enabled = true
-  form.grayPercent = 100
+  form.defaultValue = 1
+  form.percentage = 100
   form.description = ''
   dialogVisible.value = true
 }
@@ -167,8 +167,8 @@ function handleEdit(row: FeatureFlagInfo) {
   currentId.value = row.id
   form.flagKey = row.flagKey
   form.flagName = row.flagName
-  form.enabled = row.enabled
-  form.grayPercent = row.grayPercent
+  form.defaultValue = row.defaultValue
+  form.percentage = row.percentage || 100
   form.description = row.description
   dialogVisible.value = true
 }
@@ -190,8 +190,8 @@ async function handleSave() {
     if (isEdit.value && currentId.value) {
       await updateFeatureFlag(currentId.value, {
         flagName: form.flagName,
-        enabled: form.enabled,
-        grayPercent: form.grayPercent,
+        defaultValue: form.defaultValue,
+        percentage: form.percentage,
         description: form.description,
       })
       ElMessage.success('编辑成功')
@@ -199,8 +199,8 @@ async function handleSave() {
       await createFeatureFlag({
         flagKey: form.flagKey,
         flagName: form.flagName,
-        enabled: form.enabled,
-        grayPercent: form.grayPercent,
+        defaultValue: form.defaultValue,
+        percentage: form.percentage,
         description: form.description,
       })
       ElMessage.success('新增成功')

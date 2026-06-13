@@ -27,9 +27,9 @@ public class SysAuditLogController {
             @RequestParam(defaultValue = "20") Integer pageSize,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String module,
-            @RequestParam(required = false) String operation,
+            @RequestParam(required = false) String action,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return auditLogService.page(page, pageSize, keyword, module, operation, startDate, endDate);
+        return auditLogService.page(page, pageSize, keyword, module, action, startDate, endDate);
     }
 }

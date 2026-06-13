@@ -6,10 +6,13 @@ export interface AuditLogInfo {
   operatorName: string
   module: string
   action: string
-  target: string
+  targetType: string
+  targetId: string
   ip: string
   status: number
-  detail: string
+  oldValue: string
+  newValue: string
+  userAgent: string
   createdAt: string
 }
 

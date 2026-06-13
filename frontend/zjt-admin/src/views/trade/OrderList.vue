@@ -71,7 +71,7 @@
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleViewDetail(row)">详情</el-button>
             <el-button
-              v-if="row.paymentStatus === 1"
+              v-if="row.paymentStatus === 2 || row.paymentStatus === 3"
               type="success"
               link
               size="small"
@@ -80,7 +80,7 @@
               完成
             </el-button>
             <el-button
-              v-if="row.paymentStatus === 0 || row.paymentStatus === 1"
+              v-if="row.paymentStatus === 1"
               type="danger"
               link
               size="small"
@@ -137,14 +137,13 @@ import { getOrderList, getOrderDetail, completeOrder, cancelOrder, type OrderInf
 import { getStoreList } from '@/api/store/info'
 import type { StoreInfo } from '@/types/store'
 
-// 待支付(橙)/已支付(蓝)/服务中(绿)/已完成(灰)/已取消(红)/已退款(灰)
+// 待支付(1)/已支付(2)/服务中(3)/已完成(4)/已取消(5)
 const STATUS_OPTIONS = [
-  { value: 0, label: '待支付', type: 'warning' },
-  { value: 1, label: '已支付', type: '' },
-  { value: 2, label: '服务中', type: 'success' },
-  { value: 3, label: '已完成', type: 'info' },
-  { value: 4, label: '已取消', type: 'danger' },
-  { value: 5, label: '已退款', type: 'info' },
+  { value: 1, label: '待支付', type: 'warning' },
+  { value: 2, label: '已支付', type: '' },
+  { value: 3, label: '服务中', type: 'success' },
+  { value: 4, label: '已完成', type: 'info' },
+  { value: 5, label: '已取消', type: 'danger' },
 ]
 
 const loading = ref(false)
@@ -191,7 +190,7 @@ async function fetchData() {
       pageSize: pagination.pageSize,
       keyword: searchForm.keyword || undefined,
       storeId: searchForm.storeId,
-      paymentStatus: searchForm.paymentStatus,
+      status: searchForm.paymentStatus,
     }
     if (dateRange.value && dateRange.value.length === 2) {
       params.startDate = dateRange.value[0]

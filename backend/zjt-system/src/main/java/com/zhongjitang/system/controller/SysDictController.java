@@ -53,6 +53,12 @@ public class SysDictController {
         return sysDictService.update(id, request);
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "删除字典")
+    public R<Void> delete(@PathVariable Long id) {
+        return sysDictService.delete(id);
+    }
+
     @GetMapping("/{id}/items")
     @Operation(summary = "字典项列表")
     public R<List<SysDictItemDO>> getItems(@PathVariable Long id) {
@@ -61,7 +67,7 @@ public class SysDictController {
 
     @PostMapping("/{id}/items")
     @Operation(summary = "添加字典项")
-    public R<Void> addItem(@PathVariable Long id, @Valid @RequestBody SysDictItemCreateRequest request) {
+    public R<Void> addItem(@PathVariable Long id, @RequestBody SysDictItemCreateRequest request) {
         request.setDictId(id);
         return sysDictService.addItem(request);
     }

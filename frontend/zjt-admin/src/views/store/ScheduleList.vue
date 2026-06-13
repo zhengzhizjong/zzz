@@ -145,7 +145,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { getScheduleByStore, batchCreateSchedule, updateSchedule, deleteSchedule } from '@/api/store/schedule'
+import { getScheduleByTechnician, batchCreateSchedule, updateSchedule } from '@/api/store/schedule'
 import { getStoreList } from '@/api/store/info'
 import { getTechnicianList } from '@/api/store/technician'
 import type { StoreInfo } from '@/types/store'
@@ -311,13 +311,32 @@ async function fetchData() {
   if (!searchForm.storeId) return
   const month = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}`
   try {
-    const res: any = await getScheduleByStore(searchForm.storeId, month)
-    const list: ScheduleItem[] = res.data || []
+    // 获取门店下所有技师
+    const techRes: any = await getTechnicianList({ page: 1, pageSize: 999, storeId: searchForm.storeId })
+    const technicians = techRes.data.list || []
+
+    // 对每个技师查询月度排班，汇总到 scheduleMap
     const map: Record<string, ScheduleItem[]> = {}
-    list.forEach((item) => {
-      if (!map[item.date]) map[item.date] = []
-      map[item.date].push(item)
-    })
+    for (const tech of technicians) {
+      try {
+        const res: any = await getScheduleByTechnician(tech.id, month)
+        const list: any[] = res.data || []
+        list.forEach((item) => {
+          const dateStr = item.scheduleDate || item.date
+          if (!dateStr) return
+          if (!map[dateStr]) map[dateStr] = []
+          map[dateStr].push({
+            id: item.id,
+            technicianId: tech.id,
+            technicianName: tech.name || tech.technicianName,
+            date: dateStr,
+            status: item.status,
+          })
+        })
+      } catch {
+        // 单个技师查询失败不影响其他技师
+      }
+    }
     scheduleMap.value = map
   } catch {
     scheduleMap.value = {}

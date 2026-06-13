@@ -24,8 +24,11 @@ public class TradeOrderController {
             @RequestParam(defaultValue = "20") Integer pageSize,
             @RequestParam(required = false) Long storeId,
             @RequestParam(required = false) Long memberId,
-            @RequestParam(required = false) Integer status) {
-        return tradeOrderService.page(page, pageSize, storeId, memberId, status);
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return tradeOrderService.page(page, pageSize, storeId, memberId, status, keyword, startDate, endDate);
     }
 
     @GetMapping("/{id}")

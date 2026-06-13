@@ -1,8 +1,10 @@
 package com.zhongjitang.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhongjitang.common.core.exception.BusinessException;
 import com.zhongjitang.common.core.exception.ErrorCode;
+import com.zhongjitang.common.core.result.PageResult;
 import com.zhongjitang.common.core.result.R;
 import com.zhongjitang.system.domain.entity.SysFileDO;
 import com.zhongjitang.system.mapper.SysFileMapper;
@@ -37,6 +39,23 @@ public class FileServiceImpl implements IFileService {
 
     @Value("${file.upload.base-url:http://localhost:8080/files}")
     private String baseUrl;
+
+    @Override
+    public R<PageResult<SysFileDO>> page(Integer page, Integer pageSize, String name, String type) {
+        Page<SysFileDO> pageParam = new Page<>(page, pageSize);
+        LambdaQueryWrapper<SysFileDO> wrapper = new LambdaQueryWrapper<>();
+
+        if (StringUtils.hasText(name)) {
+            wrapper.like(SysFileDO::getFileName, name);
+        }
+        if (StringUtils.hasText(type)) {
+            wrapper.eq(SysFileDO::getFileType, type);
+        }
+        wrapper.orderByDesc(SysFileDO::getCreatedAt);
+
+        Page<SysFileDO> result = fileMapper.selectPage(pageParam, wrapper);
+        return R.ok(PageResult.of(result.getRecords(), result.getTotal(), page, pageSize));
+    }
 
     @Override
     public R<SysFileDO> upload(MultipartFile file, String businessType, String businessId) {

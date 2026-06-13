@@ -53,11 +53,11 @@
       destroy-on-close
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="80px">
-        <el-form-item label="角色名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入角色名称" />
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="form.roleName" placeholder="请输入角色名称" />
         </el-form-item>
-        <el-form-item label="角色编码" prop="code">
-          <el-input v-model="form.code" placeholder="请输入角色编码" :disabled="!!currentRoleId" />
+        <el-form-item label="角色编码" prop="roleCode">
+          <el-input v-model="form.roleCode" placeholder="请输入角色编码" :disabled="!!currentRoleId" />
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入描述" />
@@ -121,14 +121,14 @@ const pagination = reactive({
 })
 
 const form = reactive({
-  name: '',
-  code: '',
+  roleName: '',
+  roleCode: '',
   description: '',
 })
 
 const formRules: FormRules = {
-  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入角色编码', trigger: 'blur' }],
+  roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
+  roleCode: [{ required: true, message: '请输入角色编码', trigger: 'blur' }],
 }
 
 async function fetchData() {
@@ -166,8 +166,8 @@ function handleReset() {
 }
 
 function resetForm() {
-  form.name = ''
-  form.code = ''
+  form.roleName = ''
+  form.roleCode = ''
   form.description = ''
 }
 
@@ -179,8 +179,8 @@ function handleAdd() {
 
 function handleEdit(row: RoleInfo) {
   currentRoleId.value = row.id
-  form.name = row.roleName
-  form.code = row.roleCode
+  form.roleName = row.roleName
+  form.roleCode = row.roleCode
   form.description = row.description
   formVisible.value = true
 }
@@ -193,15 +193,15 @@ async function handleSubmit() {
   try {
     if (currentRoleId.value) {
       await updateRole(currentRoleId.value, {
-        name: form.name,
-        code: form.code,
+        roleName: form.roleName,
+        roleCode: form.roleCode,
         description: form.description,
       })
       ElMessage.success('更新成功')
     } else {
       await createRole({
-        name: form.name,
-        code: form.code,
+        roleName: form.roleName,
+        roleCode: form.roleCode,
         description: form.description,
       })
       ElMessage.success('新增成功')
@@ -235,11 +235,23 @@ async function handleAssignPermission(row: RoleInfo) {
   currentPermissionIds.value = row.permissions || []
   try {
     const res: any = await getPermissionTree()
-    permissionTree.value = res.data || []
+    const rawTree: PermissionNode[] = res.data || []
+    permissionTree.value = transformPermissionTree(rawTree)
   } catch {
     permissionTree.value = []
   }
   permissionVisible.value = true
+}
+
+/** 将后端 PermissionTreeNodeVO 格式转为 el-tree 所需的 { id, label, children } 格式 */
+function transformPermissionTree(nodes: PermissionNode[]): any[] {
+  return nodes.map(node => ({
+    id: node.permission.id,
+    label: node.permission.permissionName,
+    children: node.children && node.children.length > 0
+      ? transformPermissionTree(node.children)
+      : [],
+  }))
 }
 
 async function handlePermissionSubmit() {

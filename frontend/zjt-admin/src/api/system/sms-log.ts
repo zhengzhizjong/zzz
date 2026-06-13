@@ -4,10 +4,12 @@ import type { R, PageResult } from '@/types/api'
 export interface SmsLogInfo {
   id: number
   phone: string
-  templateName: string
+  templateCode: string
   content: string
-  status: number
-  sentAt: string
+  sendStatus: number
+  sendTime: string
+  bizId: string
+  createdAt: string
 }
 
 export function getSmsLogList(params: any) {

@@ -21,5 +21,9 @@ public interface IMemberService {
 
     R<PageResult<UserMemberDO>> page(Integer page, Integer pageSize, String keyword, Integer levelId);
 
+    R<UserMemberDO> getDetail(Long id);
+
+    R<Void> adminUpdate(Long id, MemberAdminUpdateRequest request);
+
     R<Void> bindWechat(Long memberId, String code);
 }

@@ -3,11 +3,15 @@ import type { R, PageResult } from '@/types/api'
 
 export interface FileInfo {
   id: number
-  name: string
-  type: string
-  size: number
-  uploader: string
-  uploadedAt: string
+  fileName: string
+  filePath: string
+  fileSize: number
+  fileType: string
+  mimeType: string
+  businessType: string
+  businessId: string
+  createdBy: string
+  createdAt: string
 }
 
 export function getFileList(params: any) {

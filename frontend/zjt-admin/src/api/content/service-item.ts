@@ -19,7 +19,7 @@ export function updateServiceItem(id: number, data: ServiceItemUpdateRequest) {
 }
 
 export function updateServiceItemStatus(id: number, status: number) {
-  return request.put<R<void>>(`/api/v1/admin/service-items/${id}/status`, { status })
+  return request.put<R<void>>(`/api/v1/admin/service-items/${id}/status`, null, { params: { status } })
 }
 
 export function listAllServiceItems() {

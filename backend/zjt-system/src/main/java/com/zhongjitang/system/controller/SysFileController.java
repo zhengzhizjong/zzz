@@ -1,9 +1,11 @@
 package com.zhongjitang.system.controller;
 
+import com.zhongjitang.common.core.result.PageResult;
 import com.zhongjitang.common.core.result.R;
 import com.zhongjitang.system.domain.entity.SysFileDO;
 import com.zhongjitang.system.service.IFileService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,16 @@ import java.util.List;
 public class SysFileController {
 
     private final IFileService fileService;
+
+    @GetMapping
+    @Operation(summary = "文件列表(分页)")
+    public R<PageResult<SysFileDO>> page(
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数") @RequestParam(defaultValue = "20") Integer pageSize,
+            @Parameter(description = "文件名搜索") @RequestParam(required = false) String name,
+            @Parameter(description = "文件类型") @RequestParam(required = false) String type) {
+        return fileService.page(page, pageSize, name, type);
+    }
 
     @PostMapping("/upload")
     @Operation(summary = "文件上传")

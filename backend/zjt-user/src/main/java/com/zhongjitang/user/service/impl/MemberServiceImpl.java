@@ -211,6 +211,49 @@ public class MemberServiceImpl implements IMemberService {
     }
 
     @Override
+    public R<UserMemberDO> getDetail(Long id) {
+        UserMemberDO member = memberMapper.selectById(id);
+        if (member == null) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+        return R.ok(member);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R<Void> adminUpdate(Long id, MemberAdminUpdateRequest request) {
+        UserMemberDO member = memberMapper.selectById(id);
+        if (member == null) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        if (request.getName() != null) {
+            member.setName(request.getName());
+        }
+        if (request.getRealName() != null) {
+            member.setRealName(request.getRealName());
+        }
+        if (request.getPhone() != null) {
+            member.setPhone(request.getPhone());
+        }
+        if (request.getGender() != null) {
+            member.setGender(request.getGender());
+        }
+        if (request.getBirthday() != null) {
+            member.setBirthday(request.getBirthday());
+        }
+        if (request.getMemberType() != null) {
+            member.setMemberType(request.getMemberType());
+        }
+        if (request.getStatus() != null) {
+            member.setStatus(request.getStatus());
+        }
+
+        memberMapper.updateById(member);
+        return R.ok();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Void> bindWechat(Long memberId, String code) {
         UserMemberDO member = memberMapper.selectById(memberId);

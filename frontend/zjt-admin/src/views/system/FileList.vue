@@ -11,6 +11,7 @@
             <el-option label="图片" value="image" />
             <el-option label="文档" value="document" />
             <el-option label="视频" value="video" />
+            <el-option label="其他" value="other" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -26,21 +27,21 @@
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
-        <el-table-column prop="name" label="文件名" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="type" label="类型" width="100" align="center">
+        <el-table-column prop="fileName" label="文件名" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="fileType" label="类型" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="getFileTypeTag(row.type)" size="small">
-              {{ getFileTypeLabel(row.type) }}
+            <el-tag :type="getFileTypeTag(row.fileType)" size="small">
+              {{ getFileTypeLabel(row.fileType) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="大小" width="120" align="right">
           <template #default="{ row }">
-            {{ formatFileSize(row.size) }}
+            {{ formatFileSize(row.fileSize) }}
           </template>
         </el-table-column>
-        <el-table-column prop="uploader" label="上传人" width="120" />
-        <el-table-column prop="uploadedAt" label="上传时间" width="170" />
+        <el-table-column prop="createdBy" label="上传人" width="120" />
+        <el-table-column prop="createdAt" label="上传时间" width="170" />
         <el-table-column label="操作" width="100" align="center" fixed="right">
           <template #default="{ row }">
             <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
@@ -121,7 +122,7 @@ function getFileTypeLabel(type: string): string {
   if (type === 'image') return '图片'
   if (type === 'document') return '文档'
   if (type === 'video') return '视频'
-  return type
+  return '其他'
 }
 
 function getFileTypeTag(type: string): string {

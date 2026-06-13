@@ -5,31 +5,33 @@ import type { R, PageResult } from '@/types/api'
 
 export interface DictInfo {
   id: number
-  dictType: string
+  dictCode: string
   dictName: string
-  remark: string
+  description: string
+  status: number
   createdAt: string
   updatedAt: string
 }
 
 export interface DictItemInfo {
   id: number
-  dictType: string
+  dictId: number
+  itemCode: string
+  itemName: string
   itemValue: string
-  itemLabel: string
-  sort: number
-  remark: string
+  sortOrder: number
+  status: number
 }
 
 export function getDictList(params: { page: number; pageSize: number; keyword?: string }) {
   return request.get<R<PageResult<DictInfo>>>('/api/v1/admin/dicts', { params })
 }
 
-export function createDict(data: { dictType: string; dictName: string; remark?: string }) {
+export function createDict(data: { dictCode: string; dictName: string; description?: string; status?: number }) {
   return request.post<R<void>>('/api/v1/admin/dicts', data)
 }
 
-export function updateDict(id: number, data: { dictName?: string; remark?: string }) {
+export function updateDict(id: number, data: { dictName?: string; description?: string; status?: number }) {
   return request.put<R<void>>(`/api/v1/admin/dicts/${id}`, data)
 }
 
@@ -37,20 +39,20 @@ export function deleteDict(id: number) {
   return request.delete<R<void>>(`/api/v1/admin/dicts/${id}`)
 }
 
-export function getDictItems(dictType: string) {
-  return request.get<R<DictItemInfo[]>>(`/api/v1/admin/dicts/${dictType}/items`)
+export function getDictItems(dictId: number) {
+  return request.get<R<DictItemInfo[]>>(`/api/v1/admin/dicts/${dictId}/items`)
 }
 
-export function createDictItem(data: { dictType: string; itemValue: string; itemLabel: string; sort?: number; remark?: string }) {
-  return request.post<R<void>>('/api/v1/admin/dict-items', data)
+export function createDictItem(dictId: number, data: { itemCode: string; itemName: string; itemValue?: string; sortOrder?: number; status?: number }) {
+  return request.post<R<void>>(`/api/v1/admin/dicts/${dictId}/items`, data)
 }
 
-export function updateDictItem(id: number, data: { itemValue?: string; itemLabel?: string; sort?: number; remark?: string }) {
-  return request.put<R<void>>(`/api/v1/admin/dict-items/${id}`, data)
+export function updateDictItem(id: number, data: { itemCode?: string; itemName?: string; itemValue?: string; sortOrder?: number; status?: number }) {
+  return request.put<R<void>>(`/api/v1/admin/dicts/items/${id}`, data)
 }
 
 export function deleteDictItem(id: number) {
-  return request.delete<R<void>>(`/api/v1/admin/dict-items/${id}`)
+  return request.delete<R<void>>(`/api/v1/admin/dicts/items/${id}`)
 }
 
 // ===== 配置管理 =====
@@ -60,7 +62,8 @@ export interface ConfigInfo {
   configKey: string
   configValue: string
   configName: string
-  remark: string
+  description: string
+  configType: number
   updatedAt: string
 }
 
@@ -78,9 +81,11 @@ export interface FeatureFlagInfo {
   id: number
   flagKey: string
   flagName: string
-  enabled: boolean
-  grayPercent: number
   description: string
+  defaultValue: number
+  type: number
+  percentage: number
+  rulesJson: string
   updatedAt: string
 }
 
@@ -88,11 +93,11 @@ export function getFeatureFlagList(params: { page: number; pageSize: number; key
   return request.get<R<PageResult<FeatureFlagInfo>>>('/api/v1/admin/feature-flags', { params })
 }
 
-export function createFeatureFlag(data: { flagKey: string; flagName: string; enabled?: boolean; grayPercent?: number; description?: string }) {
+export function createFeatureFlag(data: { flagKey: string; flagName: string; description?: string; defaultValue?: number; type?: number; percentage?: number; rulesJson?: string }) {
   return request.post<R<void>>('/api/v1/admin/feature-flags', data)
 }
 
-export function updateFeatureFlag(id: number, data: { flagName?: string; enabled?: boolean; grayPercent?: number; description?: string }) {
+export function updateFeatureFlag(id: number, data: { flagName?: string; description?: string; defaultValue?: number; type?: number; percentage?: number; rulesJson?: string }) {
   return request.put<R<void>>(`/api/v1/admin/feature-flags/${id}`, data)
 }
 

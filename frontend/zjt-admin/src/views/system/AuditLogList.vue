@@ -47,20 +47,20 @@
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
         <el-table-column prop="createdAt" label="时间" width="170" />
-        <el-table-column prop="operatorName" label="操作人" width="120" />
+        <el-table-column prop="userName" label="操作人" width="120" />
         <el-table-column prop="module" label="模块" width="120" align="center">
           <template #default="{ row }">
             {{ getModuleLabel(row.module) }}
           </template>
         </el-table-column>
-        <el-table-column prop="action" label="操作类型" width="100" align="center">
+        <el-table-column prop="operation" label="操作类型" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="getActionType(row.action)" size="small">
-              {{ getActionLabel(row.action) }}
+            <el-tag :type="getActionType(row.operation)" size="small">
+              {{ getActionLabel(row.operation) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="target" label="操作对象" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="targetType" label="操作对象" min-width="180" show-overflow-tooltip />
         <el-table-column prop="ip" label="IP地址" width="140" />
         <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
@@ -93,22 +93,29 @@
     <el-dialog v-model="detailVisible" title="日志详情" width="560px" destroy-on-close>
       <el-descriptions :column="2" border v-if="currentDetail">
         <el-descriptions-item label="时间">{{ currentDetail.createdAt }}</el-descriptions-item>
-        <el-descriptions-item label="操作人">{{ currentDetail.operatorName }}</el-descriptions-item>
+        <el-descriptions-item label="操作人">{{ currentDetail.userName }}</el-descriptions-item>
         <el-descriptions-item label="模块">{{ getModuleLabel(currentDetail.module) }}</el-descriptions-item>
         <el-descriptions-item label="操作类型">
-          <el-tag :type="getActionType(currentDetail.action)" size="small">
-            {{ getActionLabel(currentDetail.action) }}
+          <el-tag :type="getActionType(currentDetail.operation)" size="small">
+            {{ getActionLabel(currentDetail.operation) }}
           </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="操作对象" :span="2">{{ currentDetail.target }}</el-descriptions-item>
+        <el-descriptions-item label="操作对象" :span="2">{{ currentDetail.targetType }}</el-descriptions-item>
+        <el-descriptions-item label="目标ID">{{ currentDetail.targetId }}</el-descriptions-item>
         <el-descriptions-item label="IP地址">{{ currentDetail.ip }}</el-descriptions-item>
         <el-descriptions-item label="状态">
           <el-tag :type="currentDetail.status === 1 ? 'success' : 'danger'" size="small">
             {{ currentDetail.status === 1 ? '成功' : '失败' }}
           </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="详细信息" :span="2">
-          <div class="detail-content">{{ currentDetail.detail || '-' }}</div>
+        <el-descriptions-item label="User-Agent" :span="2">
+          <div class="detail-content">{{ currentDetail.userAgent || '-' }}</div>
+        </el-descriptions-item>
+        <el-descriptions-item label="旧值" :span="2">
+          <div class="detail-content">{{ currentDetail.oldValue || '-' }}</div>
+        </el-descriptions-item>
+        <el-descriptions-item label="新值" :span="2">
+          <div class="detail-content">{{ currentDetail.newValue || '-' }}</div>
         </el-descriptions-item>
       </el-descriptions>
       <template #footer>
