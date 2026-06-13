@@ -140,6 +140,7 @@ import { getStoreRanking, getTechnicianRanking } from '@/api/ranking'
 import { getDailyReport } from '@/api/report'
 import { getStoreDetail } from '@/api/store'
 import { getOrderList } from '@/api/order'
+import { getAppointmentList } from '@/api/appointment'
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -204,19 +205,31 @@ function generateMockRevenue(days: number) {
 async function loadStats() {
   try {
     const storeId = userStore.storeId
-    if (storeId) {
-      const storeRes: any = await getStoreDetail(storeId)
-      const data = storeRes.data || storeRes
-      stats.todayRevenue = data.todayRevenue?.toFixed(2) || '0.00'
-      stats.todayCustomers = data.todayCustomers || 0
-      stats.todayAppointments = data.todayAppointments || 0
-      stats.avgOrderPrice = data.avgOrderPrice?.toFixed(2) || '0.00'
-    }
     const today = new Date().toISOString().slice(0, 10)
-    const orderRes: any = await getOrderList({ startDate: today, endDate: today, pageSize: 1 })
-    const orderData = orderRes.data || orderRes
-    if (orderData.total > 0 && stats.todayCustomers === 0) {
-      stats.todayCustomers = orderData.total
+
+    // 获取今日预约数
+    try {
+      const appointRes: any = await getAppointmentList({ storeId, startDate: today, endDate: today, page: 1, pageSize: 1 })
+      stats.todayAppointments = appointRes.data?.pagination?.total || appointRes.data?.total || 0
+    } catch {}
+
+    // 获取今日营收
+    try {
+      const orderRes: any = await getOrderList({ storeId, startDate: today, endDate: today, page: 1, pageSize: 1 })
+      const orderData = orderRes.data || {}
+      stats.todayRevenue = orderData.todayRevenue || orderData.totalRevenue || '0.00'
+      stats.todayCustomers = orderData.total || 0
+      if (stats.todayRevenue === '0.00' && orderData.total > 0) {
+        const detailRes: any = await getOrderList({ storeId, startDate: today, endDate: today, page: 1, pageSize: 1000 })
+        const list = detailRes.data?.list || detailRes.data?.records || []
+        const total = list.reduce((sum: number, o: any) => sum + (Number(o.payAmount || o.amount || 0)), 0)
+        stats.todayRevenue = total.toFixed(2)
+      }
+    } catch {}
+
+    // 计算平均客单价
+    if (stats.todayCustomers > 0 && stats.todayRevenue !== '0.00') {
+      stats.avgOrderPrice = (Number(stats.todayRevenue) / stats.todayCustomers).toFixed(2)
     }
   } catch {
     // 静默处理，保留默认值
@@ -227,15 +240,15 @@ async function loadData() {
   loading.value = true
   try {
     const dateRange = filters.dateRange?.length === 2 ? filters.dateRange : getDefaultDateRange()
-    const params = { startDate: dateRange[0], endDate: dateRange[1] }
+    const params: Record<string, any> = { startDate: dateRange[0], endDate: dateRange[1], storeId: userStore.storeId }
     const [storeRes, techRes]: any[] = await Promise.all([
       getStoreRanking(params),
-      getTechnicianRanking(params)
+      getTechnicianRanking({ ...params, page: 1, pageSize: 50 })
     ])
     const storeData = storeRes.data || storeRes
     const techData = techRes.data || techRes
 
-    technicianPerformance.value = techData.list || techData || []
+    technicianPerformance.value = techData.list || techData.records || techData || []
 
     await nextTick()
     initRevenueChart(storeData)

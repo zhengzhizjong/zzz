@@ -59,12 +59,12 @@ const statusType = computed(() => isCheckedIn.value ? 'success' : 'warning')
 const statusText = computed(() => isCheckedIn.value ? '在岗' : '未签到')
 
 function getStatusType(status: number) {
-  const map: Record<number, string> = { 0: 'warning', 1: 'primary', 2: 'success', 3: 'default', 4: 'danger' }
+  const map: Record<number, string> = { 1: 'warning', 2: 'primary', 3: 'success', 4: 'default', 5: 'danger' }
   return map[status] || 'default'
 }
 
 function getStatusText(status: number) {
-  const map: Record<number, string> = { 0: '待确认', 1: '已确认', 2: '服务中', 3: '已完成', 4: '已取消' }
+  const map: Record<number, string> = { 1: '待支付', 2: '已支付', 3: '服务中', 4: '已完成', 5: '已取消' }
   return map[status] || '未知'
 }
 
@@ -105,10 +105,10 @@ async function loadData() {
       techId.value = empId
     }
 
-    // 获取预约列表
+    // 获取预约列表 - 使用technicianId过滤今日预约
     try {
-      const aptRes: any = await getTodayAppointments({ pageSize: 50 })
-      const records = aptRes.data?.records || aptRes.data || []
+      const aptRes: any = await getTodayAppointments({ technicianId: techId.value, pageSize: 50 })
+      const records = aptRes.data?.list || aptRes.data?.records || aptRes.data || []
       appointments.value = Array.isArray(records) ? records : []
     } catch {
       appointments.value = []

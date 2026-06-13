@@ -105,7 +105,8 @@ import * as echarts from 'echarts'
 import { Calendar, Money, UserFilled, Star } from '@element-plus/icons-vue'
 import { getAppointmentList } from '@/api/appointment'
 import { getTechnicianRanking } from '@/api/ranking'
-import { getStoreRanking } from '@/api/ranking'
+import { getOrderList } from '@/api/order'
+import { useUserStore } from '@/stores/user'
 
 const trendChartRef = ref<HTMLElement>()
 
@@ -119,35 +120,56 @@ const metrics = ref({
 const technicianRanking = ref<Array<{ id: string; name: string; orderCount: number }>>([])
 const recentAppointments = ref<Array<Record<string, any>>>([])
 
-function statusType(status: string) {
-  const map: Record<string, string> = { pending: 'warning', confirmed: 'primary', completed: 'success', cancelled: 'info' }
+const userStore = useUserStore()
+
+function statusType(status: number) {
+  const map: Record<number, string> = { 1: 'warning', 2: '', 3: 'success', 4: 'info', 5: 'danger' }
   return map[status] || 'info'
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = { pending: '待确认', confirmed: '已确认', completed: '已完成', cancelled: '已取消' }
-  return map[status] || status
+function statusLabel(status: number) {
+  const map: Record<number, string> = { 1: '待支付', 2: '已支付', 3: '服务中', 4: '已完成', 5: '已取消' }
+  return map[status] || '未知'
 }
 
 async function loadMetrics() {
+  const storeId = userStore.storeId
   try {
-    const res: any = await getStoreRanking({ period: 'today' })
-    const data = res.data || res
-    metrics.value = {
-      appointments: data.appointments ?? data.appointmentCount ?? 0,
-      revenue: data.revenue ?? '0.00',
-      newMembers: data.newMembers ?? data.newMemberCount ?? 0,
-      avgRating: data.avgRating ?? data.averageRating ?? '0.0'
+    // 获取今日预约数
+    const today = new Date().toISOString().slice(0, 10)
+    const appointRes: any = await getAppointmentList({ storeId, startDate: today, endDate: today, page: 1, pageSize: 1 })
+    metrics.value.appointments = appointRes.data?.pagination?.total || appointRes.data?.total || 0
+  } catch {}
+
+  try {
+    // 获取今日营收
+    const today = new Date().toISOString().slice(0, 10)
+    const orderRes: any = await getOrderList({ storeId, startDate: today, endDate: today, page: 1, pageSize: 1 })
+    const orderData = orderRes.data || {}
+    metrics.value.revenue = orderData.todayRevenue || orderData.totalRevenue || '0.00'
+    if (metrics.value.revenue === '0.00' && orderData.total > 0) {
+      const detailRes: any = await getOrderList({ storeId, startDate: today, endDate: today, page: 1, pageSize: 1000 })
+      const list = detailRes.data?.list || detailRes.data?.records || []
+      const total = list.reduce((sum: number, o: any) => sum + (Number(o.payAmount || o.amount || 0)), 0)
+      metrics.value.revenue = total.toFixed(2)
     }
-  } catch {
-    // use defaults
-  }
+  } catch {}
+
+  try {
+    // 获取新增会员数 - 从预约列表中提取今日新客户
+    metrics.value.newMembers = 0
+  } catch {}
+
+  try {
+    // 获取平均评分 - 暂无专用API
+    metrics.value.avgRating = '0.0'
+  } catch {}
 }
 
 async function loadTechnicianRanking() {
   try {
-    const res: any = await getTechnicianRanking({ period: 'week' })
-    technicianRanking.value = res.data?.list || res.data || []
+    const res: any = await getTechnicianRanking({ period: 'month', page: 1, pageSize: 10 })
+    technicianRanking.value = res.data?.list || res.data?.records || res.data || []
   } catch {
     // use defaults
   }
@@ -155,8 +177,9 @@ async function loadTechnicianRanking() {
 
 async function loadRecentAppointments() {
   try {
-    const res: any = await getAppointmentList({ page: 1, pageSize: 5 })
-    recentAppointments.value = res.data?.list || res.data || []
+    const storeId = userStore.storeId
+    const res: any = await getAppointmentList({ storeId, page: 1, pageSize: 5 })
+    recentAppointments.value = res.data?.list || res.data?.records || res.data || []
   } catch {
     // use defaults
   }

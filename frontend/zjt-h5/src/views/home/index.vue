@@ -146,7 +146,7 @@ async function loadHomeData() {
 async function loadServices() {
   serviceLoading.value = true
   try {
-    const res: any = await getServiceItemList({ status: 1 })
+    const res: any = await getServiceItemList({ status: 1, page: 1, pageSize: 20 })
     services.value = res.data?.list || res.data || []
   } catch {
     services.value = []

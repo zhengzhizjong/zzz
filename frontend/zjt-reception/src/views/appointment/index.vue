@@ -5,11 +5,11 @@
         <div class="filter-area">
           <el-radio-group v-model="statusFilter" @change="loadAppointments">
             <el-radio-button value="">全部</el-radio-button>
-            <el-radio-button value="pending">待确认</el-radio-button>
-            <el-radio-button value="confirmed">已确认</el-radio-button>
-            <el-radio-button value="in_service">服务中</el-radio-button>
-            <el-radio-button value="completed">已完成</el-radio-button>
-            <el-radio-button value="cancelled">已取消</el-radio-button>
+            <el-radio-button :value="1">待支付</el-radio-button>
+            <el-radio-button :value="2">已支付</el-radio-button>
+            <el-radio-button :value="3">服务中</el-radio-button>
+            <el-radio-button :value="4">已完成</el-radio-button>
+            <el-radio-button :value="5">已取消</el-radio-button>
           </el-radio-group>
         </div>
         <el-button type="primary" @click="showCreateDialog = true">
@@ -19,8 +19,8 @@
 
       <el-table :data="appointments" v-loading="loading" stripe>
         <el-table-column prop="id" label="预约号" width="80" />
-        <el-table-column prop="customerName" label="客户" width="100" />
-        <el-table-column prop="customerPhone" label="手机号" width="130" />
+        <el-table-column prop="memberName" label="客户" width="100" />
+        <el-table-column prop="memberPhone" label="手机号" width="130" />
         <el-table-column prop="serviceName" label="服务项目" />
         <el-table-column prop="technicianName" label="技师" width="80" />
         <el-table-column prop="appointmentTime" label="预约时间" width="160" />
@@ -31,14 +31,14 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <template v-if="row.status === 'confirmed' || row.status === 'pending'">
+            <template v-if="row.status === 2 || row.status === 1">
               <el-button type="primary" size="small" @click="handleCheckIn(row)">签到</el-button>
               <el-button type="danger" size="small" @click="handleCancel(row)">取消</el-button>
             </template>
-            <template v-if="row.status === 'in_service'">
+            <template v-if="row.status === 3">
               <el-button type="success" size="small" @click="handleComplete(row)">完成</el-button>
             </template>
-            <template v-if="row.status === 'completed'">
+            <template v-if="row.status === 4">
               <el-button type="warning" size="small" @click="handleCreateOrder(row)">收银</el-button>
             </template>
           </template>
@@ -98,7 +98,7 @@ import { getStoreId } from '@/utils/auth'
 const router = useRouter()
 const loading = ref(false)
 const appointments = ref<any[]>([])
-const statusFilter = ref('')
+const statusFilter = ref<number | string>('')
 const showCreateDialog = ref(false)
 const createLoading = ref(false)
 const createFormRef = ref<FormInstance>()
@@ -124,18 +124,18 @@ const createRules = {
   appointmentTime: [{ required: true, message: '请选择预约时间', trigger: 'change' }]
 }
 
-function statusTagType(status: string) {
-  const map: Record<string, string> = {
-    pending: 'warning', confirmed: '', in_service: 'success', completed: 'info', cancelled: 'danger'
+function statusTagType(status: number) {
+  const map: Record<number, string> = {
+    1: 'warning', 2: '', 3: 'success', 4: 'info', 5: 'danger'
   }
   return map[status] || ''
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = {
-    pending: '待确认', confirmed: '已确认', in_service: '服务中', completed: '已完成', cancelled: '已取消'
+function statusLabel(status: number) {
+  const map: Record<number, string> = {
+    1: '待支付', 2: '已支付', 3: '服务中', 4: '已完成', 5: '已取消'
   }
-  return map[status] || status
+  return map[status] || '未知'
 }
 
 async function loadAppointments() {
@@ -152,7 +152,7 @@ async function loadAppointments() {
     }
     const res: any = await getAppointmentList(params)
     appointments.value = res.data?.list || res.data?.records || []
-    pagination.total = res.data?.total || 0
+    pagination.total = res.data?.pagination?.total || res.data?.total || 0
   } catch {
     // handled by interceptor
   } finally {
@@ -162,7 +162,7 @@ async function loadAppointments() {
 
 async function handleCheckIn(row: any) {
   try {
-    await ElMessageBox.confirm(`确认为客户 ${row.customerName} 签到？`, '签到确认')
+    await ElMessageBox.confirm(`确认为客户 ${row.memberName} 签到？`, '签到确认')
     await checkInAppointment(row.id)
     ElMessage.success('签到成功')
     loadAppointments()
@@ -173,7 +173,7 @@ async function handleCheckIn(row: any) {
 
 async function handleComplete(row: any) {
   try {
-    await ElMessageBox.confirm(`确认完成 ${row.customerName} 的服务？`, '完成确认')
+    await ElMessageBox.confirm(`确认完成 ${row.memberName} 的服务？`, '完成确认')
     await completeAppointment(row.id)
     ElMessage.success('已完成')
     loadAppointments()
@@ -184,7 +184,7 @@ async function handleComplete(row: any) {
 
 async function handleCancel(row: any) {
   try {
-    await ElMessageBox.confirm(`确认取消 ${row.customerName} 的预约？`, '取消确认', { type: 'warning' })
+    await ElMessageBox.confirm(`确认取消 ${row.memberName} 的预约？`, '取消确认', { type: 'warning' })
     await cancelAppointment(row.id)
     ElMessage.success('已取消')
     loadAppointments()

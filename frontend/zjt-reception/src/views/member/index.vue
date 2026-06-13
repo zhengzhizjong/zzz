@@ -42,8 +42,8 @@
                 </el-table-column>
                 <el-table-column prop="status" label="状态" width="80">
                   <template #default="{ row }">
-                    <el-tag :type="row.status === 'paid' ? 'success' : 'warning'" size="small">
-                      {{ row.status === 'paid' ? '已付' : '待付' }}
+                    <el-tag :type="row.status === 2 ? 'success' : 'warning'" size="small">
+                      {{ row.status === 2 ? '已付' : '待付' }}
                     </el-tag>
                   </template>
                 </el-table-column>
@@ -60,8 +60,8 @@
                 <el-table-column prop="expireDate" label="到期日" width="120" />
                 <el-table-column prop="status" label="状态" width="80">
                   <template #default="{ row }">
-                    <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">
-                      {{ row.status === 'active' ? '有效' : '已过期' }}
+                    <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+                      {{ row.status === 1 ? '有效' : '已过期' }}
                     </el-tag>
                   </template>
                 </el-table-column>
@@ -78,8 +78,8 @@
                 <el-table-column prop="expireDate" label="到期日" width="120" />
                 <el-table-column prop="status" label="状态" width="80">
                   <template #default="{ row }">
-                    <el-tag :type="row.status === 'available' ? 'success' : 'info'" size="small">
-                      {{ row.status === 'available' ? '可用' : '已使用' }}
+                    <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+                      {{ row.status === 1 ? '可用' : '已使用' }}
                     </el-tag>
                   </template>
                 </el-table-column>

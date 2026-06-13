@@ -267,8 +267,8 @@ async function searchMember() {
 async function loadMemberCouponsAndCards(memberId: number | string) {
   try {
     const [couponsRes, cardsRes] = await Promise.all([
-      get('/api/v1/trade/coupons', { params: { memberId, status: 'available', page: 1, pageSize: 50 } }).catch(() => ({ data: { list: [] } })),
-      get('/api/v1/trade/treatment-cards/my', { params: { memberId, status: 'active', page: 1, pageSize: 50 } }).catch(() => ({ data: { list: [] } }))
+      get('/api/v1/trade/coupons', { params: { memberId, status: 1, page: 1, pageSize: 50 } }).catch(() => ({ data: { list: [] } })),
+      get('/api/v1/trade/treatment-cards/my', { params: { memberId, status: 1, page: 1, pageSize: 50 } }).catch(() => ({ data: { list: [] } }))
     ])
     availableCoupons.value = (couponsRes as any).data?.list || (couponsRes as any).data?.records || []
     availableCards.value = (cardsRes as any).data?.list || (cardsRes as any).data?.records || []

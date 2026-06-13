@@ -27,7 +27,7 @@
           <div class="tech-status">
             <div v-if="tech.currentAppointment" class="current-task">
               <div class="task-label">当前服务</div>
-              <div class="task-customer">{{ tech.currentAppointment.customerName }}</div>
+              <div class="task-customer">{{ tech.currentAppointment.memberName }}</div>
               <div class="task-service">{{ tech.currentAppointment.serviceName }}</div>
             </div>
             <div v-else-if="tech.onDuty" class="idle-status">空闲</div>

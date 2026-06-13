@@ -15,10 +15,11 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="filters.status" placeholder="全部" clearable style="width: 140px;">
-            <el-option label="待确认" value="pending" />
-            <el-option label="已确认" value="confirmed" />
-            <el-option label="已完成" value="completed" />
-            <el-option label="已取消" value="cancelled" />
+            <el-option label="待支付" :value="1" />
+            <el-option label="已支付" :value="2" />
+            <el-option label="服务中" :value="3" />
+            <el-option label="已完成" :value="4" />
+            <el-option label="已取消" :value="5" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -46,9 +47,9 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="row.status === 'pending'" type="primary" link size="small" @click="handleConfirm(row)">确认</el-button>
-            <el-button v-if="row.status === 'pending' || row.status === 'confirmed'" type="warning" link size="small" @click="handleModify(row)">修改</el-button>
-            <el-button v-if="row.status !== 'cancelled' && row.status !== 'completed'" type="danger" link size="small" @click="handleCancel(row)">取消</el-button>
+            <el-button v-if="row.status === 1" type="primary" link size="small" @click="handleConfirm(row)">确认</el-button>
+            <el-button v-if="row.status === 1 || row.status === 2" type="warning" link size="small" @click="handleModify(row)">修改</el-button>
+            <el-button v-if="row.status !== 5 && row.status !== 4" type="danger" link size="small" @click="handleCancel(row)">取消</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -106,7 +107,7 @@ const formRef = ref<FormInstance>()
 
 const filters = reactive({
   dateRange: null as string[] | null,
-  status: ''
+  status: '' as number | string
 })
 
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
@@ -127,14 +128,14 @@ const formRules: FormRules = {
   appointmentTime: [{ required: true, message: '请选择预约时间', trigger: 'change' }]
 }
 
-function statusType(status: string) {
-  const map: Record<string, string> = { pending: 'warning', confirmed: 'primary', completed: 'success', cancelled: 'info' }
+function statusType(status: number) {
+  const map: Record<number, string> = { 1: 'warning', 2: '', 3: 'success', 4: 'info', 5: 'danger' }
   return map[status] || 'info'
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = { pending: '待确认', confirmed: '已确认', completed: '已完成', cancelled: '已取消' }
-  return map[status] || status
+function statusLabel(status: number) {
+  const map: Record<number, string> = { 1: '待支付', 2: '已支付', 3: '服务中', 4: '已完成', 5: '已取消' }
+  return map[status] || '未知'
 }
 
 function resetFilters() {
@@ -154,8 +155,8 @@ async function loadData() {
       params.endDate = filters.dateRange[1]
     }
     const res: any = await getAppointmentList(params)
-    appointmentList.value = res.data?.list || res.data || []
-    pagination.total = res.data?.total || 0
+    appointmentList.value = res.data?.list || res.data?.records || res.data || []
+    pagination.total = res.data?.pagination?.total || res.data?.total || 0
   } finally {
     loading.value = false
   }
@@ -182,7 +183,7 @@ function handleModify(row: Record<string, any>) {
 }
 
 async function handleConfirm(row: Record<string, any>) {
-  await modifyAppointment(row.id, { status: 'confirmed' })
+  await modifyAppointment(row.id, { status: 2 })
   ElMessage.success('已确认预约')
   loadData()
 }

@@ -8,10 +8,10 @@
         </el-form-item>
         <el-form-item label="会员等级">
           <el-select v-model="filters.level" placeholder="全部" clearable style="width: 140px;">
-            <el-option label="普通会员" value="normal" />
-            <el-option label="银卡会员" value="silver" />
-            <el-option label="金卡会员" value="gold" />
-            <el-option label="钻石会员" value="diamond" />
+            <el-option label="普通会员" :value="1" />
+            <el-option label="银卡会员" :value="2" />
+            <el-option label="金卡会员" :value="3" />
+            <el-option label="钻石会员" :value="4" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -81,8 +81,8 @@
             <el-table-column prop="expireDate" label="到期日" width="120" />
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">
-                  {{ row.status === 'active' ? '有效' : '已过期' }}
+                <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+                  {{ row.status === 1 ? '有效' : '已过期' }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -129,14 +129,14 @@ const filters = reactive({ keyword: '', level: '' })
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const memberList = ref<Array<Record<string, any>>>([])
 
-function levelType(level: string) {
-  const map: Record<string, string> = { normal: 'info', silver: '', gold: 'warning', diamond: 'danger' }
+function levelType(level: number) {
+  const map: Record<number, string> = { 1: 'info', 2: '', 3: 'warning', 4: 'danger' }
   return map[level] || ''
 }
 
-function levelLabel(level: string) {
-  const map: Record<string, string> = { normal: '普通会员', silver: '银卡会员', gold: '金卡会员', diamond: '钻石会员' }
-  return map[level] || level
+function levelLabel(level: number) {
+  const map: Record<number, string> = { 1: '普通会员', 2: '银卡会员', 3: '金卡会员', 4: '钻石会员' }
+  return map[level] || '未知'
 }
 
 function resetFilters() {
@@ -153,8 +153,8 @@ async function loadData() {
     if (filters.keyword) params.keyword = filters.keyword
     if (filters.level) params.level = filters.level
     const res: any = await getMemberList(params)
-    memberList.value = res.data?.list || res.data || []
-    pagination.total = res.data?.total || 0
+    memberList.value = res.data?.list || res.data?.records || res.data || []
+    pagination.total = res.data?.pagination?.total || res.data?.total || 0
   } finally {
     loading.value = false
   }

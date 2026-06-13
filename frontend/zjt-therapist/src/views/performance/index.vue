@@ -69,7 +69,8 @@ function getBarHeight(value: number) {
 
 async function loadData() {
   try {
-    const techId = userStore.userInfo?.id || 1
+    const techId = userStore.userInfo?.technicianId || userStore.userInfo?.id || 0
+    if (!techId) return
     const res: any = await getPerformance(techId)
     const data = res.data || {}
     stats.value = {

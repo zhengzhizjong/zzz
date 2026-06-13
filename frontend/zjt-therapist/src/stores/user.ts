@@ -20,7 +20,8 @@ export const useUserStore = defineStore('user', () => {
         name: data.nickname || data.name,
         phone: data.phone,
         storeId: data.storeId,
-        avatarUrl: data.avatarUrl
+        avatarUrl: data.avatarUrl,
+        technicianId: data.technicianId || data.id
       }
     }
     return res
@@ -40,7 +41,8 @@ export const useUserStore = defineStore('user', () => {
           employeeNo: data.employeeNo,
           position: data.position,
           departmentId: data.departmentId,
-          status: data.status
+          status: data.status,
+          technicianId: data.technicianId || data.id
         }
       }
     } catch {

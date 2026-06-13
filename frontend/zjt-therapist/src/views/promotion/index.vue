@@ -114,7 +114,8 @@ function copyCode() {
 
 async function loadData() {
   try {
-    const techId = userStore.userInfo?.id || 1
+    const techId = userStore.userInfo?.technicianId || userStore.userInfo?.id || 0
+    if (!techId) return
     const today = new Date()
     const monthAgo = new Date(today.getTime() - 30 * 86400000)
     const startDate = monthAgo.toISOString().split('T')[0]
@@ -140,7 +141,7 @@ async function loadData() {
 
   // 佣金
   try {
-    const techId = userStore.userInfo?.id || 1
+    const techId = userStore.userInfo?.technicianId || userStore.userInfo?.id || 0
     const commRes: any = await getCommissions(techId)
     const commData = commRes.data || {}
     commission.value = {
@@ -159,7 +160,7 @@ async function loadData() {
 
   // 排行
   try {
-    const techId = userStore.userInfo?.id || 1
+    const techId = userStore.userInfo?.technicianId || userStore.userInfo?.id || 0
     const rankRes: any = await getRanking(techId)
     const rankData = rankRes.data || {}
     rankList.value = rankData.rankings || []

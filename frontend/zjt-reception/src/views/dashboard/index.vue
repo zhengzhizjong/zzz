@@ -65,7 +65,7 @@
             <span>最近预约</span>
           </template>
           <el-table :data="recentAppointments" size="small" stripe>
-            <el-table-column prop="customerName" label="客户" width="80" />
+            <el-table-column prop="memberName" label="客户" width="80" />
             <el-table-column prop="serviceName" label="项目" />
             <el-table-column prop="technicianName" label="技师" width="80" />
             <el-table-column prop="appointmentTime" label="预约时间" width="100" />
@@ -84,6 +84,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { getAppointmentList } from '@/api/appointment'
+import { getOrderList } from '@/api/order'
 import { getTechnicianList } from '@/api/technician'
 import { getStoreId } from '@/utils/auth'
 
@@ -97,39 +98,28 @@ const stats = reactive({
 const technicians = ref<any[]>([])
 const recentAppointments = ref<any[]>([])
 
-function statusTagType(status: string) {
-  const map: Record<string, string> = {
-    pending: 'warning',
-    confirmed: '',
-    in_service: 'success',
-    completed: 'info',
-    cancelled: 'danger'
-  }
+function statusTagType(status: number) {
+  const map: Record<number, string> = { 1: 'warning', 2: '', 3: 'success', 4: 'info', 5: 'danger' }
   return map[status] || ''
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = {
-    pending: '待确认',
-    confirmed: '已确认',
-    in_service: '服务中',
-    completed: '已完成',
-    cancelled: '已取消'
-  }
-  return map[status] || status
+function statusLabel(status: number) {
+  const map: Record<number, string> = { 1: '待支付', 2: '已支付', 3: '服务中', 4: '已完成', 5: '已取消' }
+  return map[status] || '未知'
 }
 
 async function loadDashboard() {
   const storeId = getStoreId() || ''
   try {
+    // 获取预约统计 - status使用数字：1=待支付,2=已支付,3=服务中,4=已完成,5=已取消
     const [pendingRes, inServiceRes, completedRes] = await Promise.all([
-      getAppointmentList({ storeId, status: 'pending', page: 1, pageSize: 1 }),
-      getAppointmentList({ storeId, status: 'in_service', page: 1, pageSize: 1 }),
-      getAppointmentList({ storeId, status: 'completed', page: 1, pageSize: 1 })
+      getAppointmentList({ storeId, status: 1, page: 1, pageSize: 1 }),
+      getAppointmentList({ storeId, status: 3, page: 1, pageSize: 1 }),
+      getAppointmentList({ storeId, status: 4, page: 1, pageSize: 1 })
     ])
-    stats.pendingCount = (pendingRes as any).data?.total || 0
-    stats.inServiceCount = (inServiceRes as any).data?.total || 0
-    stats.completedCount = (completedRes as any).data?.total || 0
+    stats.pendingCount = (pendingRes as any).data?.pagination?.total || (pendingRes as any).data?.total || 0
+    stats.inServiceCount = (inServiceRes as any).data?.pagination?.total || (inServiceRes as any).data?.total || 0
+    stats.completedCount = (completedRes as any).data?.pagination?.total || (completedRes as any).data?.total || 0
   } catch {
     // silently handle
   }
@@ -144,6 +134,24 @@ async function loadDashboard() {
   try {
     const techRes: any = await getTechnicianList({ storeId, page: 1, pageSize: 50 })
     technicians.value = techRes.data?.list || techRes.data?.records || []
+  } catch {
+    // silently handle
+  }
+
+  // 获取今日营收
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const orderRes: any = await getOrderList({ storeId, startDate: today, endDate: today, page: 1, pageSize: 1 })
+    const orderData = orderRes.data || {}
+    // 尝试从订单列表响应中获取今日营收总额
+    stats.todayRevenue = orderData.todayRevenue || orderData.totalRevenue || '0.00'
+    // 如果没有汇总字段，则从列表数据计算
+    if (stats.todayRevenue === '0.00' && orderData.total > 0) {
+      const detailRes: any = await getOrderList({ storeId, startDate: today, endDate: today, page: 1, pageSize: 1000 })
+      const list = detailRes.data?.list || detailRes.data?.records || []
+      const total = list.reduce((sum: number, o: any) => sum + (Number(o.payAmount || o.amount || 0)), 0)
+      stats.todayRevenue = total.toFixed(2)
+    }
   } catch {
     // silently handle
   }

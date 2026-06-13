@@ -5,11 +5,11 @@
       <el-form :inline="true" :model="filters">
         <el-form-item label="订单状态">
           <el-select v-model="filters.status" placeholder="全部" clearable style="width: 140px;">
-            <el-option label="待支付" value="pending" />
-            <el-option label="已支付" value="paid" />
-            <el-option label="已完成" value="completed" />
-            <el-option label="已退款" value="refunded" />
-            <el-option label="已取消" value="cancelled" />
+            <el-option label="待支付" :value="1" />
+            <el-option label="已支付" :value="2" />
+            <el-option label="已完成" :value="3" />
+            <el-option label="已退款" :value="4" />
+            <el-option label="已取消" :value="5" />
           </el-select>
         </el-form-item>
         <el-form-item label="日期范围">
@@ -52,7 +52,7 @@
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleViewDetail(row)">详情</el-button>
-            <el-button v-if="row.status === 'paid'" type="danger" link size="small" @click="handleRefund(row)">退款</el-button>
+            <el-button v-if="row.status === 2" type="danger" link size="small" @click="handleRefund(row)">退款</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -110,7 +110,7 @@ const detailVisible = ref(false)
 const currentOrder = ref<Record<string, any> | null>(null)
 
 const filters = reactive({
-  status: '',
+  status: '' as number | string,
   dateRange: null as string[] | null,
   orderNo: ''
 })
@@ -118,14 +118,14 @@ const filters = reactive({
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const orderList = ref<Array<Record<string, any>>>([])
 
-function statusType(status: string) {
-  const map: Record<string, string> = { pending: 'warning', paid: 'primary', completed: 'success', refunded: 'danger', cancelled: 'info' }
+function statusType(status: number) {
+  const map: Record<number, string> = { 1: 'warning', 2: 'primary', 3: 'success', 4: 'danger', 5: 'info' }
   return map[status] || 'info'
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = { pending: '待支付', paid: '已支付', completed: '已完成', refunded: '已退款', cancelled: '已取消' }
-  return map[status] || status
+function statusLabel(status: number) {
+  const map: Record<number, string> = { 1: '待支付', 2: '已支付', 3: '已完成', 4: '已退款', 5: '已取消' }
+  return map[status] || '未知'
 }
 
 function resetFilters() {
@@ -147,8 +147,8 @@ async function loadData() {
       params.endDate = filters.dateRange[1]
     }
     const res: any = await getOrderList(params)
-    orderList.value = res.data?.list || res.data || []
-    pagination.total = res.data?.total || 0
+    orderList.value = res.data?.list || res.data?.records || res.data || []
+    pagination.total = res.data?.pagination?.total || res.data?.total || 0
   } finally {
     loading.value = false
   }

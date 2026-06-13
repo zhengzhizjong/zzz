@@ -11,10 +11,11 @@
         </el-form-item>
         <el-form-item label="技能等级">
           <el-select v-model="filters.skillLevel" placeholder="全部" clearable style="width: 140px;">
-            <el-option label="初级" value="junior" />
-            <el-option label="中级" value="intermediate" />
-            <el-option label="高级" value="senior" />
-            <el-option label="专家" value="expert" />
+            <el-option label="初级" :value="1" />
+            <el-option label="中级" :value="2" />
+            <el-option label="高级" :value="3" />
+            <el-option label="资深" :value="4" />
+            <el-option label="首席" :value="5" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -111,14 +112,14 @@ const filters = reactive({ onDuty: '', skillLevel: '' })
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const technicianList = ref<Array<Record<string, any>>>([])
 
-function skillLevelType(level: string) {
-  const map: Record<string, string> = { junior: 'info', intermediate: '', senior: 'warning', expert: 'danger' }
+function skillLevelType(level: number) {
+  const map: Record<number, string> = { 1: 'info', 2: '', 3: 'warning', 4: 'danger', 5: 'success' }
   return map[level] || ''
 }
 
-function skillLevelLabel(level: string) {
-  const map: Record<string, string> = { junior: '初级', intermediate: '中级', senior: '高级', expert: '专家' }
-  return map[level] || level
+function skillLevelLabel(level: number) {
+  const map: Record<number, string> = { 1: '初级', 2: '中级', 3: '高级', 4: '资深', 5: '首席' }
+  return map[level] || '未知'
 }
 
 function resetFilters() {
@@ -135,8 +136,8 @@ async function loadData() {
     if (filters.onDuty !== '') params.onDuty = filters.onDuty
     if (filters.skillLevel) params.skillLevel = filters.skillLevel
     const res: any = await getTechnicianList(params)
-    technicianList.value = res.data?.list || res.data || []
-    pagination.total = res.data?.total || 0
+    technicianList.value = res.data?.list || res.data?.records || res.data || []
+    pagination.total = res.data?.pagination?.total || res.data?.total || 0
   } finally {
     loading.value = false
   }

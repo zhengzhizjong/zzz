@@ -79,6 +79,11 @@ async function loadProfile() {
   try {
     await userStore.fetchProfile()
     userInfo.value = userStore.userInfo
+    // 确保从profile中获取完整信息
+    if (userInfo.value && !userInfo.value.levelName && userInfo.value.level) {
+      const LEVEL_MAP: Record<number, string> = { 1: '普通会员', 2: '银卡会员', 3: '金卡会员', 4: '钻石会员' }
+      userInfo.value.levelName = LEVEL_MAP[userInfo.value.level] || '普通会员'
+    }
   } catch {}
 }
 

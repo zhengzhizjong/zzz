@@ -9,7 +9,7 @@ export function getAppointmentDetail(id: number | string) {
 }
 
 export function modifyAppointment(id: number | string, data: Record<string, any>) {
-  return put(`/api/v1/trade/appointments/${id}/modify`, data)
+  return put(`/api/v1/trade/appointments/${id}`, data)
 }
 
 export function cancelAppointment(id: number | string, data?: Record<string, any>) {

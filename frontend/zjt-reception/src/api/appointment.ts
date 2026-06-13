@@ -13,11 +13,11 @@ export function getAppointmentList(params: any) {
 }
 
 export function checkInAppointment(id: number | string) {
-  return put(`/api/v1/trade/appointments/${id}/modify`, { status: 'in_service' })
+  return put(`/api/v1/trade/appointments/${id}`, { status: 3 })
 }
 
 export function completeAppointment(id: number | string) {
-  return put(`/api/v1/trade/appointments/${id}/modify`, { status: 'completed' })
+  return put(`/api/v1/trade/appointments/${id}`, { status: 4 })
 }
 
 export function cancelAppointment(id: number | string, data?: any) {
