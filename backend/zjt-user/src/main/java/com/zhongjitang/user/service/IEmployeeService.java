@@ -12,6 +12,8 @@ public interface IEmployeeService {
 
     R<LoginResponse> login(EmployeeLoginRequest request);
 
+    R<UserEmployeeDO> getById(Long id);
+
     R<PageResult<UserEmployeeDO>> page(Integer page, Integer pageSize, String keyword, Integer status, Long departmentId);
 
     R<Void> create(EmployeeCreateRequest request);

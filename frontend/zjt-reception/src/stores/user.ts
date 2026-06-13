@@ -10,21 +10,46 @@ export const useUserStore = defineStore('user', () => {
 
   async function login(phone: string, password: string) {
     const res: any = await post('/api/v1/user/employees/login', { phone, password })
-    token.value = res.data.token
-    setToken(res.data.token)
+    const data = res.data
+    token.value = data.token
+    setToken(data.token)
     isLogin.value = true
-    if (res.data.storeId) {
-      setStoreId(String(res.data.storeId))
+    // 直接保存登录返回的用户信息
+    userInfo.value = {
+      id: data.memberId || data.id,
+      name: data.nickname || data.name,
+      phone: data.phone,
+      storeId: data.storeId,
+      avatarUrl: data.avatarUrl
     }
-    return res.data
+    if (data.storeId) {
+      setStoreId(String(data.storeId))
+    }
+    return data
   }
 
   async function fetchProfile() {
     try {
       const res: any = await get('/api/v1/user/employees/profile')
-      userInfo.value = res.data
+      const data = res.data
+      if (data) {
+        userInfo.value = {
+          id: data.id,
+          name: data.name,
+          phone: data.phone,
+          storeId: data.storeId,
+          avatarUrl: data.avatarUrl,
+          employeeNo: data.employeeNo,
+          position: data.position,
+          departmentId: data.departmentId,
+          status: data.status
+        }
+        if (data.storeId) {
+          setStoreId(String(data.storeId))
+        }
+      }
     } catch {
-      userInfo.value = null
+      // fetchProfile失败不影响页面，使用登录时保存的信息
     }
   }
 

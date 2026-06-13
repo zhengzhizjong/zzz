@@ -14,11 +14,12 @@ export const useUserStore = defineStore('user', () => {
     if (token) {
       setToken(token)
       isLoggedIn.value = true
-      // 保存基本信息
+      // 直接保存登录返回的用户信息
       userInfo.value = {
-        id: data.memberId,
-        name: data.nickname,
+        id: data.memberId || data.id,
+        name: data.nickname || data.name,
         phone: data.phone,
+        storeId: data.storeId,
         avatarUrl: data.avatarUrl
       }
     }
@@ -30,10 +31,20 @@ export const useUserStore = defineStore('user', () => {
       const res: any = await getProfile()
       const data = res.data || res
       if (data) {
-        userInfo.value = data
+        userInfo.value = {
+          id: data.id,
+          name: data.name,
+          phone: data.phone,
+          storeId: data.storeId,
+          avatarUrl: data.avatarUrl,
+          employeeNo: data.employeeNo,
+          position: data.position,
+          departmentId: data.departmentId,
+          status: data.status
+        }
       }
     } catch {
-      // ignore
+      // fetchProfile失败不影响页面，使用登录时保存的信息
     }
   }
 

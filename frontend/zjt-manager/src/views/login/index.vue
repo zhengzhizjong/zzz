@@ -6,8 +6,8 @@
         <p>店长管理系统</p>
       </div>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="0" size="large">
-        <el-form-item prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" :prefix-icon="User" />
+        <el-form-item prop="phone">
+          <el-input v-model="form.phone" placeholder="请输入手机号" :prefix-icon="User" />
         </el-form-item>
         <el-form-item prop="password">
           <el-input v-model="form.password" type="password" placeholder="请输入密码" :prefix-icon="Lock" show-password @keyup.enter="handleLogin" />
@@ -34,12 +34,12 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 
 const form = reactive({
-  username: '',
+  phone: '',
   password: ''
 })
 
 const rules: FormRules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
@@ -48,7 +48,7 @@ async function handleLogin() {
   if (!valid) return
   loading.value = true
   try {
-    await userStore.login(form.username, form.password)
+    await userStore.login(form.phone, form.password)
     ElMessage.success('登录成功')
     router.push('/dashboard')
   } catch {

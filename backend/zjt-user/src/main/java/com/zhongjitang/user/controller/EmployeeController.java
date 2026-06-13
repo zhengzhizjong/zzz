@@ -2,6 +2,7 @@ package com.zhongjitang.user.controller;
 
 import com.zhongjitang.common.core.result.PageResult;
 import com.zhongjitang.common.core.result.R;
+import com.zhongjitang.common.core.context.UserContext;
 import com.zhongjitang.user.domain.dto.EmployeeCreateRequest;
 import com.zhongjitang.user.domain.dto.EmployeeLoginRequest;
 import com.zhongjitang.user.domain.dto.EmployeeUpdateRequest;
@@ -27,6 +28,16 @@ public class EmployeeController {
     @Operation(summary = "员工登录")
     public R<LoginResponse> login(@Valid @RequestBody EmployeeLoginRequest request) {
         return employeeService.login(request);
+    }
+
+    @GetMapping("/profile")
+    @Operation(summary = "获取当前登录员工信息")
+    public R<UserEmployeeDO> getProfile() {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            return R.fail("未登录");
+        }
+        return employeeService.getById(userId);
     }
 
     @GetMapping

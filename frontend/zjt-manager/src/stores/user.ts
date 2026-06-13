@@ -2,34 +2,59 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { post, get } from '@/utils/request'
 
+const TOKEN_KEY = 'manager_token'
+const STORE_ID_KEY = 'manager_store_id'
+
 export const useUserStore = defineStore('user', () => {
-  const token = ref(localStorage.getItem('manager_token') || '')
+  const token = ref(localStorage.getItem(TOKEN_KEY) || '')
   const userInfo = ref<any>(null)
-  const storeId = ref(localStorage.getItem('manager_store_id') || '')
-  const isLogin = ref(!!localStorage.getItem('manager_token'))
+  const storeId = ref(localStorage.getItem(STORE_ID_KEY) || '')
+  const isLogin = ref(!!localStorage.getItem(TOKEN_KEY))
 
   async function login(phone: string, password: string) {
     const res: any = await post('/api/v1/user/employees/login', { phone, password })
-    token.value = res.data.token
+    const data = res.data
+    token.value = data.token
     isLogin.value = true
-    localStorage.setItem('manager_token', res.data.token)
-    if (res.data.storeId) {
-      storeId.value = String(res.data.storeId)
-      localStorage.setItem('manager_store_id', String(res.data.storeId))
+    localStorage.setItem(TOKEN_KEY, data.token)
+    // 直接保存登录返回的用户信息
+    userInfo.value = {
+      id: data.memberId || data.id,
+      name: data.nickname || data.name,
+      phone: data.phone,
+      storeId: data.storeId,
+      avatarUrl: data.avatarUrl
     }
-    return res.data
+    if (data.storeId) {
+      storeId.value = String(data.storeId)
+      localStorage.setItem(STORE_ID_KEY, String(data.storeId))
+    }
+    return data
   }
 
   async function fetchProfile() {
     try {
       const res: any = await get('/api/v1/user/employees/profile')
-      userInfo.value = res.data
-      if (res.data?.storeId) {
-        storeId.value = String(res.data.storeId)
-        localStorage.setItem('manager_store_id', String(res.data.storeId))
+      const data = res.data
+      if (data) {
+        userInfo.value = {
+          id: data.id,
+          name: data.name,
+          phone: data.phone,
+          storeId: data.storeId,
+          avatarUrl: data.avatarUrl,
+          employeeNo: data.employeeNo,
+          position: data.position,
+          departmentId: data.departmentId,
+          status: data.status
+        }
+        if (data.storeId) {
+          storeId.value = String(data.storeId)
+          localStorage.setItem(STORE_ID_KEY, String(data.storeId))
+        }
       }
     } catch {
-      userInfo.value = null
+      // fetchProfile失败不影响页面，使用登录时保存的信息
     }
   }
 
@@ -38,8 +63,8 @@ export const useUserStore = defineStore('user', () => {
     userInfo.value = null
     storeId.value = ''
     isLogin.value = false
-    localStorage.removeItem('manager_token')
-    localStorage.removeItem('manager_store_id')
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(STORE_ID_KEY)
   }
 
   return { token, userInfo, storeId, isLogin, login, fetchProfile, logout }

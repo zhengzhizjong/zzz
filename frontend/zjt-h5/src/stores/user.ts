@@ -30,16 +30,56 @@ export const useUserStore = defineStore('user', () => {
 
   async function loginBySms(phone: string, verifyCode: string) {
     const res: any = await post('/api/v1/user/members/login', { phone, verifyCode })
-    token.value = res.data.token
-    setToken(res.data.token)
+    const data = res.data
+    token.value = data.token
+    setToken(data.token)
     isLogin.value = true
+    // 直接保存登录返回的用户信息
+    userInfo.value = {
+      id: data.memberId || data.id,
+      nickname: data.nickname || '',
+      name: data.nickname || '',
+      realName: data.nickname || '',
+      phone: data.phone || phone,
+      avatar: data.avatarUrl || '',
+      gender: 0,
+      birthday: '',
+      levelName: '',
+      memberType: '',
+      points: 0,
+      balance: 0,
+      constitutionType: '',
+      memberNo: '',
+      source: '',
+      status: 1
+    }
   }
 
   async function loginByWechat(code: string) {
     const res: any = await post('/api/v1/user/members/wechat-login', { code })
-    token.value = res.data.token
-    setToken(res.data.token)
+    const data = res.data
+    token.value = data.token
+    setToken(data.token)
     isLogin.value = true
+    // 直接保存登录返回的用户信息
+    userInfo.value = {
+      id: data.memberId || data.id,
+      nickname: data.nickname || '',
+      name: data.nickname || '',
+      realName: data.nickname || '',
+      phone: data.phone || '',
+      avatar: data.avatarUrl || '',
+      gender: 0,
+      birthday: '',
+      levelName: '',
+      memberType: '',
+      points: 0,
+      balance: 0,
+      constitutionType: '',
+      memberNo: '',
+      source: '',
+      status: 1
+    }
   }
 
   async function fetchProfile() {

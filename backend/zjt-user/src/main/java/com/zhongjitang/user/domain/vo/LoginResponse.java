@@ -26,4 +26,10 @@ public class LoginResponse {
 
     @Schema(description = "手机号")
     private String phone;
+
+    @Schema(description = "门店ID")
+    private Long storeId;
+
+    @Schema(description = "租户ID")
+    private Long tenantId;
 }

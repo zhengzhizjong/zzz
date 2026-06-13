@@ -68,7 +68,7 @@ public class EmployeeServiceImpl implements IEmployeeService {
         if (tenantId == null) {
             tenantId = 1L; // 默认租户
         }
-        Long storeId = TenantContext.getStoreId();
+        Long storeId = employee.getStoreId();
         if (storeId == null) {
             storeId = 0L; // 默认门店
         }
@@ -82,7 +82,18 @@ public class EmployeeServiceImpl implements IEmployeeService {
         response.setNickname(employee.getName());
         response.setAvatarUrl(employee.getAvatarUrl());
         response.setPhone(employee.getPhone());
+        response.setStoreId(storeId);
+        response.setTenantId(tenantId);
         return R.ok(response);
+    }
+
+    @Override
+    public R<UserEmployeeDO> getById(Long id) {
+        UserEmployeeDO employee = employeeMapper.selectById(id);
+        if (employee == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "员工不存在");
+        }
+        return R.ok(employee);
     }
 
     @Override
