@@ -13,14 +13,10 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="日期">
-          <el-date-picker
-            v-model="searchForm.date"
-            type="date"
-            placeholder="选择日期"
-            value-format="YYYY-MM-DD"
-            @change="fetchData"
-          />
+        <el-form-item>
+          <el-button :icon="ArrowLeft" circle @click="handlePrevWeek" />
+          <span class="week-label">{{ weekLabel }}</span>
+          <el-button :icon="ArrowRight" circle @click="handleNextWeek" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleBatchCreate">批量排班</el-button>
@@ -28,44 +24,87 @@
       </el-form>
     </el-card>
 
-    <!-- 日历视图 -->
+    <!-- 排班表格 -->
     <el-card shadow="never" class="table-card">
-      <div class="calendar-header">
-        <el-button :icon="ArrowLeft" circle @click="handlePrevMonth" />
-        <span class="calendar-title">{{ currentMonthLabel }}</span>
-        <el-button :icon="ArrowRight" circle @click="handleNextMonth" />
-      </div>
-
-      <div class="calendar-grid">
-        <div class="calendar-weekdays">
-          <div v-for="day in weekdays" :key="day" class="weekday-cell">{{ day }}</div>
-        </div>
-        <div class="calendar-body">
-          <div
-            v-for="(cell, idx) in calendarCells"
-            :key="idx"
-            class="calendar-cell"
-            :class="{
-              'other-month': !cell.currentMonth,
-              'today': cell.isToday,
-            }"
-          >
-            <div class="cell-date">{{ cell.day }}</div>
-            <div v-if="cell.schedules.length > 0" class="cell-schedules">
-              <div
-                v-for="s in cell.schedules"
-                :key="s.id"
-                class="schedule-tag"
-                :class="getScheduleClass(s.status)"
-                @click="handleEditSchedule(s)"
+      <div class="schedule-table-wrapper">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th class="tech-col">技师</th>
+              <th v-for="day in weekDays" :key="day.dateStr" class="day-col" :class="{ 'is-today': day.isToday }">
+                <div class="day-header">
+                  <div class="day-weekday">{{ day.weekday }}</div>
+                  <div class="day-date">{{ day.day }}</div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="tech in technicians" :key="tech.id">
+              <td class="tech-col">
+                <div class="tech-name">{{ tech.name }}</div>
+              </td>
+              <td
+                v-for="day in weekDays"
+                :key="day.dateStr"
+                class="day-col"
+                :class="{ 'is-today': day.isToday }"
+                @click="handleCellClick(tech, day)"
               >
-                {{ s.technicianName }} {{ getScheduleLabel(s.status) }}
-              </div>
-            </div>
+                <div class="cell-content">
+                  <template v-if="getSchedule(tech.id, day.dateStr)">
+                    <el-tag
+                      :type="getScheduleTagType(tech.id, day.dateStr)"
+                      size="small"
+                      effect="dark"
+                      class="shift-tag"
+                    >
+                      {{ getScheduleLabel(tech.id, day.dateStr) }}
+                    </el-tag>
+                  </template>
+                  <template v-else>
+                    <span class="empty-cell">+</span>
+                  </template>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="technicians.length === 0">
+              <td :colspan="weekDays.length + 1" class="empty-row">
+                <el-empty description="请先选择门店" :image-size="60" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </el-card>
+
+    <!-- 班次选择弹窗 -->
+    <el-dialog
+      v-model="shiftDialogVisible"
+      :title="`${currentCell.technicianName} - ${currentCell.dateLabel}`"
+      width="360px"
+      destroy-on-close
+    >
+      <div class="shift-options">
+        <div
+          v-for="opt in shiftOptions"
+          :key="opt.scheduleType + '-' + opt.shiftType"
+          class="shift-option"
+          :class="{ 'is-active': isSelected(opt), [opt.className]: true }"
+          @click="handleSelectShift(opt)"
+        >
+          <div class="shift-icon">{{ opt.icon }}</div>
+          <div class="shift-info">
+            <div class="shift-name">{{ opt.label }}</div>
+            <div class="shift-time">{{ opt.time }}</div>
           </div>
         </div>
       </div>
-    </el-card>
+      <template #footer>
+        <el-button @click="shiftDialogVisible = false">取消</el-button>
+        <el-button type="danger" plain v-if="currentCell.scheduleId" @click="handleDeleteSchedule">删除排班</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 批量排班弹窗 -->
     <el-dialog
@@ -78,18 +117,25 @@
         <el-form-item label="技师" prop="technicianIds">
           <el-select v-model="batchForm.technicianIds" multiple placeholder="请选择技师" style="width: 100%">
             <el-option
-              v-for="t in technicianOptions"
+              v-for="t in technicians"
               :key="t.id"
               :label="t.name"
               :value="t.id"
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="排班类型" prop="status">
-          <el-select v-model="batchForm.status" placeholder="请选择" style="width: 100%">
+        <el-form-item label="排班类型" prop="scheduleType">
+          <el-select v-model="batchForm.scheduleType" placeholder="请选择" style="width: 100%">
             <el-option label="上班" :value="1" />
             <el-option label="休息" :value="2" />
             <el-option label="请假" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="班次" v-if="batchForm.scheduleType === 1">
+          <el-select v-model="batchForm.shiftType" placeholder="请选择班次" style="width: 100%">
+            <el-option label="早班 (09:00-17:00)" value="morning" />
+            <el-option label="中班 (13:00-21:00)" value="afternoon" />
+            <el-option label="晚班 (17:00-01:00)" value="evening" />
           </el-select>
         </el-form-item>
         <el-form-item label="日期范围" prop="dateRange">
@@ -109,34 +155,6 @@
         <el-button type="primary" :loading="batchLoading" @click="handleBatchSubmit">确认</el-button>
       </template>
     </el-dialog>
-
-    <!-- 单条排班编辑弹窗 -->
-    <el-dialog
-      v-model="editDialogVisible"
-      title="编辑排班"
-      width="440px"
-      destroy-on-close
-    >
-      <el-form ref="editFormRef" :model="editForm" :rules="editFormRules" label-width="80px">
-        <el-form-item label="技师">
-          <el-input :model-value="editForm.technicianName" disabled />
-        </el-form-item>
-        <el-form-item label="日期">
-          <el-input :model-value="editForm.date" disabled />
-        </el-form-item>
-        <el-form-item label="排班类型" prop="status">
-          <el-select v-model="editForm.status" style="width: 100%">
-            <el-option label="上班" :value="1" />
-            <el-option label="休息" :value="2" />
-            <el-option label="请假" :value="3" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="editDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="editLoading" @click="handleEditSubmit">确认</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -145,144 +163,157 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { getScheduleByTechnician, batchCreateSchedule, updateSchedule } from '@/api/store/schedule'
+import { getScheduleByTechnician, batchCreateSchedule, updateSchedule, createSchedule, deleteSchedule } from '@/api/store/schedule'
 import { getStoreList } from '@/api/store/info'
 import { getTechnicianList } from '@/api/store/technician'
 import type { StoreInfo } from '@/types/store'
 
-interface ScheduleItem {
+interface TechnicianInfo {
   id: number
-  technicianId: number
-  technicianName: string
-  date: string
-  status: number
+  name: string
 }
 
-interface CalendarCell {
-  day: number
+interface DayInfo {
   dateStr: string
-  currentMonth: boolean
+  day: number
+  weekday: string
   isToday: boolean
-  schedules: ScheduleItem[]
 }
 
-const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+interface ScheduleData {
+  id: number
+  scheduleType: number
+  shiftType: string
+}
+
+interface ShiftOption {
+  label: string
+  scheduleType: number
+  shiftType: string
+  icon: string
+  time: string
+  className: string
+}
+
+const weekdayLabels = ['日', '一', '二', '三', '四', '五', '六']
+
+const shiftOptions: ShiftOption[] = [
+  { label: '早班', scheduleType: 1, shiftType: 'morning', icon: '🌅', time: '09:00 - 17:00', className: 'opt-morning' },
+  { label: '中班', scheduleType: 1, shiftType: 'afternoon', icon: '☀️', time: '13:00 - 21:00', className: 'opt-afternoon' },
+  { label: '晚班', scheduleType: 1, shiftType: 'evening', icon: '🌙', time: '17:00 - 01:00', className: 'opt-evening' },
+  { label: '休息', scheduleType: 2, shiftType: '', icon: '💤', time: '全天休息', className: 'opt-rest' },
+  { label: '请假', scheduleType: 3, shiftType: '', icon: '📝', time: '已请假', className: 'opt-leave' },
+]
 
 const storeOptions = ref<StoreInfo[]>([])
-const technicianOptions = ref<{ id: number; name: string }[]>([])
-const scheduleMap = ref<Record<string, ScheduleItem[]>>({})
-
-const batchDialogVisible = ref(false)
-const batchLoading = ref(false)
-const batchFormRef = ref<FormInstance>()
-
-const editDialogVisible = ref(false)
-const editLoading = ref(false)
-const editFormRef = ref<FormInstance>()
+const technicians = ref<TechnicianInfo[]>([])
+const scheduleMap = ref<Record<string, Record<string, ScheduleData>>>({})
 
 const searchForm = reactive({
   storeId: undefined as number | undefined,
-  date: '' as string,
 })
 
-const currentYear = ref(new Date().getFullYear())
-const currentMonth = ref(new Date().getMonth())
+const weekStart = ref(getMonday(new Date()))
+
+const shiftDialogVisible = ref(false)
+const batchDialogVisible = ref(false)
+const batchLoading = ref(false)
+const batchFormRef = ref<FormInstance>()
+const saving = ref(false)
+
+const currentCell = reactive({
+  technicianId: 0,
+  technicianName: '',
+  dateStr: '',
+  dateLabel: '',
+  scheduleId: 0,
+  scheduleType: 0,
+  shiftType: '',
+})
 
 const batchForm = reactive({
   technicianIds: [] as number[],
-  status: 1,
+  scheduleType: 1,
+  shiftType: 'morning',
   dateRange: null as [string, string] | null,
 })
 
 const batchFormRules: FormRules = {
   technicianIds: [{ required: true, message: '请选择技师', trigger: 'change' }],
-  status: [{ required: true, message: '请选择排班类型', trigger: 'change' }],
+  scheduleType: [{ required: true, message: '请选择排班类型', trigger: 'change' }],
   dateRange: [{ required: true, message: '请选择日期范围', trigger: 'change' }],
 }
 
-const editForm = reactive({
-  id: undefined as number | undefined,
-  technicianName: '',
-  date: '',
-  status: 1,
-})
-
-const editFormRules: FormRules = {
-  status: [{ required: true, message: '请选择排班类型', trigger: 'change' }],
+function getMonday(d: Date): Date {
+  const date = new Date(d)
+  const day = date.getDay()
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1)
+  date.setDate(diff)
+  date.setHours(0, 0, 0, 0)
+  return date
 }
 
-const currentMonthLabel = computed(() => {
-  return `${currentYear.value}年${currentMonth.value + 1}月`
-})
-
-const calendarCells = computed<CalendarCell[]>(() => {
-  const year = currentYear.value
-  const month = currentMonth.value
-  const firstDay = new Date(year, month, 1).getDay()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const daysInPrevMonth = new Date(year, month, 0).getDate()
+const weekDays = computed<DayInfo[]>(() => {
+  const days: DayInfo[] = []
   const today = new Date()
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-
-  const cells: CalendarCell[] = []
-
-  // 上月填充
-  for (let i = firstDay - 1; i >= 0; i--) {
-    const day = daysInPrevMonth - i
-    const prevMonth = month === 0 ? 11 : month - 1
-    const prevYear = month === 0 ? year - 1 : year
-    const dateStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    cells.push({
-      day,
-      dateStr,
-      currentMonth: false,
-      isToday: dateStr === todayStr,
-      schedules: scheduleMap.value[dateStr] || [],
+  const todayStr = formatDate(today)
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart.value)
+    d.setDate(d.getDate() + i)
+    days.push({
+      dateStr: formatDate(d),
+      day: d.getDate(),
+      weekday: weekdayLabels[d.getDay()],
+      isToday: formatDate(d) === todayStr,
     })
   }
-
-  // 本月
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    cells.push({
-      day,
-      dateStr,
-      currentMonth: true,
-      isToday: dateStr === todayStr,
-      schedules: scheduleMap.value[dateStr] || [],
-    })
-  }
-
-  // 下月填充
-  const remaining = 42 - cells.length
-  for (let day = 1; day <= remaining; day++) {
-    const nextMonth = month === 11 ? 0 : month + 1
-    const nextYear = month === 11 ? year + 1 : year
-    const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    cells.push({
-      day,
-      dateStr,
-      currentMonth: false,
-      isToday: dateStr === todayStr,
-      schedules: scheduleMap.value[dateStr] || [],
-    })
-  }
-
-  return cells
+  return days
 })
 
-function getScheduleLabel(status: number): string {
-  if (status === 1) return '上班'
-  if (status === 2) return '休息'
-  if (status === 3) return '请假'
-  return '未知'
+const weekLabel = computed(() => {
+  const start = weekDays.value[0]
+  const end = weekDays.value[6]
+  if (!start || !end) return ''
+  return `${start.dateStr} ~ ${end.dateStr}`
+})
+
+function formatDate(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
 }
 
-function getScheduleClass(status: number): string {
-  if (status === 1) return 'schedule-work'
-  if (status === 2) return 'schedule-rest'
-  if (status === 3) return 'schedule-leave'
-  return ''
+function getSchedule(techId: number, dateStr: string): ScheduleData | null {
+  return scheduleMap.value[techId]?.[dateStr] || null
+}
+
+function getScheduleLabel(techId: number, dateStr: string): string {
+  const s = getSchedule(techId, dateStr)
+  if (!s) return ''
+  if (s.scheduleType === 2) return '休息'
+  if (s.scheduleType === 3) return '请假'
+  if (s.shiftType === 'morning') return '早班'
+  if (s.shiftType === 'afternoon') return '中班'
+  if (s.shiftType === 'evening') return '晚班'
+  return '上班'
+}
+
+function getScheduleTagType(techId: number, dateStr: string): string {
+  const s = getSchedule(techId, dateStr)
+  if (!s) return 'info'
+  if (s.scheduleType === 2) return 'info'
+  if (s.scheduleType === 3) return 'warning'
+  if (s.shiftType === 'morning') return 'success'
+  if (s.shiftType === 'afternoon') return ''
+  if (s.shiftType === 'evening') return 'danger'
+  return 'success'
+}
+
+function isSelected(opt: ShiftOption): boolean {
+  if (currentCell.scheduleType !== opt.scheduleType) return false
+  if (opt.scheduleType === 1 && currentCell.shiftType !== opt.shiftType) return false
+  return true
 }
 
 async function fetchStoreOptions() {
@@ -297,75 +328,130 @@ async function fetchStoreOptions() {
   }
 }
 
-async function fetchTechnicianOptions() {
+async function fetchTechnicians() {
   if (!searchForm.storeId) return
   try {
     const res: any = await getTechnicianList({ page: 1, pageSize: 999, storeId: searchForm.storeId })
-    technicianOptions.value = (res.data.list || []).map((t: any) => ({ id: t.id, name: t.name }))
+    technicians.value = (res.data.list || []).map((t: any) => ({ id: t.id, name: t.name }))
   } catch {
-    technicianOptions.value = []
+    technicians.value = []
   }
 }
 
-async function fetchData() {
-  if (!searchForm.storeId) return
-  const month = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}`
-  try {
-    // 获取门店下所有技师
-    const techRes: any = await getTechnicianList({ page: 1, pageSize: 999, storeId: searchForm.storeId })
-    const technicians = techRes.data.list || []
-
-    // 对每个技师查询月度排班，汇总到 scheduleMap
-    const map: Record<string, ScheduleItem[]> = {}
-    for (const tech of technicians) {
-      try {
-        const res: any = await getScheduleByTechnician(tech.id, month)
-        const list: any[] = res.data || []
-        list.forEach((item) => {
-          const dateStr = item.scheduleDate || item.date
-          if (!dateStr) return
-          if (!map[dateStr]) map[dateStr] = []
-          map[dateStr].push({
-            id: item.id,
-            technicianId: tech.id,
-            technicianName: tech.name || tech.technicianName,
-            date: dateStr,
-            status: item.status,
-          })
-        })
-      } catch {
-        // 单个技师查询失败不影响其他技师
-      }
-    }
-    scheduleMap.value = map
-  } catch {
+async function fetchScheduleData() {
+  if (!searchForm.storeId || technicians.value.length === 0) {
     scheduleMap.value = {}
+    return
   }
+  const month = `${weekStart.value.getFullYear()}-${String(weekStart.value.getMonth() + 1).padStart(2, '0')}`
+  const map: Record<string, Record<string, ScheduleData>> = {}
+  for (const tech of technicians.value) {
+    try {
+      const res: any = await getScheduleByTechnician(tech.id, month)
+      const list: any[] = res.data || []
+      const techMap: Record<string, ScheduleData> = {}
+      list.forEach((item) => {
+        const dateStr = item.scheduleDate
+        if (!dateStr) return
+        techMap[dateStr] = {
+          id: item.id,
+          scheduleType: item.scheduleType,
+          shiftType: item.shiftType || '',
+        }
+      })
+      map[tech.id] = techMap
+    } catch {
+      // ignore
+    }
+  }
+  scheduleMap.value = map
 }
 
 function handleStoreChange() {
-  fetchTechnicianOptions()
-  fetchData()
+  fetchTechnicians().then(() => fetchScheduleData())
 }
 
-function handlePrevMonth() {
-  if (currentMonth.value === 0) {
-    currentMonth.value = 11
-    currentYear.value--
-  } else {
-    currentMonth.value--
-  }
-  fetchData()
+function handlePrevWeek() {
+  const d = new Date(weekStart.value)
+  d.setDate(d.getDate() - 7)
+  weekStart.value = d
+  fetchScheduleData()
 }
 
-function handleNextMonth() {
-  if (currentMonth.value === 11) {
-    currentMonth.value = 0
-    currentYear.value++
+function handleNextWeek() {
+  const d = new Date(weekStart.value)
+  d.setDate(d.getDate() + 7)
+  weekStart.value = d
+  fetchScheduleData()
+}
+
+function handleCellClick(tech: TechnicianInfo, day: DayInfo) {
+  currentCell.technicianId = tech.id
+  currentCell.technicianName = tech.name
+  currentCell.dateStr = day.dateStr
+  currentCell.dateLabel = `${day.dateStr} 周${day.weekday}`
+  const s = getSchedule(tech.id, day.dateStr)
+  if (s) {
+    currentCell.scheduleId = s.id
+    currentCell.scheduleType = s.scheduleType
+    currentCell.shiftType = s.shiftType
   } else {
-    currentMonth.value++
+    currentCell.scheduleId = 0
+    currentCell.scheduleType = 0
+    currentCell.shiftType = ''
   }
-  fetchData()
+  shiftDialogVisible.value = true
+}
+
+async function handleSelectShift(opt: ShiftOption) {
+  saving.value = true
+  try {
+    if (currentCell.scheduleId) {
+      // 更新已有排班
+      await updateSchedule(currentCell.scheduleId, {
+        scheduleType: opt.scheduleType,
+        shiftType: opt.scheduleType === 1 ? opt.shiftType : '',
+      })
+    } else {
+      // 创建新排班
+      const shiftTimeMap: Record<string, { start: string; end: string }> = {
+        morning: { start: '09:00', end: '17:00' },
+        afternoon: { start: '13:00', end: '21:00' },
+        evening: { start: '17:00', end: '01:00' },
+      }
+      const time = opt.scheduleType === 1 ? shiftTimeMap[opt.shiftType] : { start: '00:00', end: '00:00' }
+      await createSchedule({
+        technicianId: currentCell.technicianId,
+        scheduleDate: currentCell.dateStr,
+        startTime: time.start,
+        endTime: time.end,
+        scheduleType: opt.scheduleType,
+        shiftType: opt.scheduleType === 1 ? opt.shiftType : '',
+      })
+    }
+    ElMessage.success('排班更新成功')
+    shiftDialogVisible.value = false
+    fetchScheduleData()
+  } catch {
+    ElMessage.error('排班更新失败')
+  } finally {
+    saving.value = false
+  }
+}
+
+async function handleDeleteSchedule() {
+  if (!currentCell.scheduleId) return
+  saving.value = true
+  try {
+    await deleteSchedule(currentCell.scheduleId)
+    ElMessage.success('排班已删除')
+    shiftDialogVisible.value = false
+    fetchScheduleData()
+  } catch {
+    ElMessage.error('删除失败')
+  } finally {
+    saving.value = false
+  }
 }
 
 function handleBatchCreate() {
@@ -374,7 +460,8 @@ function handleBatchCreate() {
     return
   }
   batchForm.technicianIds = []
-  batchForm.status = 1
+  batchForm.scheduleType = 1
+  batchForm.shiftType = 'morning'
   batchForm.dateRange = null
   batchDialogVisible.value = true
 }
@@ -386,54 +473,38 @@ async function handleBatchSubmit() {
 
   batchLoading.value = true
   try {
+    const shiftTimeMap: Record<string, { start: string; end: string }> = {
+      morning: { start: '09:00', end: '17:00' },
+      afternoon: { start: '13:00', end: '21:00' },
+      evening: { start: '17:00', end: '01:00' },
+    }
+    const time = batchForm.scheduleType === 1 ? shiftTimeMap[batchForm.shiftType] : { start: '09:00', end: '18:00' }
     await batchCreateSchedule({
       storeId: searchForm.storeId,
       technicianIds: batchForm.technicianIds,
-      status: batchForm.status,
+      scheduleType: batchForm.scheduleType,
+      shiftType: batchForm.scheduleType === 1 ? batchForm.shiftType : '',
       startDate: batchForm.dateRange[0],
       endDate: batchForm.dateRange[1],
+      startTime: time.start,
+      endTime: time.end,
+      restDays: [0, 6],
     })
     ElMessage.success('批量排班成功')
     batchDialogVisible.value = false
-    fetchData()
+    fetchScheduleData()
   } catch {
-    // 错误已在拦截器中处理
+    ElMessage.error('批量排班失败')
   } finally {
     batchLoading.value = false
-  }
-}
-
-function handleEditSchedule(schedule: ScheduleItem) {
-  editForm.id = schedule.id
-  editForm.technicianName = schedule.technicianName
-  editForm.date = schedule.date
-  editForm.status = schedule.status
-  editDialogVisible.value = true
-}
-
-async function handleEditSubmit() {
-  if (!editFormRef.value) return
-  await editFormRef.value.validate()
-  if (!editForm.id) return
-
-  editLoading.value = true
-  try {
-    await updateSchedule(editForm.id, { status: editForm.status })
-    ElMessage.success('更新成功')
-    editDialogVisible.value = false
-    fetchData()
-  } catch {
-    // 错误已在拦截器中处理
-  } finally {
-    editLoading.value = false
   }
 }
 
 onMounted(async () => {
   await fetchStoreOptions()
   if (searchForm.storeId) {
-    await fetchTechnicianOptions()
-    fetchData()
+    await fetchTechnicians()
+    fetchScheduleData()
   }
 })
 </script>
@@ -453,109 +524,182 @@ onMounted(async () => {
   align-items: center;
 }
 
-.calendar-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.calendar-title {
-  font-size: 18px;
-  font-weight: 600;
-  min-width: 120px;
-  text-align: center;
-}
-
-.calendar-grid {
-  border: 1px solid #ebeef5;
-}
-
-.calendar-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-}
-
-.weekday-cell {
-  padding: 10px;
-  text-align: center;
-  font-weight: 600;
-  background: #f5f7fa;
-  border-bottom: 1px solid #ebeef5;
-
-  &:not(:last-child) {
-    border-right: 1px solid #ebeef5;
-  }
-}
-
-.calendar-body {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-}
-
-.calendar-cell {
-  min-height: 100px;
-  padding: 6px;
-  border-bottom: 1px solid #ebeef5;
-  border-right: 1px solid #ebeef5;
-
-  &:nth-child(7n) {
-    border-right: none;
-  }
-
-  &.other-month {
-    background: #fafafa;
-
-    .cell-date {
-      color: #c0c4cc;
-    }
-  }
-
-  &.today {
-    background: #f0f9eb;
-
-    .cell-date {
-      color: #07C160;
-      font-weight: 700;
-    }
-  }
-}
-
-.cell-date {
+.week-label {
   font-size: 14px;
-  margin-bottom: 4px;
+  font-weight: 600;
+  margin: 0 8px;
+  min-width: 200px;
+  text-align: center;
+}
+
+.schedule-table-wrapper {
+  overflow-x: auto;
+}
+
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th, td {
+    border: 1px solid #ebeef5;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  th {
+    background: #f5f7fa;
+    font-weight: 600;
+    padding: 8px 4px;
+  }
+
+  td {
+    padding: 6px 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #f0f9eb;
+    }
+  }
+}
+
+.tech-col {
+  width: 100px;
+  min-width: 100px;
+  text-align: left !important;
+  padding-left: 12px !important;
+}
+
+.day-col {
+  width: 120px;
+  min-width: 120px;
+
+  &.is-today {
+    background: #f0f9eb;
+  }
+}
+
+.day-header {
+  .day-weekday {
+    font-size: 12px;
+    color: #909399;
+  }
+  .day-date {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
+  }
+}
+
+.is-today .day-date {
+  color: #409eff;
+}
+
+.tech-name {
+  font-size: 14px;
+  font-weight: 500;
   color: #303133;
-}
-
-.cell-schedules {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.schedule-tag {
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
 
-  &.schedule-work {
-    background: #e1f3d8;
-    color: #67c23a;
+.cell-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+}
+
+.shift-tag {
+  width: 100%;
+  text-align: center;
+}
+
+.empty-cell {
+  color: #c0c4cc;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.empty-row {
+  text-align: center;
+  padding: 40px !important;
+}
+
+/* 班次选择弹窗 */
+.shift-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shift-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 2px solid #ebeef5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #409eff;
+    background: #f0f9eb;
   }
 
-  &.schedule-rest {
+  &.is-active {
+    border-color: #409eff;
+    background: #ecf5ff;
+  }
+
+  &.opt-morning.is-active {
+    border-color: #67c23a;
+    background: #f0f9eb;
+  }
+
+  &.opt-afternoon.is-active {
+    border-color: #409eff;
+    background: #ecf5ff;
+  }
+
+  &.opt-evening.is-active {
+    border-color: #e6a23c;
+    background: #fdf6ec;
+  }
+
+  &.opt-rest.is-active {
+    border-color: #909399;
     background: #f4f4f5;
-    color: #909399;
   }
 
-  &.schedule-leave {
-    background: #faecd8;
-    color: #e6a23c;
+  &.opt-leave.is-active {
+    border-color: #f56c6c;
+    background: #fef0f0;
   }
+}
+
+.shift-icon {
+  font-size: 24px;
+  width: 36px;
+  text-align: center;
+}
+
+.shift-info {
+  flex: 1;
+}
+
+.shift-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.shift-time {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 2px;
 }
 </style>

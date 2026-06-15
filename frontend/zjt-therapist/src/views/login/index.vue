@@ -55,8 +55,25 @@ const loading = ref(false)
 async function handleLogin() {
   loading.value = true
   try {
-    await userStore.doLogin(form.value.phone, form.value.password)
+    const data = await userStore.doLogin(form.value.phone, form.value.password)
     showToast('登录成功')
+
+    // 验证角色是否匹配技师端
+    const position = data.position || ''
+    if (position && position !== '理疗师' && position !== 'therapist') {
+      const roleRedirectMap: Record<string, string> = {
+        '店长': 'http://localhost:3300',
+        '前台': 'http://localhost:3200',
+        'store_manager': 'http://localhost:3300',
+        'receptionist': 'http://localhost:3200',
+      }
+      if (roleRedirectMap[position]) {
+        showToast('该账号将跳转到对应端')
+        window.location.href = roleRedirectMap[position]
+        return
+      }
+    }
+
     const redirect = (route.query.redirect as string) || '/workspace'
     router.push(redirect)
   } catch {

@@ -58,6 +58,7 @@ public class ScheduleServiceImpl implements IScheduleService {
         schedule.setStartTime(request.getStartTime());
         schedule.setEndTime(request.getEndTime());
         schedule.setScheduleType(request.getScheduleType());
+        schedule.setShiftType(request.getShiftType());
         schedule.setNotes(request.getNotes());
         scheduleMapper.insert(schedule);
         return R.ok();
@@ -83,6 +84,7 @@ public class ScheduleServiceImpl implements IScheduleService {
                     schedule.setScheduleType(request.getScheduleType());
                     schedule.setStartTime(request.getStartTime());
                     schedule.setEndTime(request.getEndTime());
+                    schedule.setShiftType(request.getShiftType());
                 }
                 schedules.add(schedule);
             }
@@ -112,6 +114,9 @@ public class ScheduleServiceImpl implements IScheduleService {
         }
         if (request.getScheduleType() != null) {
             schedule.setScheduleType(request.getScheduleType());
+        }
+        if (request.getShiftType() != null) {
+            schedule.setShiftType(request.getShiftType());
         }
         if (request.getNotes() != null) {
             schedule.setNotes(request.getNotes());

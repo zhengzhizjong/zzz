@@ -32,4 +32,10 @@ public class LoginResponse {
 
     @Schema(description = "租户ID")
     private Long tenantId;
+
+    @Schema(description = "职位: store_manager店长, receptionist前台, therapist理疗师")
+    private String position;
+
+    @Schema(description = "员工编号")
+    private String employeeNo;
 }

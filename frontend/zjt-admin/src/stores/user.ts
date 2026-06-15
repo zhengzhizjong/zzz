@@ -11,6 +11,8 @@ interface UserInfo {
   phone: string
   role: string
   avatar: string
+  position: string
+  storeId: number
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -31,9 +33,12 @@ export const useUserStore = defineStore('user', () => {
       name: res.data.nickname,
       phone: res.data.phone,
       role: 'employee',
-      avatar: res.data.avatarUrl || ''
+      avatar: res.data.avatarUrl || '',
+      position: res.data.position || '',
+      storeId: res.data.storeId || 0,
     }
     permissions.value = res.data.permissions || ['*']
+    return res.data
   }
 
   function logout() {

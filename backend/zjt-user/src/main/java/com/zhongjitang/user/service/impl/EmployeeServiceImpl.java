@@ -84,6 +84,8 @@ public class EmployeeServiceImpl implements IEmployeeService {
         response.setPhone(employee.getPhone());
         response.setStoreId(storeId);
         response.setTenantId(tenantId);
+        response.setPosition(employee.getPosition());
+        response.setEmployeeNo(employee.getEmployeeNo());
         return R.ok(response);
     }
 

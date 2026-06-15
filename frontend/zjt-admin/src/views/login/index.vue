@@ -55,8 +55,25 @@ async function handleLogin() {
   }
   loading.value = true
   try {
-    await userStore.login(loginForm.phone, loginForm.password)
+    const data = await userStore.login(loginForm.phone, loginForm.password)
     ElMessage.success('登录成功')
+
+    // 根据职位跳转到对应端
+    const position = data.position || userStore.userInfo?.position || ''
+    const roleRedirectMap: Record<string, string> = {
+      '店长': 'http://localhost:3300',
+      '前台': 'http://localhost:3200',
+      '理疗师': 'http://localhost:3400',
+      'store_manager': 'http://localhost:3300',
+      'receptionist': 'http://localhost:3200',
+      'therapist': 'http://localhost:3400',
+    }
+    if (roleRedirectMap[position]) {
+      // 非管理员角色跳转到对应端
+      window.location.href = roleRedirectMap[position]
+      return
+    }
+
     const redirect = (route.query.redirect as string) || '/'
     router.push(redirect)
   } catch {

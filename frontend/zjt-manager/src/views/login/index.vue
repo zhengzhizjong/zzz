@@ -50,8 +50,25 @@ async function handleLogin() {
   if (!valid) return
   loading.value = true
   try {
-    await userStore.login(form.phone, form.password)
+    const data = await userStore.login(form.phone, form.password)
     ElMessage.success('登录成功')
+
+    // 验证角色是否匹配店长端
+    const position = data.position || ''
+    if (position && position !== '店长' && position !== 'store_manager') {
+      const roleRedirectMap: Record<string, string> = {
+        '前台': 'http://localhost:3200',
+        '理疗师': 'http://localhost:3400',
+        'receptionist': 'http://localhost:3200',
+        'therapist': 'http://localhost:3400',
+      }
+      if (roleRedirectMap[position]) {
+        ElMessage.info('该账号将跳转到对应端')
+        window.location.href = roleRedirectMap[position]
+        return
+      }
+    }
+
     router.push('/dashboard')
   } catch {
     // error handled by interceptor

@@ -22,6 +22,9 @@ public class ScheduleUpdateRequest {
     @Schema(description = "排班类型: 1上班 2休息 3请假", example = "1")
     private Integer scheduleType;
 
+    @Schema(description = "班次: morning早班, afternoon中班, evening晚班", example = "morning")
+    private String shiftType;
+
     @Schema(description = "备注")
     private String notes;
 }

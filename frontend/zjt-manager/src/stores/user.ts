@@ -23,7 +23,9 @@ export const useUserStore = defineStore('user', () => {
       name: data.nickname || data.name,
       phone: data.phone,
       storeId: data.storeId,
-      avatarUrl: data.avatarUrl
+      avatarUrl: data.avatarUrl,
+      position: data.position || '',
+      employeeNo: data.employeeNo || '',
     }
     if (data.storeId) {
       storeId.value = String(data.storeId)

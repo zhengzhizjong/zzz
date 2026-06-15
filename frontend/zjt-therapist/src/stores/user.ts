@@ -21,10 +21,12 @@ export const useUserStore = defineStore('user', () => {
         phone: data.phone,
         storeId: data.storeId,
         avatarUrl: data.avatarUrl,
-        technicianId: data.technicianId || data.id
+        technicianId: data.technicianId || data.id,
+        position: data.position || '',
+        employeeNo: data.employeeNo || '',
       }
     }
-    return res
+    return data
   }
 
   async function fetchProfile() {
