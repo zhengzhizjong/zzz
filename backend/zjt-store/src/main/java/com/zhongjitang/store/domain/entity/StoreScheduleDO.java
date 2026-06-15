@@ -26,6 +26,9 @@ public class StoreScheduleDO extends BaseDO {
     /** 排班类型: 1上班 2休息 3请假 */
     private Integer scheduleType;
 
+    /** 班次: morning早班, afternoon中班, evening晚班 */
+    private String shiftType;
+
     @TableField(exist = false)
     private String notes;
 }
