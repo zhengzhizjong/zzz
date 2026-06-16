@@ -61,12 +61,12 @@ async function handleLogin() {
     // 根据职位跳转到对应端
     const position = data.position || userStore.userInfo?.position || ''
     const roleRedirectMap: Record<string, string> = {
-      '店长': 'http://localhost:3300',
-      '前台': 'http://localhost:3200',
-      '理疗师': 'http://localhost:3400',
-      'store_manager': 'http://localhost:3300',
-      'receptionist': 'http://localhost:3200',
-      'therapist': 'http://localhost:3400',
+      '店长': '/manager/',
+      '前台': '/reception/',
+      '理疗师': '/therapist/',
+      'store_manager': '/manager/',
+      'receptionist': '/reception/',
+      'therapist': '/therapist/',
     }
     if (roleRedirectMap[position]) {
       // 非管理员角色跳转到对应端

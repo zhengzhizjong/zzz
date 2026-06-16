@@ -57,10 +57,10 @@ async function handleLogin() {
     const position = data.position || ''
     if (position && position !== '前台' && position !== 'receptionist') {
       const roleRedirectMap: Record<string, string> = {
-        '店长': 'http://localhost:3300',
-        '理疗师': 'http://localhost:3400',
-        'store_manager': 'http://localhost:3300',
-        'therapist': 'http://localhost:3400',
+        '店长': '/manager/',
+        '理疗师': '/therapist/',
+        'store_manager': '/manager/',
+        'therapist': '/therapist/',
       }
       if (roleRedirectMap[position]) {
         ElMessage.info('该账号将跳转到对应端')

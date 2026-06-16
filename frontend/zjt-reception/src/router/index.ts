@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { getToken } from '@/utils/auth'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/reception/'),
   routes: [
     {
       path: '/login',

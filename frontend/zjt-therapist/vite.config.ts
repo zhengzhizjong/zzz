@@ -10,10 +10,11 @@ export default defineConfig({
       resolvers: [VantResolver()]
     })
   ],
+  base: '/therapist/',
   server: {
     host: '0.0.0.0',
-    port: 3400,
-    hmr: { port: 3400 },
+    port: 3005,
+    hmr: { port: 3005 },
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

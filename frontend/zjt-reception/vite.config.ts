@@ -11,10 +11,11 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, 'src')
       }
     },
+    base: '/reception/',
     server: {
-      port: 3200,
+      port: 3003,
       host: '0.0.0.0',
-      hmr: { port: 3200 },
+      hmr: { port: 3003 },
       proxy: {
         '/api': { target: env.VITE_API_BASE_URL, changeOrigin: true }
       }

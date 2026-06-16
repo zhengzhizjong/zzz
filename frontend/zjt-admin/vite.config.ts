@@ -16,11 +16,12 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: { '@': path.resolve(__dirname, 'src') }
     },
+    base: '/admin/',
     server: {
-      port: 3000,
+      port: 3001,
       host: '0.0.0.0',
       hmr: {
-        port: 3000
+        port: 3001
       },
       proxy: {
         '/api': { target: env.VITE_API_BASE_URL, changeOrigin: true }

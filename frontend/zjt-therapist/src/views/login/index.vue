@@ -62,10 +62,10 @@ async function handleLogin() {
     const position = data.position || ''
     if (position && position !== '理疗师' && position !== 'therapist') {
       const roleRedirectMap: Record<string, string> = {
-        '店长': 'http://localhost:3300',
-        '前台': 'http://localhost:3200',
-        'store_manager': 'http://localhost:3300',
-        'receptionist': 'http://localhost:3200',
+        '店长': '/manager/',
+        '前台': '/reception/',
+        'store_manager': '/manager/',
+        'receptionist': '/reception/',
       }
       if (roleRedirectMap[position]) {
         showToast('该账号将跳转到对应端')

@@ -20,11 +20,12 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: { '@': path.resolve(__dirname, 'src') }
     },
+    base: '/h5/',
     server: {
-      port: 3100,
+      port: 3002,
       host: '0.0.0.0',
       hmr: {
-        port: 3100
+        port: 3002
       },
       proxy: {
         '/api': { target: env.VITE_API_BASE_URL, changeOrigin: true }
