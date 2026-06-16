@@ -221,7 +221,7 @@ class MemberServiceImplTest {
 
         when(memberMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(pageResult);
 
-        R<PageResult<UserMemberDO>> result = memberService.page(1, 20, null, null);
+        R<PageResult<UserMemberDO>> result = memberService.page(1, 20, null, null, null);
 
         assertNotNull(result);
         assertEquals(0, result.getCode());

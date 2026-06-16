@@ -1,4 +1,4 @@
-import { get, put } from '@/utils/request'
+import { get, post } from '@/utils/request'
 
 export function getTechnicianList(params?: Record<string, any>) {
   return get('/api/v1/store/technicians', { params })
@@ -9,9 +9,9 @@ export function getTechnicianDetail(id: number | string) {
 }
 
 export function checkIn(id: number | string) {
-  return put(`/api/v1/store/technicians/${id}/check-in`)
+  return post(`/api/v1/store/technicians/${id}/check-in`)
 }
 
 export function checkOut(id: number | string) {
-  return put(`/api/v1/store/technicians/${id}/check-out`)
+  return post(`/api/v1/store/technicians/${id}/check-out`)
 }

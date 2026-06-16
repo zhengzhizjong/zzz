@@ -24,7 +24,7 @@ service.interceptors.response.use(
       ElMessage.error(res.message || '请求失败')
       if (res.code === 40101 || res.code === 401) {
         localStorage.removeItem(TOKEN_KEY)
-        window.location.href = '/login'
+        window.location.href = '/manager/login'
       }
       return Promise.reject(new Error(res.message || '请求失败'))
     }
@@ -33,7 +33,7 @@ service.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem(TOKEN_KEY)
-      window.location.href = '/login'
+      window.location.href = '/manager/login'
     }
     ElMessage.error(error.response?.data?.message || error.message || '网络错误')
     return Promise.reject(error)

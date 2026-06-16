@@ -202,7 +202,7 @@ class TradeOrderServiceImplTest {
         pageResult.setTotal(1);
         when(tradeOrderMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(pageResult);
 
-        var result = tradeOrderService.page(1, 20, null, null, null);
+        var result = tradeOrderService.page(1, 20, null, null, null, null, null, null);
 
         assertNotNull(result);
         assertEquals(0, result.getCode());

@@ -19,7 +19,7 @@ public interface IMemberService {
 
     R<Void> updateProfile(Long memberId, UpdateProfileRequest request);
 
-    R<PageResult<UserMemberDO>> page(Integer page, Integer pageSize, String keyword, Integer levelId);
+    R<PageResult<UserMemberDO>> page(Integer page, Integer pageSize, String keyword, Integer levelId, Long storeId);
 
     R<UserMemberDO> getDetail(Long id);
 

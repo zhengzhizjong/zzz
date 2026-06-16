@@ -61,8 +61,9 @@ public class MemberController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer pageSize,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Integer levelId) {
-        return memberService.page(page, pageSize, keyword, levelId);
+            @RequestParam(required = false) Integer levelId,
+            @RequestParam(required = false) Long storeId) {
+        return memberService.page(page, pageSize, keyword, levelId, storeId);
     }
 
     @GetMapping("/{id}")

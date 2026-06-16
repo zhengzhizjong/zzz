@@ -1,7 +1,11 @@
 import { get, post, put, del } from '@/utils/request'
 
-export function getScheduleList(params: any) {
-  return get('/api/v1/store/schedules', { params })
+export function getScheduleByTechnician(technicianId: number, month: string) {
+  return get(`/api/v1/store/schedules/technician/${technicianId}`, { params: { month } })
+}
+
+export function getScheduleByStore(storeId: number, date: string) {
+  return get(`/api/v1/store/schedules/store/${storeId}`, { params: { date } })
 }
 
 export function createSchedule(data: any) {

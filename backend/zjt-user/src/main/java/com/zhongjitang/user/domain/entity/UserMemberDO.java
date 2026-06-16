@@ -44,6 +44,9 @@ public class UserMemberDO extends BaseDO {
     @TableField("constitution_time")
     private LocalDateTime constitutionTime;
 
+    @TableField("store_id")
+    private Long storeId;
+
     @TableField("member_level_id")
     private Long levelId;
 

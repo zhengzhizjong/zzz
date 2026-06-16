@@ -119,7 +119,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
 import { getMemberList, getMemberDetail } from '@/api/member'
+
+const userStore = useUserStore()
 
 const loading = ref(false)
 const detailVisible = ref(false)
@@ -149,7 +152,7 @@ function resetFilters() {
 async function loadData() {
   loading.value = true
   try {
-    const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize }
+    const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize, storeId: userStore.storeId }
     if (filters.keyword) params.keyword = filters.keyword
     if (filters.level) params.level = filters.level
     const res: any = await getMemberList(params)

@@ -103,7 +103,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 import { getOrderList, getOrderDetail, refundOrder } from '@/api/order'
+
+const userStore = useUserStore()
 
 const loading = ref(false)
 const detailVisible = ref(false)
@@ -139,7 +142,7 @@ function resetFilters() {
 async function loadData() {
   loading.value = true
   try {
-    const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize }
+    const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize, storeId: userStore.storeId }
     if (filters.status) params.status = filters.status
     if (filters.orderNo) params.orderNo = filters.orderNo
     if (filters.dateRange && filters.dateRange.length === 2) {

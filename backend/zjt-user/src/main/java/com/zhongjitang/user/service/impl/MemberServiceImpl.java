@@ -194,9 +194,12 @@ public class MemberServiceImpl implements IMemberService {
     }
 
     @Override
-    public R<PageResult<UserMemberDO>> page(Integer page, Integer pageSize, String keyword, Integer levelId) {
+    public R<PageResult<UserMemberDO>> page(Integer page, Integer pageSize, String keyword, Integer levelId, Long storeId) {
         Page<UserMemberDO> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<UserMemberDO> wrapper = new LambdaQueryWrapper<>();
+        if (storeId != null) {
+            wrapper.eq(UserMemberDO::getStoreId, storeId);
+        }
         if (StringUtils.hasText(keyword)) {
             wrapper.and(w -> w.like(UserMemberDO::getName, keyword)
                     .or().like(UserMemberDO::getPhone, keyword)

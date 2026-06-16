@@ -97,7 +97,9 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getAppointmentList, modifyAppointment, cancelAppointment, createAppointment } from '@/api/appointment'
+import { useUserStore } from '@/stores/user'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const dialogVisible = ref(false)
 const submitLoading = ref(false)
@@ -148,7 +150,7 @@ function resetFilters() {
 async function loadData() {
   loading.value = true
   try {
-    const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize }
+    const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize, storeId: userStore.storeId }
     if (filters.status) params.status = filters.status
     if (filters.dateRange && filters.dateRange.length === 2) {
       params.startDate = filters.dateRange[0]
@@ -201,10 +203,10 @@ async function handleSubmit() {
   submitLoading.value = true
   try {
     if (isEdit.value) {
-      await modifyAppointment(editingId.value, form)
+      await modifyAppointment(editingId.value, { ...form, storeId: userStore.storeId })
       ElMessage.success('修改成功')
     } else {
-      await createAppointment(form)
+      await createAppointment({ ...form, storeId: userStore.storeId })
       ElMessage.success('创建成功')
     }
     dialogVisible.value = false

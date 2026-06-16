@@ -101,7 +101,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTechnicianList, getTechnicianDetail, checkIn, checkOut } from '@/api/technician'
+import { getScheduleByTechnician } from '@/api/schedule'
+import { useUserStore } from '@/stores/user'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const detailVisible = ref(false)
 const scheduleVisible = ref(false)
@@ -132,7 +135,7 @@ function resetFilters() {
 async function loadData() {
   loading.value = true
   try {
-    const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize }
+    const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize, storeId: userStore.storeId }
     if (filters.onDuty !== '') params.onDuty = filters.onDuty
     if (filters.skillLevel) params.skillLevel = filters.skillLevel
     const res: any = await getTechnicianList(params)
@@ -168,18 +171,22 @@ async function handleCheckOut(row: Record<string, any>) {
   loadData()
 }
 
-function handleViewSchedule(_row: Record<string, any>) {
-  // 模拟排班数据，实际应从API获取
-  scheduleList.value = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() + i)
-    return {
-      date: d.toISOString().slice(0, 10),
-      startTime: '09:00',
-      endTime: '18:00',
-      status: i === 0 ? 'scheduled' : 'scheduled'
-    }
-  })
+async function handleViewSchedule(row: Record<string, any>) {
+  try {
+    const month = new Date().toISOString().slice(0, 7)
+    const res: any = await getScheduleByTechnician(row.id, month)
+    const list = res.data || []
+    scheduleList.value = list.map((item: any) => ({
+      date: item.scheduleDate,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      status: item.scheduleType === 1 ? 'scheduled' : 'rest',
+      shiftType: item.shiftType || '',
+      scheduleType: item.scheduleType,
+    }))
+  } catch {
+    scheduleList.value = []
+  }
   scheduleVisible.value = true
 }
 
