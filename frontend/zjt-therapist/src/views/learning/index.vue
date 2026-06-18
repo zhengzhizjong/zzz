@@ -53,11 +53,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getCourseList } from '@/api/learning'
+import { showToast } from 'vant'
 
+const router = useRouter()
 const activeTab = ref(0)
+const loading = ref(false)
 
-const courses = ref([
+// 分类名称与索引映射
+const categoryNames = ['中医基础', '推拿手法', '艾灸技术', '沟通技巧']
+
+// fallback mock 数据
+const mockCourses = [
   // 中医基础
   [
     { id: 1, title: '中医经络基础理论', type: '文章', duration: '15分钟', icon: '📖' },
@@ -82,11 +91,64 @@ const courses = ref([
     { id: 11, title: '如何处理客户投诉', type: '视频', duration: '20分钟', icon: '🎬' },
     { id: 12, title: '服务礼仪规范', type: '文章', duration: '12分钟', icon: '📖' }
   ]
-])
+]
 
-function goCourse(item: any) {
-  // 可扩展跳转课程详情
+const courses = ref<any[][]>([[], [], [], []])
+
+function normalizeCourse(item: any) {
+  return {
+    id: item.id,
+    title: item.title || item.name || '',
+    type: item.type || (item.media_type === 'video' ? '视频' : '文章'),
+    duration: item.duration || item.read_time || '',
+    icon: item.icon || (item.type === '视频' || item.media_type === 'video' ? '🎬' : '📖'),
+    category: item.category ?? item.category_name ?? ''
+  }
 }
+
+function groupByCategory(list: any[]) {
+  const grouped: any[][] = [[], [], [], []]
+  for (const item of list) {
+    const normalized = normalizeCourse(item)
+    const catIdx = categoryNames.indexOf(normalized.category)
+    if (catIdx >= 0) {
+      grouped[catIdx].push(normalized)
+    } else {
+      // 无法匹配分类时归入第一个 tab
+      grouped[0].push(normalized)
+    }
+  }
+  return grouped
+}
+
+async function fetchCourses() {
+  loading.value = true
+  try {
+    const res: any = await getCourseList({ page: 1, pageSize: 20 })
+    const list = res?.data?.list || res?.data || res?.list || []
+    if (Array.isArray(list) && list.length > 0) {
+      courses.value = groupByCategory(list)
+    } else {
+      // API 返回空数据，使用 mock
+      courses.value = mockCourses
+    }
+  } catch (e) {
+    // API 失败，fallback 到 mock 数据
+    console.warn('获取课程列表失败，使用本地数据', e)
+    courses.value = mockCourses
+    showToast('课程数据加载失败，显示本地数据')
+  } finally {
+    loading.value = false
+  }
+}
+
+function goCourse(course: any) {
+  router.push(`/learning/${course.id}`)
+}
+
+onMounted(() => {
+  fetchCourses()
+})
 </script>
 
 <style scoped>

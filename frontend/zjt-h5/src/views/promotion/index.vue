@@ -61,6 +61,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { showToast } from 'vant'
 import { useUserStore } from '@/stores/user'
+import { getPromotionStats, getPromotionList } from '@/api/promotion'
 
 const userStore = useUserStore()
 
@@ -80,7 +81,7 @@ const availableBenefits = computed(() => {
   return 1
 })
 
-const promoList = ref([
+const defaultPromoList = [
   {
     id: 1,
     tag: '新人专享',
@@ -109,13 +110,33 @@ const promoList = ref([
     desc: '生日当月享专属折扣',
     bgColor: 'linear-gradient(135deg, #f5a623, #e08e0b)'
   }
-])
+]
 
-onMounted(() => {
+const promoList = ref([...defaultPromoList])
+
+onMounted(async () => {
   if (userStore.isLogin && !userStore.userInfo) {
     userStore.fetchProfile()
   }
+  loadPromotionData()
 })
+
+async function loadPromotionData() {
+  try {
+    const [statsRes, listRes]: any[] = await Promise.all([
+      getPromotionStats(),
+      getPromotionList()
+    ])
+    if (listRes.data?.list || listRes.data?.records || listRes.data) {
+      const list = listRes.data?.list || listRes.data?.records || listRes.data
+      if (Array.isArray(list) && list.length > 0) {
+        promoList.value = list
+      }
+    }
+  } catch {
+    // API 失败时保留默认 mock 数据
+  }
+}
 
 function copyReferralCode() {
   const code = referralCode.value

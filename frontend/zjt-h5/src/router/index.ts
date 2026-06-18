@@ -121,6 +121,12 @@ const routes = [
     meta: { title: '我的订单', requireAuth: true }
   },
   {
+    path: '/order/detail',
+    name: 'OrderDetail',
+    component: () => import('@/views/order/detail.vue'),
+    meta: { title: '订单详情', requireAuth: true }
+  },
+  {
     path: '/mall',
     name: 'Mall',
     component: () => import('@/views/mall/index.vue'),

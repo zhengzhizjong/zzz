@@ -94,7 +94,7 @@ import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import { getServiceItemList } from '@/api/service'
 import { getCouponList, claimCoupon } from '@/api/coupon'
-import { getMyCards } from '@/api/treatment'
+import { getTreatmentCards, buyTreatmentCard } from '@/api/treatment'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
@@ -119,12 +119,7 @@ onMounted(() => {
 async function loadCards() {
   cardLoading.value = true
   try {
-    const memberId = userStore.userInfo?.id
-    if (!memberId) {
-      cards.value = []
-      return
-    }
-    const res: any = await getMyCards(memberId)
+    const res: any = await getTreatmentCards()
     cards.value = res.data?.list || res.data || []
   } catch {
     cards.value = []
@@ -176,8 +171,14 @@ async function handleClaimCoupon(item: any) {
   }
 }
 
-function handleBuyCard(_item: any) {
-  showToast('购买功能开发中')
+async function handleBuyCard(item: any) {
+  try {
+    await buyTreatmentCard(item.id)
+    showToast('购买成功')
+    loadCards()
+  } catch {
+    showToast('购买失败，请稍后重试')
+  }
 }
 
 function handleBookService(_item: any) {

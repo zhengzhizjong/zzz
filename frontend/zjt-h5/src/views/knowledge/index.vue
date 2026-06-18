@@ -42,6 +42,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { getArticleList } from '@/api/knowledge'
 
 const router = useRouter()
 
@@ -59,7 +60,7 @@ const listLoading = ref(false)
 const finished = ref(false)
 const page = ref(1)
 
-// 模拟数据
+// 模拟数据（API 失败时回退使用）
 const mockArticles: Record<string, any[]> = {
   tcm: [
     { id: 1, title: '中医养生的基本原则', summary: '中医养生讲究天人合一、阴阳平衡，通过调节饮食、起居、情志来达到健康长寿的目的。', cover: '', views: 1234, categoryName: '中医养生' },
@@ -96,11 +97,23 @@ function getCurrentCategory() {
   return categories[activeTab.value].key
 }
 
-function loadArticles() {
+async function loadArticles() {
   const cat = getCurrentCategory()
-  const data = mockArticles[cat] || []
-  articles.value = data
-  finished.value = true
+  try {
+    const res: any = await getArticleList({ page: page.value, pageSize: 20, category: cat })
+    const list = res.data?.list || res.data || []
+    if (page.value === 1) {
+      articles.value = list
+    } else {
+      articles.value = [...articles.value, ...list]
+    }
+    finished.value = !res.data?.hasMore && list.length < 20
+  } catch {
+    // API 失败时回退到 mock 数据
+    const data = mockArticles[cat] || []
+    articles.value = page.value === 1 ? data : [...articles.value, ...data]
+    finished.value = true
+  }
 }
 
 function onTabChange() {
@@ -113,14 +126,14 @@ function onTabChange() {
 async function onRefresh() {
   page.value = 1
   finished.value = false
-  loadArticles()
+  await loadArticles()
   refreshing.value = false
 }
 
-function loadMore() {
-  // 模拟数据已全部加载
+async function loadMore() {
+  page.value++
+  await loadArticles()
   listLoading.value = false
-  finished.value = true
 }
 </script>
 

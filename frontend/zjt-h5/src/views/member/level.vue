@@ -52,7 +52,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { get } from '@/utils/request'
+import { getMemberLevels, getCurrentLevel } from '@/api/member-level'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -70,15 +70,17 @@ interface LevelInfo {
   benefits: string[]
 }
 
-const levels: LevelInfo[] = [
+const defaultLevels: LevelInfo[] = [
   { key: 'normal', name: '普通会员', icon: '🥉', requiredPoints: 0, discount: 9.8, benefits: ['基础会员权益', '生日提醒'] },
   { key: 'silver', name: '银卡会员', icon: '🥈', requiredPoints: 1000, discount: 9.5, benefits: ['基础会员权益', '专属折扣', '优先预约'] },
   { key: 'gold', name: '金卡会员', icon: '🥇', requiredPoints: 5000, discount: 9.0, benefits: ['基础会员权益', '专属折扣', '优先预约', '免费体验'] },
   { key: 'diamond', name: '钻石会员', icon: '💎', requiredPoints: 20000, discount: 8.5, benefits: ['全部权益', '专属折扣', '优先预约', '免费体验', '私人顾问'] }
 ]
 
+const levels = ref<LevelInfo[]>([...defaultLevels])
+
 const currentLevelInfo = computed(() => {
-  return levels.find((l) => l.key === currentLevel.value) || levels[0]
+  return levels.value.find((l) => l.key === currentLevel.value) || levels.value[0]
 })
 
 onMounted(() => {
@@ -91,13 +93,22 @@ async function loadMemberLevel() {
     currentLevel.value = (userStore.userInfo as any).level || 'normal'
   }
   try {
-    const res: any = await get('/api/v1/user/member-levels')
-    if (res.data) {
-      currentPoints.value = res.data.points ?? currentPoints.value
-      currentLevel.value = res.data.level ?? currentLevel.value
+    const [levelsRes, currentRes]: any[] = await Promise.all([
+      getMemberLevels(),
+      getCurrentLevel()
+    ])
+    if (levelsRes.data) {
+      const levelList = levelsRes.data.list || levelsRes.data.records || levelsRes.data
+      if (Array.isArray(levelList) && levelList.length > 0) {
+        levels.value = levelList
+      }
+    }
+    if (currentRes.data) {
+      currentPoints.value = currentRes.data.points ?? currentPoints.value
+      currentLevel.value = currentRes.data.level ?? currentLevel.value
     }
   } catch {
-    // 使用默认值
+    // API 失败时保留默认值
   }
 }
 

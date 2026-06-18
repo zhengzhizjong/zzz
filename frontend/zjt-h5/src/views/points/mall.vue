@@ -46,8 +46,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { showToast } from 'vant'
+import { showToast, showDialog } from 'vant'
 import { useUserStore } from '@/stores/user'
+import { getPointsBalance, getPointsMallItems, exchangePointsGoods } from '@/api/points'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -71,7 +72,8 @@ interface GoodsItem {
   category: string
 }
 
-const goodsList = ref<GoodsItem[]>([
+// 模拟数据（API 失败时回退使用）
+const mockGoodsList: GoodsItem[] = [
   { id: 1, name: '艾灸体验券', points: 500, icon: '🔥', category: 'service' },
   { id: 2, name: '足浴养生套餐', points: 800, icon: '🦶', category: 'service' },
   { id: 3, name: '肩颈推拿体验', points: 600, icon: '💆', category: 'service' },
@@ -82,7 +84,9 @@ const goodsList = ref<GoodsItem[]>([
   { id: 8, name: '满200减50券', points: 400, icon: '🎫', category: 'coupon' },
   { id: 9, name: '拔罐体验券', points: 350, icon: '🔴', category: 'service' },
   { id: 10, name: '精油香薰', points: 900, icon: '🫧', category: 'health' }
-])
+]
+
+const goodsList = ref<GoodsItem[]>([])
 
 const filteredGoods = computed(() => {
   const cat = categories[activeCategory.value].key
@@ -90,25 +94,57 @@ const filteredGoods = computed(() => {
   return goodsList.value.filter((item) => item.category === cat)
 })
 
-onMounted(() => {
-  if (userStore.userInfo?.points !== undefined) {
-    currentPoints.value = userStore.userInfo.points || 0
-  }
+onMounted(async () => {
+  await loadPointsAndGoods()
 })
+
+async function loadPointsAndGoods() {
+  // 加载积分余额
+  try {
+    const res: any = await getPointsBalance()
+    currentPoints.value = res.data?.points ?? res.data ?? 0
+  } catch {
+    if (userStore.userInfo?.points !== undefined) {
+      currentPoints.value = userStore.userInfo.points || 0
+    }
+  }
+
+  // 加载商品列表
+  try {
+    const res: any = await getPointsMallItems()
+    const list = res.data?.list || res.data || []
+    goodsList.value = list
+  } catch {
+    // API 失败时回退到 mock 数据
+    goodsList.value = mockGoodsList
+  }
+}
 
 function onCategoryChange() {
   // 筛选由computed处理
 }
 
-function onExchange(_item: GoodsItem) {
-  showToast('兑换功能开发中')
+async function onExchange(item: GoodsItem) {
+  try {
+    await showDialog({
+      title: '确认兑换',
+      message: `确定使用 ${item.points} 积分兑换「${item.name}」吗？`,
+      showCancelButton: true,
+      confirmButtonText: '确认兑换',
+      cancelButtonText: '再想想'
+    })
+    await exchangePointsGoods(item.id)
+    showToast('兑换成功')
+    // 兑换成功后刷新积分和商品
+    await loadPointsAndGoods()
+  } catch {
+    // 用户取消或兑换失败
+  }
 }
 
 async function onRefresh() {
+  await loadPointsAndGoods()
   refreshing.value = false
-  if (userStore.userInfo?.points !== undefined) {
-    currentPoints.value = userStore.userInfo.points || 0
-  }
 }
 </script>
 
