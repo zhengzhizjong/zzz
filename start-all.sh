@@ -79,10 +79,10 @@ if [ ! -f /workspace/backend/zjt-app/target/zjt-app-1.0.0-SNAPSHOT.jar ]; then
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
   <mirrors>
     <mirror>
-      <id>aliyun</id>
+      <id>aliyun-https</id>
       <mirrorOf>central</mirrorOf>
-      <name>Aliyun Maven</name>
-      <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+      <name>Aliyun Maven HTTPS</name>
+      <url>https://maven.aliyun.com/nexus/content/groups/public/</url>
     </mirror>
   </mirrors>
   <proxies>
@@ -92,7 +92,15 @@ if [ ! -f /workspace/backend/zjt-app/target/zjt-app-1.0.0-SNAPSHOT.jar ]; then
       <protocol>http</protocol>
       <host>127.0.0.1</host>
       <port>18080</port>
-      <nonProxyHosts>localhost|127.0.0.1|*.aliyun.com</nonProxyHosts>
+      <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
+    </proxy>
+    <proxy>
+      <id>https-proxy</id>
+      <active>true</active>
+      <protocol>https</protocol>
+      <host>127.0.0.1</host>
+      <port>18080</port>
+      <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
     </proxy>
   </proxies>
 </settings>
