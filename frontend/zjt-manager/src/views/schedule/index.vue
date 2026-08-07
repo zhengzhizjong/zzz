@@ -296,32 +296,30 @@ async function loadTechnicians() {
 }
 
 async function loadScheduleData() {
-  if (!filters.storeId || technicianOptions.value.length === 0) {
+  if (!filters.storeId) {
     scheduleMap.value = {}
     return
   }
-  const month = filters.weekStart.slice(0, 7)
-  const map: Record<number, Record<string, any>> = {}
-  for (const tech of technicianOptions.value) {
-    try {
-      const res: any = await getScheduleByTechnician(tech.id, month)
-      const list: any[] = res.data || []
-      const techMap: Record<string, any> = {}
-      list.forEach((item: any) => {
-        const dateStr = item.scheduleDate
-        if (!dateStr) return
-        techMap[dateStr] = {
-          id: item.id,
-          scheduleType: item.scheduleType,
-          shiftType: item.shiftType || '',
-        }
-      })
-      map[tech.id] = techMap
-    } catch {
-      // ignore
-    }
+  const date = filters.weekStart
+  try {
+    const res: any = await getScheduleByStore(filters.storeId, date)
+    const list: any[] = res.data || []
+    const map: Record<number, Record<string, any>> = {}
+    list.forEach((item: any) => {
+      const techId = item.technicianId
+      const dateStr = item.scheduleDate
+      if (!techId || !dateStr) return
+      if (!map[techId]) map[techId] = {}
+      map[techId][dateStr] = {
+        id: item.id,
+        scheduleType: item.scheduleType,
+        shiftType: item.shiftType || '',
+      }
+    })
+    scheduleMap.value = map
+  } catch {
+    scheduleMap.value = {}
   }
-  scheduleMap.value = map
 }
 
 function handleCellClick(tech: Record<string, any>, day: typeof weekDays.value[0]) {
@@ -359,6 +357,7 @@ async function handleSelectShift(opt: typeof shiftOptions[0]) {
       })
     } else {
       await createSchedule({
+        storeId: filters.storeId,
         technicianId: currentCell.technicianId,
         scheduleDate: currentCell.date,
         startTime: time.start,

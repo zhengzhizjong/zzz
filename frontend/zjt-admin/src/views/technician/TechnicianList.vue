@@ -148,6 +148,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTechnicianList, checkIn, checkOut } from '@/api/store/technician'
 import { getStoreList } from '@/api/store/info'
@@ -157,6 +158,7 @@ import type { StoreInfo } from '@/types/store'
 import TechnicianForm from './TechnicianForm.vue'
 
 const loading = ref(false)
+const router = useRouter()
 const tableData = ref<TechnicianInfo[]>([])
 const formVisible = ref(false)
 const currentTechnicianId = ref<number | undefined>(undefined)
@@ -193,7 +195,7 @@ function parseSkilledItems(items: string): string[] {
 }
 
 function handleSchedule(row: TechnicianInfo) {
-  ElMessage.info(`排班管理功能开发中，技师：${row.employeeName || row.technicianNo}`)
+  router.push({ path: '/store/schedules', query: { technicianId: String(row.id) } })
 }
 
 async function fetchStoreOptions() {

@@ -38,4 +38,10 @@ public class LoginResponse {
 
     @Schema(description = "员工编号")
     private String employeeNo;
+
+    @Schema(description = "员工ID")
+    private Long id;
+
+    @Schema(description = "技师ID（仅理疗师角色有值）")
+    private Long technicianId;
 }

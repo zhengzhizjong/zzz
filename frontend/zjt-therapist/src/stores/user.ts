@@ -16,12 +16,12 @@ export const useUserStore = defineStore('user', () => {
       isLoggedIn.value = true
       // 直接保存登录返回的用户信息
       userInfo.value = {
-        id: data.memberId || data.id,
+        id: data.id || data.memberId,
         name: data.nickname || data.name,
         phone: data.phone,
         storeId: data.storeId,
         avatarUrl: data.avatarUrl,
-        technicianId: data.technicianId || data.id,
+        technicianId: data.technicianId ?? data.id,
         position: data.position || '',
         employeeNo: data.employeeNo || '',
       }

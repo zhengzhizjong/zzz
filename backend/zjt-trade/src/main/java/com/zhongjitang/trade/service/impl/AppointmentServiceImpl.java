@@ -140,7 +140,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     @Override
     public R<PageResult<TradeAppointmentDO>> page(Integer page, Integer pageSize, Long storeId,
-                                                    Long memberId, Integer status) {
+                                                    Long memberId, Long technicianId, Integer status) {
         Page<TradeAppointmentDO> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<TradeAppointmentDO> wrapper = new LambdaQueryWrapper<>();
         if (storeId != null) {
@@ -148,6 +148,9 @@ public class AppointmentServiceImpl implements IAppointmentService {
         }
         if (memberId != null) {
             wrapper.eq(TradeAppointmentDO::getMemberId, memberId);
+        }
+        if (technicianId != null) {
+            wrapper.eq(TradeAppointmentDO::getTechnicianId, technicianId);
         }
         if (status != null) {
             wrapper.eq(TradeAppointmentDO::getStatus, status);

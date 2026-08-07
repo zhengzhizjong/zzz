@@ -54,6 +54,7 @@
         <el-card shadow="hover">
           <template #header>
             <span>本周趋势</span>
+            <el-tag size="small" type="info" style="margin-left: 8px;">模拟数据</el-tag>
           </template>
           <div ref="trendChartRef" style="height: 350px;"></div>
         </el-card>
@@ -106,6 +107,7 @@ import { Calendar, Money, UserFilled, Star } from '@element-plus/icons-vue'
 import { getAppointmentList } from '@/api/appointment'
 import { getTechnicianRanking } from '@/api/ranking'
 import { getOrderList } from '@/api/order'
+import { getDashboardSummary } from '@/api/data/dashboard'
 import { useUserStore } from '@/stores/user'
 
 const trendChartRef = ref<HTMLElement>()
@@ -156,19 +158,17 @@ async function loadMetrics() {
   } catch {}
 
   try {
-    // 获取新增会员数 - 从预约列表中提取今日新客户
-    metrics.value.newMembers = 0
-  } catch {}
-
-  try {
-    // 获取平均评分 - 暂无专用API
-    metrics.value.avgRating = '0.0'
+    // 获取新增会员数和平均评分 - 从Dashboard汇总API获取
+    const summaryRes: any = await getDashboardSummary(storeId)
+    const summary = summaryRes.data || {}
+    metrics.value.newMembers = summary.newMembers ?? 0
+    metrics.value.avgRating = summary.avgRating ?? '0.0'
   } catch {}
 }
 
 async function loadTechnicianRanking() {
   try {
-    const res: any = await getTechnicianRanking({ period: 'month', page: 1, pageSize: 10 })
+    const res: any = await getTechnicianRanking({ period: 'month', page: 1, pageSize: 10, storeId: userStore.storeId })
     technicianRanking.value = res.data?.list || res.data?.records || res.data || []
   } catch {
     // use defaults

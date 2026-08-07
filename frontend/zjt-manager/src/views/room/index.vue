@@ -4,10 +4,10 @@
     <el-card shadow="never" class="filter-card">
       <el-form :inline="true" :model="filters">
         <el-form-item label="房间类型">
-          <el-select v-model="filters.type" placeholder="全部" clearable style="width: 140px;">
-            <el-option label="普通" value="normal" />
-            <el-option label="双人" value="double" />
-            <el-option label="VIP" value="vip" />
+          <el-select v-model="filters.roomType" placeholder="全部" clearable style="width: 140px;">
+            <el-option label="普通" :value="1" />
+            <el-option label="双人" :value="2" />
+            <el-option label="VIP" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="房间状态">
@@ -31,9 +31,9 @@
         <el-table-column prop="id" label="编号" width="80" />
         <el-table-column prop="roomNo" label="房间号" width="120" />
         <el-table-column prop="name" label="房间名" width="150" />
-        <el-table-column prop="type" label="类型" width="100">
+        <el-table-column prop="roomType" label="类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="roomTypeTag(row.type)" size="small">{{ roomTypeLabel(row.type) }}</el-tag>
+            <el-tag :type="roomTypeTag(row.roomType || row.type)" size="small">{{ roomTypeLabel(row.roomType || row.type) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
@@ -74,10 +74,10 @@
           <el-input v-model="roomForm.name" placeholder="请输入房间名" />
         </el-form-item>
         <el-form-item label="类型" required>
-          <el-select v-model="roomForm.type" placeholder="请选择类型" style="width: 100%;">
-            <el-option label="普通" value="normal" />
-            <el-option label="双人" value="double" />
-            <el-option label="VIP" value="vip" />
+          <el-select v-model="roomForm.roomType" placeholder="请选择类型" style="width: 100%;">
+            <el-option label="普通" :value="1" />
+            <el-option label="双人" :value="2" />
+            <el-option label="VIP" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="描述">
@@ -105,23 +105,23 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const roomList = ref<Array<Record<string, any>>>([])
 
-const filters = reactive({ type: '', status: '' as number | string })
+const filters = reactive({ roomType: '' as number | string, status: '' as number | string })
 const roomForm = reactive({
   id: null as number | null,
   roomNo: '',
   name: '',
-  type: 'normal',
+  roomType: 1 as number,
   description: ''
 })
 
-function roomTypeLabel(type: string) {
-  const map: Record<string, string> = { normal: '普通', double: '双人', vip: 'VIP' }
-  return map[type] || type
+function roomTypeLabel(type: number | string) {
+  const map: Record<number, string> = { 1: '普通', 2: '双人', 3: 'VIP' }
+  return map[type as number] || type
 }
 
-function roomTypeTag(type: string) {
-  const map: Record<string, string> = { normal: 'info', double: '', vip: 'warning' }
-  return map[type] || ''
+function roomTypeTag(type: number | string) {
+  const map: Record<number, string> = { 1: 'info', 2: '', 3: 'warning' }
+  return map[type as number] || ''
 }
 
 function statusLabel(status: number) {
@@ -135,7 +135,7 @@ function statusTag(status: number) {
 }
 
 function resetFilters() {
-  filters.type = ''
+  filters.roomType = ''
   filters.status = ''
   loadData()
 }
@@ -144,7 +144,7 @@ async function loadData() {
   loading.value = true
   try {
     const params: Record<string, any> = { storeId: userStore.storeId }
-    if (filters.type) params.type = filters.type
+    if (filters.roomType) params.roomType = filters.roomType
     if (filters.status !== '') params.status = filters.status
     const res: any = await getRoomList(params)
     roomList.value = res.data?.list || res.data || []
@@ -158,7 +158,7 @@ function handleAdd() {
   roomForm.id = null
   roomForm.roomNo = ''
   roomForm.name = ''
-  roomForm.type = 'normal'
+  roomForm.roomType = 1
   roomForm.description = ''
   dialogVisible.value = true
 }
@@ -168,13 +168,13 @@ function handleEdit(row: Record<string, any>) {
   roomForm.id = row.id
   roomForm.roomNo = row.roomNo
   roomForm.name = row.name
-  roomForm.type = row.type
+  roomForm.roomType = row.roomType || row.type || 1
   roomForm.description = row.description || ''
   dialogVisible.value = true
 }
 
 async function handleSave() {
-  if (!roomForm.roomNo || !roomForm.name || !roomForm.type) {
+  if (!roomForm.roomNo || !roomForm.name || !roomForm.roomType) {
     ElMessage.warning('请填写必要信息')
     return
   }
@@ -184,7 +184,7 @@ async function handleSave() {
       storeId: userStore.storeId,
       roomNo: roomForm.roomNo,
       name: roomForm.name,
-      type: roomForm.type,
+      roomType: roomForm.roomType,
       description: roomForm.description
     }
     if (isEdit.value && roomForm.id) {

@@ -23,7 +23,7 @@
           />
         </el-form-item>
         <el-form-item label="订单号">
-          <el-input v-model="filters.orderNo" placeholder="订单编号" clearable style="width: 180px;" />
+          <el-input v-model="filters.keyword" placeholder="订单编号" clearable style="width: 180px;" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="loadData">查询</el-button>
@@ -115,7 +115,7 @@ const currentOrder = ref<Record<string, any> | null>(null)
 const filters = reactive({
   status: '' as number | string,
   dateRange: null as string[] | null,
-  orderNo: ''
+  keyword: ''
 })
 
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
@@ -134,7 +134,7 @@ function statusLabel(status: number) {
 function resetFilters() {
   filters.status = ''
   filters.dateRange = null
-  filters.orderNo = ''
+  filters.keyword = ''
   pagination.page = 1
   loadData()
 }
@@ -144,7 +144,7 @@ async function loadData() {
   try {
     const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize, storeId: userStore.storeId }
     if (filters.status) params.status = filters.status
-    if (filters.orderNo) params.orderNo = filters.orderNo
+    if (filters.keyword) params.keyword = filters.keyword
     if (filters.dateRange && filters.dateRange.length === 2) {
       params.startDate = filters.dateRange[0]
       params.endDate = filters.dateRange[1]

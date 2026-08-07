@@ -163,7 +163,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { getScheduleByTechnician, batchCreateSchedule, updateSchedule, createSchedule, deleteSchedule } from '@/api/store/schedule'
+import { getScheduleByStore, batchCreateSchedule, updateSchedule, createSchedule, deleteSchedule } from '@/api/store/schedule'
 import { getStoreList } from '@/api/store/info'
 import { getTechnicianList } from '@/api/store/technician'
 import type { StoreInfo } from '@/types/store'
@@ -343,28 +343,26 @@ async function fetchScheduleData() {
     scheduleMap.value = {}
     return
   }
-  const month = `${weekStart.value.getFullYear()}-${String(weekStart.value.getMonth() + 1).padStart(2, '0')}`
-  const map: Record<string, Record<string, ScheduleData>> = {}
-  for (const tech of technicians.value) {
-    try {
-      const res: any = await getScheduleByTechnician(tech.id, month)
-      const list: any[] = res.data || []
-      const techMap: Record<string, ScheduleData> = {}
-      list.forEach((item) => {
-        const dateStr = item.scheduleDate
-        if (!dateStr) return
-        techMap[dateStr] = {
-          id: item.id,
-          scheduleType: item.scheduleType,
-          shiftType: item.shiftType || '',
-        }
-      })
-      map[tech.id] = techMap
-    } catch {
-      // ignore
-    }
+  const date = weekDays.value[0]?.dateStr || formatDate(new Date())
+  try {
+    const res: any = await getScheduleByStore(searchForm.storeId, date)
+    const list: any[] = res.data || []
+    const map: Record<string, Record<string, ScheduleData>> = {}
+    list.forEach((item) => {
+      const techId = item.technicianId
+      const dateStr = item.scheduleDate
+      if (!techId || !dateStr) return
+      if (!map[techId]) map[techId] = {}
+      map[techId][dateStr] = {
+        id: item.id,
+        scheduleType: item.scheduleType,
+        shiftType: item.shiftType || '',
+      }
+    })
+    scheduleMap.value = map
+  } catch {
+    scheduleMap.value = {}
   }
-  scheduleMap.value = map
 }
 
 function handleStoreChange() {

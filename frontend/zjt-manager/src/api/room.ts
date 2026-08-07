@@ -13,5 +13,5 @@ export function updateRoom(id: number, data: any) {
 }
 
 export function updateRoomStatus(id: number, status: number) {
-  return put(`/api/v1/store/rooms/${id}/status`, { status })
+  return put(`/api/v1/store/rooms/${id}/status`, null, { params: { status } })
 }

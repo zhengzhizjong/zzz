@@ -63,8 +63,9 @@ public class AppointmentController {
             @RequestParam(defaultValue = "20") Integer pageSize,
             @RequestParam(required = false) Long storeId,
             @RequestParam(required = false) Long memberId,
+            @RequestParam(required = false) Long technicianId,
             @RequestParam(required = false) Integer status) {
-        return appointmentService.page(page, pageSize, storeId, memberId, status);
+        return appointmentService.page(page, pageSize, storeId, memberId, technicianId, status);
     }
 
     @GetMapping("/{id}")

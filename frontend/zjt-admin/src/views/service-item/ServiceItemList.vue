@@ -113,6 +113,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getServiceItemList, updateServiceItemStatus } from '@/api/content/service-item'
+import { getDictItemsByCode } from '@/api/system/config'
 import { SERVICE_ITEM_STATUS_OPTIONS, COMMISSION_TYPE_OPTIONS } from '@/types/service-item'
 import type { ServiceItem } from '@/types/service-item'
 import ServiceItemForm from './ServiceItemForm.vue'
@@ -152,15 +153,29 @@ function getCommissionLabel(type: number): string {
   return COMMISSION_TYPE_OPTIONS.find(o => o.value === type)?.label || '未知'
 }
 
+const FALLBACK_CATEGORIES: CategoryOption[] = [
+  { id: 1, name: '推拿按摩' },
+  { id: 2, name: '艾灸理疗' },
+  { id: 3, name: '拔罐刮痧' },
+  { id: 4, name: '足浴养生' },
+  { id: 5, name: '套餐项目' },
+]
+
 async function fetchCategoryOptions() {
-  // TODO: 替换为实际的分类API
-  categoryOptions.value = [
-    { id: 1, name: '推拿按摩' },
-    { id: 2, name: '艾灸理疗' },
-    { id: 3, name: '拔罐刮痧' },
-    { id: 4, name: '足浴养生' },
-    { id: 5, name: '套餐项目' },
-  ]
+  try {
+    const res: any = await getDictItemsByCode('service_category')
+    const items = res.data || []
+    if (items.length > 0) {
+      categoryOptions.value = items.map((item: any) => ({
+        id: Number(item.itemValue || item.id),
+        name: item.itemName,
+      }))
+    } else {
+      categoryOptions.value = FALLBACK_CATEGORIES
+    }
+  } catch {
+    categoryOptions.value = FALLBACK_CATEGORIES
+  }
 }
 
 async function fetchData() {

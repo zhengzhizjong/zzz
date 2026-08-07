@@ -7,7 +7,7 @@
           <el-input v-model="filters.keyword" placeholder="姓名/手机号" clearable style="width: 200px;" />
         </el-form-item>
         <el-form-item label="会员等级">
-          <el-select v-model="filters.level" placeholder="全部" clearable style="width: 140px;">
+          <el-select v-model="filters.levelId" placeholder="全部" clearable style="width: 140px;">
             <el-option label="普通会员" :value="1" />
             <el-option label="银卡会员" :value="2" />
             <el-option label="金卡会员" :value="3" />
@@ -128,7 +128,7 @@ const loading = ref(false)
 const detailVisible = ref(false)
 const currentMember = ref<Record<string, any> | null>(null)
 
-const filters = reactive({ keyword: '', level: '' })
+const filters = reactive({ keyword: '', levelId: '' })
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const memberList = ref<Array<Record<string, any>>>([])
 
@@ -144,7 +144,7 @@ function levelLabel(level: number) {
 
 function resetFilters() {
   filters.keyword = ''
-  filters.level = ''
+  filters.levelId = ''
   pagination.page = 1
   loadData()
 }
@@ -154,7 +154,7 @@ async function loadData() {
   try {
     const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize, storeId: userStore.storeId }
     if (filters.keyword) params.keyword = filters.keyword
-    if (filters.level) params.level = filters.level
+    if (filters.levelId) params.levelId = filters.levelId
     const res: any = await getMemberList(params)
     memberList.value = res.data?.list || res.data?.records || res.data || []
     pagination.total = res.data?.pagination?.total || res.data?.total || 0

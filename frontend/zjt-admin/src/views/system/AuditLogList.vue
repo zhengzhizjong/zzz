@@ -47,7 +47,7 @@
     <el-card shadow="never" class="table-card">
       <el-table :data="tableData" v-loading="loading" stripe border>
         <el-table-column prop="createdAt" label="时间" width="170" />
-        <el-table-column prop="userName" label="操作人" width="120" />
+        <el-table-column prop="operatorName" label="操作人" width="120" />
         <el-table-column prop="module" label="模块" width="120" align="center">
           <template #default="{ row }">
             {{ getModuleLabel(row.module) }}
@@ -93,7 +93,7 @@
     <el-dialog v-model="detailVisible" title="日志详情" width="560px" destroy-on-close>
       <el-descriptions :column="2" border v-if="currentDetail">
         <el-descriptions-item label="时间">{{ currentDetail.createdAt }}</el-descriptions-item>
-        <el-descriptions-item label="操作人">{{ currentDetail.userName }}</el-descriptions-item>
+        <el-descriptions-item label="操作人">{{ currentDetail.operatorName }}</el-descriptions-item>
         <el-descriptions-item label="模块">{{ getModuleLabel(currentDetail.module) }}</el-descriptions-item>
         <el-descriptions-item label="操作类型">
           <el-tag :type="getActionType(currentDetail.operation)" size="small">

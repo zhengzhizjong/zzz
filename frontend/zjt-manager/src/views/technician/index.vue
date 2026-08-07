@@ -4,9 +4,9 @@
     <el-card shadow="never" class="filter-card">
       <el-form :inline="true" :model="filters">
         <el-form-item label="在岗状态">
-          <el-select v-model="filters.onDuty" placeholder="全部" clearable style="width: 140px;">
-            <el-option label="在岗" value="true" />
-            <el-option label="离岗" value="false" />
+          <el-select v-model="filters.isOnline" placeholder="全部" clearable style="width: 140px;">
+            <el-option label="在岗" :value="1" />
+            <el-option label="离岗" :value="0" />
           </el-select>
         </el-form-item>
         <el-form-item label="技能等级">
@@ -111,7 +111,7 @@ const scheduleVisible = ref(false)
 const currentTechnician = ref<Record<string, any> | null>(null)
 const scheduleList = ref<Array<Record<string, any>>>([])
 
-const filters = reactive({ onDuty: '', skillLevel: '' })
+const filters = reactive({ isOnline: '' as number | string, skillLevel: '' })
 const pagination = reactive({ page: 1, pageSize: 10, total: 0 })
 const technicianList = ref<Array<Record<string, any>>>([])
 
@@ -126,7 +126,7 @@ function skillLevelLabel(level: number) {
 }
 
 function resetFilters() {
-  filters.onDuty = ''
+  filters.isOnline = ''
   filters.skillLevel = ''
   pagination.page = 1
   loadData()
@@ -136,7 +136,7 @@ async function loadData() {
   loading.value = true
   try {
     const params: Record<string, any> = { page: pagination.page, pageSize: pagination.pageSize, storeId: userStore.storeId }
-    if (filters.onDuty !== '') params.onDuty = filters.onDuty
+    if (filters.isOnline !== '') params.isOnline = filters.isOnline
     if (filters.skillLevel) params.skillLevel = filters.skillLevel
     const res: any = await getTechnicianList(params)
     technicianList.value = res.data?.list || res.data?.records || res.data || []

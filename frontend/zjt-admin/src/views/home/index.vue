@@ -36,10 +36,7 @@
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { getAppointmentList } from '@/api/trade/appointment'
-import { getTechnicianList } from '@/api/store/technician'
-import { getStoreList } from '@/api/store/info'
-import { getOrderList } from '@/api/trade/order'
+import { getDashboardSummary } from '@/api/data/dashboard'
 
 const userStore = useUserStore()
 
@@ -51,52 +48,17 @@ const dashboardData = reactive({
 })
 
 async function fetchDashboardData() {
-  const today = new Date()
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-
   try {
-    // 今日预约数
-    const appointmentRes: any = await getAppointmentList({
-      page: 1,
-      pageSize: 1,
-      startDate: todayStr,
-      endDate: todayStr,
-    })
-    dashboardData.todayAppointments = appointmentRes.data?.pagination?.total ?? 0
+    const res: any = await getDashboardSummary()
+    const data = res.data || {}
+    dashboardData.todayAppointments = data.todayAppointments ?? 0
+    dashboardData.todayRevenue = data.todayRevenue != null ? Number(data.todayRevenue).toFixed(2) : '0.00'
+    dashboardData.onlineTechnicians = data.onlineTechnicians ?? 0
+    dashboardData.storeCount = data.totalStores ?? 0
   } catch {
     dashboardData.todayAppointments = 0
-  }
-
-  try {
-    // 今日营收
-    const orderRes: any = await getOrderList({
-      page: 1,
-      pageSize: 1,
-      startDate: todayStr,
-      endDate: todayStr,
-    })
-    dashboardData.todayRevenue = (orderRes.data?.pagination?.total ?? 0).toFixed(2)
-  } catch {
     dashboardData.todayRevenue = '0.00'
-  }
-
-  try {
-    // 在岗技师数
-    const technicianRes: any = await getTechnicianList({
-      page: 1,
-      pageSize: 1,
-      isOnline: 1,
-    })
-    dashboardData.onlineTechnicians = technicianRes.data?.pagination?.total ?? 0
-  } catch {
     dashboardData.onlineTechnicians = 0
-  }
-
-  try {
-    // 门店数量
-    const storeRes: any = await getStoreList({ page: 1, pageSize: 1 })
-    dashboardData.storeCount = storeRes.data?.pagination?.total ?? 0
-  } catch {
     dashboardData.storeCount = 0
   }
 }

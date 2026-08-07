@@ -38,7 +38,9 @@ export function getMemberList(params: {
   page: number
   pageSize: number
   keyword?: string
+  memberType?: number
   memberLevelId?: number
+  status?: number
 }) {
   return request.get<R<PageResult<MemberInfo>>>('/api/v1/user/members', { params })
 }

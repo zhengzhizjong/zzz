@@ -32,6 +32,7 @@ public class EmployeeServiceImpl implements IEmployeeService {
 
     private final UserEmployeeMapper employeeMapper;
     private final JwtUtil jwtUtil;
+    private final javax.sql.DataSource dataSource;
 
     private static final AtomicInteger SEQUENCE = new AtomicInteger(1);
 
@@ -86,6 +87,17 @@ public class EmployeeServiceImpl implements IEmployeeService {
         response.setTenantId(tenantId);
         response.setPosition(employee.getPosition());
         response.setEmployeeNo(employee.getEmployeeNo());
+        response.setId(employee.getId());
+        // 如果是理疗师，查询对应的技师ID
+        if ("理疗师".equals(employee.getPosition()) || "therapist".equals(employee.getPosition())) {
+            try {
+                // 通过storeId和employeeId查找技师记录
+                Long techId = findTechnicianIdByEmployeeId(employee.getId());
+                response.setTechnicianId(techId);
+            } catch (Exception e) {
+                log.warn("查询技师ID失败: {}", e.getMessage());
+            }
+        }
         return R.ok(response);
     }
 
@@ -194,5 +206,30 @@ public class EmployeeServiceImpl implements IEmployeeService {
             seq = 1;
         }
         return "E" + datePart + String.format("%04d", seq);
+    }
+
+    /**
+     * 通过员工ID查找对应的技师ID
+     * 在store_technician表中，employee_id字段关联员工ID
+     */
+    private Long findTechnicianIdByEmployeeId(Long employeeId) {
+        try {
+            java.sql.Connection conn = dataSource.getConnection();
+            java.sql.PreparedStatement ps = conn.prepareStatement(
+                    "SELECT id FROM store_technician WHERE employee_id = ? AND deleted = 0 LIMIT 1");
+            ps.setLong(1, employeeId);
+            java.sql.ResultSet rs = ps.executeQuery();
+            Long techId = null;
+            if (rs.next()) {
+                techId = rs.getLong("id");
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+            return techId;
+        } catch (Exception e) {
+            log.warn("查询技师ID失败: {}", e.getMessage());
+        }
+        return null;
     }
 }

@@ -14,7 +14,7 @@ public interface IAppointmentService {
     R<AppointmentResponse> create(AppointmentCreateRequest request);
 
     R<PageResult<TradeAppointmentDO>> page(Integer page, Integer pageSize, Long storeId,
-                                            Long memberId, Integer status);
+                                            Long memberId, Long technicianId, Integer status);
 
     R<TradeAppointmentDO> getById(Long id);
 

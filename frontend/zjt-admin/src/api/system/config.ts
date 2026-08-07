@@ -43,6 +43,10 @@ export function getDictItems(dictId: number) {
   return request.get<R<DictItemInfo[]>>(`/api/v1/admin/dicts/${dictId}/items`)
 }
 
+export function getDictItemsByCode(dictCode: string) {
+  return request.get<R<DictItemInfo[]>>(`/api/v1/admin/dicts/code/${dictCode}/items`)
+}
+
 export function createDictItem(dictId: number, data: { itemCode: string; itemName: string; itemValue?: string; sortOrder?: number; status?: number }) {
   return request.post<R<void>>(`/api/v1/admin/dicts/${dictId}/items`, data)
 }

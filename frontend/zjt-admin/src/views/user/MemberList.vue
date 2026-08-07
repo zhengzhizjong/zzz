@@ -267,7 +267,8 @@ async function fetchData() {
       page: pagination.page,
       pageSize: pagination.pageSize,
       keyword: searchForm.keyword || undefined,
-      memberLevelId: searchForm.memberType,
+      memberType: searchForm.memberType,
+      status: searchForm.status,
     })
     tableData.value = res.data.list || []
     pagination.total = res.data.pagination.total
